@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบประเมินผลนิสิตแพทย์ - สำหรับอาจารย์</title>
+    <title>แบบประเมินการปฏิบัติงานของนิสิตแพทย์ - สำหรับอาจารย์</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 700px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #0070f3; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; line-height: 1.6; }
         .form-group { margin-bottom: 20px; }
         label { font-weight: bold; display: block; margin-bottom: 8px; }
         select, input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
@@ -16,18 +16,22 @@
         button:hover { background: #0051b3; }
         .student-card { background: #f9f9f9; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .evaluate-zone { margin-top: 25px; padding: 20px; border-top: 2px dashed #0070f3; display: none; background-color: #fffaf0; border-radius: 6px; }
-        .rating-group { margin-bottom: 20px; background: #fff; padding: 12px; border-radius: 4px; border-left: 4px solid #0070f3; }
-        .radio-options { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
-        .radio-options label { font-weight: normal; background: #f0f2f5; padding: 6px 12px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .radio-options input:checked + span { font-weight: bold; color: #0070f3; }
+        .rating-group { margin-bottom: 25px; background: #fff; padding: 15px; border-radius: 6px; border-left: 5px solid #0070f3; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .rating-title { font-weight: bold; font-size: 16px; color: #1e293b; margin-bottom: 12px; }
+        .radio-option-block { display: block; background: #f8fafc; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .radio-option-block:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .radio-option-block input { margin-right: 10px; transform: scale(1.1); vertical-align: middle; }
+        .option-detail { display: inline-block; vertical-align: middle; width: 90%; }
+        .score-badge { font-weight: bold; color: #0070f3; margin-right: 5px; }
+        .desc-text { display: block; font-size: 13.5px; color: #64748b; margin-top: 4px; }
         .status-msg { text-align: center; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>👨‍🏫 แบบประเมินการปฏิบัติงานของนิสิตแพทย์</h2>
-    <div class="subtitle">วิชาเลือกเสรี ศูนย์แพทยศาสตรศึกษาชั้นคลินิก</div>
+    <h2>👨‍🏫 แบบประเมินการปฏิบัติงานของนิสิตแพทย์ ชั้นปีที่ 6</h2>
+    <div class="subtitle">วิชาเลือกเสรี ศูนย์แพทยศาสตรศึกษาชั้นคลินิก โรงพยาบาลพุทธชินราชพิษณุโลก<br><span style="color: #ef4444; font-weight: bold;">(ข้อมูลที่ได้รับจะถือเป็นความลับเพื่อประโยชน์ต่อการพัฒนาการเรียนของนิสิตแพทย์)</span></div>
     
     <div class="form-group">
         <label>ชื่อ-นามสกุล อาจารย์ผู้ประเมิน:</label>
@@ -63,68 +67,128 @@
         <h3 id="targetStudentTitle" style="color: #333; margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">ประเมินนิสิต: -</h3>
         
         <div class="rating-group">
-            <label>1. ความรู้ (คะแนนเต็ม 20)</label>
-            <div class="radio-options">
-                <label><input type="radio" name="q1" value="20"><span>20 (ดีมาก)</span></label>
-                <label><input type="radio" name="q1" value="15"><span>15 (ดี)</span></label>
-                <label><input type="radio" name="q1" value="10"><span>10 (พอใช้)</span></label>
-                <label><input type="radio" name="q1" value="5"><span>5 (ปรับปรุง)</span></label>
-            </div>
+            <div class="rating-title">1. ความรู้ (คะแนนเต็ม 20)</div>
+            <label class="radio-option-block">
+                <input type="radio" name="q1" value="20">
+                <div class="option-detail"><span class="score-badge">[20 คะแนน] ดีมาก:</span><span class="desc-text">มีความรู้และสามารถอภิปรายและนำความรู้ไปใช้ทางคลินิกได้ดีมาก</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q1" value="15">
+                <div class="option-detail"><span class="score-badge">[15 คะแนน] ดี:</span><span class="desc-text">มีความรู้ อภิปรายและนำความรู้ไปใช้ทางคลินิกได้ดี</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q1" value="10">
+                <div class="option-detail"><span class="score-badge">[10 คะแนน] พอใช้:</span><span class="desc-text">มีความรู้บ้าง การประยุกต์ความรู้ในการดูแลผู้ป่วยดีพอควร</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q1" value="5">
+                <div class="option-detail"><span class="score-badge">[5 คะแนน] ควรปรับปรุง:</span><span class="desc-text">ขาดความรู้ที่สำคัญ ประยุกต์ใช้ทางคลินิกได้น้อย ต้องการคำชี้แนะ</span></div>
+            </label>
         </div>
 
         <div class="rating-group">
-            <label>2. ทักษะทางคลินิก (การซักประวัติ ตรวจร่างกาย หัตถการ) (คะแนนเต็ม 20)</label>
-            <div class="radio-options">
-                <label><input type="radio" name="q2" value="20"><span>20 (ดีมาก)</span></label>
-                <label><input type="radio" name="q2" value="15"><span>15 (ดี)</span></label>
-                <label><input type="radio" name="q2" value="10"><span>10 (พอใช้)</span></label>
-                <label><input type="radio" name="q2" value="5"><span>5 (ปรับปรุง)</span></label>
-            </div>
+            <div class="rating-title">2. ทักษะทางคลินิก (การซักประวัติ ตรวจร่างกาย หัตถการ) (คะแนนเต็ม 20)</div>
+            <label class="radio-option-block">
+                <input type="radio" name="q2" value="20">
+                <div class="option-detail"><span class="score-badge">[20 คะแนน] ดีมาก:</span><span class="desc-text">ซักประวัติ ตรวจร่างกาย ทำหัตถการพื้นฐานได้ถูกต้อง รวดเร็วและแม่นยำ</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q2" value="15">
+                <div class="option-detail"><span class="score-badge">[15 คะแนน] ดี:</span><span class="desc-text">ซักประวัติ ตรวจร่างกาย ทำหัตถการพื้นฐานได้ถูกต้องและครบถ้วนตามขั้นตอน</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q2" value="10">
+                <div class="option-detail"><span class="score-badge">[10 คะแนน] พอใช้:</span><span class="desc-text">ซักประวัติ ตรวจร่างกาย ทำหัตถการพื้นฐานได้แต่ยังติดขัดหรือทำไม่ครบถ้วนในบางครั้ง</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q2" value="5">
+                <div class="option-detail"><span class="score-badge">[5 คะแนน] ควรปรับปรุง:</span><span class="desc-text">มีข้อบกพร่องมากในการซักประวัติ ตรวจร่างกาย ทำหัตถการผิดขั้นตอนบ่อยครั้ง</span></div>
+            </label>
         </div>
 
         <div class="rating-group">
-            <label>3. การเรียนรู้ด้วยตนเอง (คะแนนเต็ม 15)</label>
-            <div class="radio-options">
-                <label><input type="radio" name="q3" value="15"><span>15 (ดีมาก)</span></label>
-                <label><input type="radio" name="q3" value="12"><span>12 (ดี)</span></label>
-                <label><input type="radio" name="q3" value="7"><span>7 (พอใช้)</span></label>
-                <label><input type="radio" name="q3" value="5"><span>5 (ปรับปรุง)</span></label>
-            </div>
+            <div class="rating-title">3. การเรียนรู้ด้วยตนเอง (คะแนนเต็ม 15)</div>
+            <label class="radio-option-block">
+                <input type="radio" name="q3" value="15">
+                <div class="option-detail"><span class="score-badge">[15 คะแนน] ดีมาก:</span><span class="desc-text">ใฝ่รู้ ค้นคว้าข้อมูลทางการแพทย์จากแหล่งที่น่าเชื่อถือมาประยุกต์ใช้ได้อย่างดีเยี่ยม</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q3" value="12">
+                <div class="option-detail"><span class="score-badge">[12 คะแนน] ดี:</span><span class="desc-text">มีการศึกษาค้นคว้าด้วยตนเองเพิ่มเติมเมื่อได้รับมอบหมายงานหรือพบเคสที่น่าสนใจ</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q3" value="7">
+                <div class="option-detail"><span class="score-badge">[7 คะแนน] พอใช้:</span><span class="desc-text">ศึกษาเรียนรู้ด้วยตนเองบ้างแต่ยังไม่ครอบคลุม ต้องอาศัยการกระตุ้นจากอาจารย์</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q3" value="5">
+                <div class="option-detail"><span class="score-badge">[5 คะแนน] ควรปรับปรุง:</span><span class="desc-text">ไม่สนใจแสวงหาความรู้เพิ่มเติม ละเลยการศึกษาค้นคว้าด้วยตนเอง</span></div>
+            </label>
         </div>
 
         <div class="rating-group">
-            <label>4. การสื่อสารและมนุษยสัมพันธ์ (คะแนนเต็ม 15)</label>
-            <div class="radio-options">
-                <label><input type="radio" name="q4" value="15"><span>15 (ดีมาก)</span></label>
-                <label><input type="radio" name="q4" value="12"><span>12 (ดี)</span></label>
-                <label><input type="radio" name="q4" value="7"><span>7 (พอใช้)</span></label>
-                <label><input type="radio" name="q4" value="5"><span>5 (ปรับปรุง)</span></label>
-            </div>
+            <div class="rating-title">4. การสื่อสารและมนุษยสัมพันธ์ (คะแนนเต็ม 15)</div>
+            <label class="radio-option-block">
+                <input type="radio" name="q4" value="15">
+                <div class="option-detail"><span class="score-badge">[15 คะแนน] ดีมาก:</span><span class="desc-text">สื่อสารและทำความเข้าใจกับผู้ป่วย ญาติ และทีมงานสหวิชาชีพได้ชัดเจน สุภาพ นุ่มนวล</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q4" value="12">
+                <div class="option-detail"><span class="score-badge">[12 คะแนน] ดี:</span><span class="desc-text">มีทักษะในการสื่อสารดี มนุษยสัมพันธ์ที่ดีกับบุคลากรผู้ป่วย และญาติผู้ป่วย</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q4" value="7">
+                <div class="option-detail"><span class="score-badge">[7 คะแนน] พอใช้:</span><span class="desc-text">สามารถทำงานได้กับบุคลากร อาจประสบปัญหาบ้างในการสื่อสารกับผู้ป่วยหรือญาติในบางครั้ง</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q4" value="5">
+                <div class="option-detail"><span class="score-badge">[5 คะแนน] ควรปรับปรุง:</span><span class="desc-text">มีปัญหาในการทำงานกับบุคลากรอื่นและ ขาดทักษะพื้นฐานในการสื่อสารกับผู้ป่วยและญาติ</span></div>
+            </label>
         </div>
 
         <div class="rating-group">
-            <label>5. ความรับผิดชอบ (คะแนนเต็ม 15)</label>
-            <div class="radio-options">
-                <label><input type="radio" name="q5" value="15"><span>15 (ดีมาก)</span></label>
-                <label><input type="radio" name="q5" value="12"><span>12 (ดี)</span></label>
-                <label><input type="radio" name="q5" value="7"><span>7 (พอใช้)</span></label>
-                <label><input type="radio" name="q5" value="5"><span>5 (ปรับปรุง)</span></label>
-            </div>
+            <div class="rating-title">5. ความรับผิดชอบ (คะแนนเต็ม 15)</div>
+            <label class="radio-option-block">
+                <input type="radio" name="q5" value="15">
+                <div class="option-detail"><span class="score-badge">[15 คะแนน] ดีมาก:</span><span class="desc-text">มีความรับผิดชอบดีมาก มักทำหน้าที่ต่างๆ ที่อยู่ในความรับผิดชอบของตนได้ดีเกินความคาดหมาย</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q5" value="12">
+                <div class="option-detail"><span class="score-badge">[12 คะแนน] ดี:</span><span class="desc-text">มีความรับผิดชอบดี ดูแลงานในความรับผิดชอบของตนได้ตามความคาดหมาย</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q5" value="7">
+                <div class="option-detail"><span class="score-badge">[7 คะแนน] พอใช้:</span><span class="desc-text">มีความรับผิดชอบพอใช้ได้ มีบางครั้งที่อาจารย์หรือบุคลากรอื่นต้องช่วยแบ่งเบาภาระงาน</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q5" value="5">
+                <div class="option-detail"><span class="score-badge">[5 คะแนน] ควรปรับปรุง:</span><span class="desc-text">แสดงถึงการขาดความรับผิดชอบในภาระหน้าที่ที่ได้รับมอบหมายเป็นประจำ</span></div>
+            </label>
         </div>
 
         <div class="rating-group">
-            <label>6. เจตคติและจริยธรรม (คะแนนเต็ม 15)</label>
-            <div class="radio-options">
-                <label><input type="radio" name="q6" value="15"><span>15 (ดีมาก)</span></label>
-                <label><input type="radio" name="q6" value="12"><span>12 (ดี)</span></label>
-                <label><input type="radio" name="q6" value="7"><span>7 (พอใช้)</span></label>
-                <label><input type="radio" name="q6" value="5"><span>5 (ปรับปรุง)</span></label>
-            </div>
+            <div class="rating-title">6. เจตคติและจริยธรรม (คะแนนเต็ม 15)</div>
+            <label class="radio-option-block">
+                <input type="radio" name="q6" value="15">
+                <div class="option-detail"><span class="score-badge">[15 คะแนน] ดีมาก:</span><span class="desc-text">มีเจตคติที่ดีมากต่อการเป็นแพทย์ แสดงถึงความเป็นวิชาชีพเช่นตรงเวลา คำนึงถึงประโยชน์ของผู้ป่วยและผู้ร่วมงาน</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q6" value="12">
+                <div class="option-detail"><span class="score-badge">[12 คะแนน] ดี:</span><span class="desc-text">มีเจตคติที่ดีต่อวิชาชีพแพทย์ ไม่ทำผิดกฎระเบียบ ข้อบังคับต่างๆ รักษาประโยชน์ส่วนใหญ่</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q6" value="7">
+                <div class="option-detail"><span class="score-badge">[7 คะแนน] พอใช้:</span><span class="desc-text">อาจแสดงออกถึงการไม่คำนึงถึงหลักจริยธรรมในการดูแลผู้ป่วยบางราย หรือไม่ตรงต่อเวลาบ้าง</span></div>
+            </label>
+            <label class="radio-option-block">
+                <input type="radio" name="q6" value="5">
+                <div class="option-detail"><span class="score-badge">[5 คะแนน] ควรปรับปรุง:</span><span class="desc-text">แสดงพฤติกรรมที่ไม่เหมาะสมต่อการเป็นแพทย์หรือขัดต่อหลักวิชาชีพแพทย์หลายครั้ง</span></div>
+            </label>
         </div>
 
         <div class="form-group">
             <label>ความคิดเห็นเพิ่มเติม:</label>
-            <textarea id="evaluationComment" rows="3" placeholder="ระบุความคิดเห็นของอาจารย์ (ถ้ามี)"></textarea>
+            <textarea id="evaluationComment" rows="3" placeholder="ระบุความคิดเห็นของอาจารย์เพิ่มเติม (ถ้ามี)"></textarea>
         </div>
 
         <button onclick="submitEvaluation()">💾 บันทึกผลการประเมิน</button>
@@ -134,7 +198,6 @@
 </div>
 
 <script>
-    // 🔗 ฝัง URL เว็บแอปของคุณให้เรียบร้อยแล้วตรงนี้ครับ
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec"; 
     
     let selectedStudentId = "";
@@ -243,7 +306,7 @@
                 statusMsg.style.color = 'green';
                 statusMsg.innerText = `✅ บันทึกผลการประเมินของ ${selectedStudentName} เรียบร้อยแล้ว!`;
                 document.getElementById('evaluationZone').style.display = 'none';
-                fetchStudents(); // รีโหลดรายชื่อใหม่
+                fetchStudents();
             } else {
                 statusMsg.style.color = 'red';
                 statusMsg.innerText = '❌ ระบบเกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้';
