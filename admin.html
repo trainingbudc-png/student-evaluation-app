@@ -3,125 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการ Admin - Evaluation App</title>
+    <title>ระบบแดชบอร์ดผู้ดูแลระบบ - Admin Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        h2 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
-        .tab { padding: 10px 20px; cursor: pointer; border-radius: 8px 8px 0 0; background: #eee; }
-        .tab.active { background: #1a73e8; color: white; font-weight: bold; }
-        .section { display: none; }
-        .section.active { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f8f9fa; }
-        .question-item { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #1a73e8; }
-        input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button.refresh { background: #34a853; margin-bottom: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { color: #1e293b; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+        .btn-refresh { padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .btn-refresh:hover { background: #4338ca; }
+        .table-responsive { margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; color: #64748b; font-weight: bold; }
+        tr:hover { background-color: #f8fafc; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 13px; font-weight: bold; }
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-warning { background-color: #fef3c7; color: #b45309; }
+        .status-text { font-size: 14px; color: #64748b; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>⚙️ แผงควบคุมสำหรับผู้ดูแลระบบ (Admin)</h2>
-
-    <div class="nav-tabs">
-        <div class="tab active" onclick="switchTab('audit')">ตรวจสอบการประเมิน</div>
-        <div class="tab" onclick="switchTab('settings')">ตั้งค่าหัวข้อประเมิน</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <h2>⚙️ แดชบอร์ดติดตามสถานะการประเมินผล (Admin)</h2>
+        <button class="btn-refresh" onclick="loadAdminLogs()">🔄 อัปเดตดึงข้อมูลล่าสุด</button>
     </div>
+    
+    <p class="status-text" id="statusText">กดปุ่มด้านบนเพื่อโหลดประวัติการประเมินจาก Google Sheets</p>
 
-    <div id="audit" class="section active">
-        <button class="refresh" onclick="fetchLogs()">🔄 ดึงข้อมูลประวัติล่าสุด</button>
-        <div id="logTableContainer">
-            <p style="text-align:center;">กดปุ่มเพื่อดึงข้อมูลจากระบบ...</p>
-        </div>
-    </div>
-
-    <div id="settings" class="section">
-        <p>คุณสามารถแก้ไขหัวข้อที่ใช้ประเมินได้ที่นี่ (ข้อมูลจะถูกดึงไปแสดงในหน้าอาจารย์)</p>
-        <div id="questionsList">
-            <div class="question-item">
-                <label>ข้อที่ 1:</label>
-                <input type="text" id="q1_text" value="ความตั้งใจและการมีส่วนร่วมในชั้นเรียน">
-            </div>
-            <div class="question-item">
-                <label>ข้อที่ 2:</label>
-                <input type="text" id="q2_text" value="การส่งงานตรงเวลาและความถูกต้องของเนื้อหา">
-            </div>
-            <div class="question-item">
-                <label>ข้อที่ 3:</label>
-                <input type="text" id="q3_text" value="ทักษะการคิดวิเคราะห์และการแก้ปัญหา">
-            </div>
-        </div>
-        <button onclick="saveQuestions()">💾 บันทึกการเปลี่ยนแปลง</button>
-        <p id="saveStatus"></p>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>วัน-เวลาประเมิน</th>
+                    <th>อาจารย์ผู้ประเมิน</th>
+                    <th>รหัสวิชา</th>
+                    <th>รหัสนิสิต</th>
+                    <th>ชื่อ-นามสกุลนิสิต</th>
+                    <th>คะแนนรวม (100)</th>
+                    <th>ผลการประเมิน</th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody">
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #94a3b8; padding: 30px;">ไม่มีข้อมูลการประเมิน หรือกรุณากดปุ่มเพื่อโหลดข้อมูลล่าสุด</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
 <script>
-    const API_URL = "URL_WEB_APP_ของ_GAS_ของคุณ"; // ใส่ลิงก์จาก Apps Script
+    // 🔗 ฝัง URL เว็บแอปให้เรียบร้อยแล้วครับ ไม่ต้องแก้ไขอะไรเพิ่ม
+    const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec"; 
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-    }
-
-    async function fetchLogs() {
-        const container = document.getElementById('logTableContainer');
-        container.innerHTML = "<p style='text-align:center;'>กำลังดึงข้อมูล...</p>";
+    async function loadAdminLogs() {
+        const statusText = document.getElementById('statusText');
+        const tbody = document.getElementById('logTableBody');
         
+        statusText.innerText = '⏳ กำลังติดต่อเชื่อมโยงคลังข้อมูลคลาวด์...';
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">กำลังโหลด...</td></tr>`;
+
         try {
-            // เรียก action "getAdminLogs" จาก GAS
             const response = await fetch(`${API_URL}?action=getAdminLogs`);
-            const data = await response.json();
-            
-            let html = "<table><thead><tr><th>วัน-เวลา</th><th>อาจารย์</th><th>วิชา</th><th>นิสิต</th><th>ผลประเมิน</th></tr></thead><tbody>";
-            data.forEach(log => {
-                html += `<tr>
-                    <td>${new Date(log.date).toLocaleString()}</td>
-                    <td>${log.teacher}</td>
-                    <td>${log.subject}</td>
-                    <td>${log.studentId}</td>
-                    <td>${log.scores.join(', ')}</td>
-                </tr>`;
-            });
-            html += "</tbody></table>";
-            container.innerHTML = html;
-        } catch (error) {
-            container.innerHTML = "<p style='color:red;'>ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบ API</p>";
-        }
-    }
+            const logs = await response.json();
 
-    async function saveQuestions() {
-        const q1 = document.getElementById('q1_text').value;
-        const q2 = document.getElementById('q2_text').value;
-        const q3 = document.getElementById('q3_text').value;
-        const status = document.getElementById('saveStatus');
-
-        status.innerText = "กำลังบันทึก...";
-        
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: "updateQuestions",
-                    questions: [q1, q2, q3]
-                })
-            });
-            const res = await response.json();
-            if(res.result === "success") {
-                status.style.color = "green";
-                status.innerText = "✅ บันทึกหัวข้อใหม่สำเร็จ!";
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 30px;">คลังข้อมูลว่างเปล่า (ยังไม่เคยมีบันทึกการประเมินส่งเข้ามา)</td></tr>`;
+                statusText.innerText = 'โหลดเสร็จสิ้น: ไม่พบข้อมูลบันทึก';
+                return;
             }
-        } catch (e) {
-            status.style.color = "red";
-            status.innerText = "❌ บันทึกไม่สำเร็จ";
+
+            tbody.innerHTML = '';
+            // เรียงลำดับเอาอันล่าสุดขึ้นก่อน
+            logs.reverse().forEach(log => {
+                const tr = document.createElement('tr');
+                
+                // จัดการ Format วันที่ให้ดูง่ายขึ้น
+                const dateObj = new Date(log.date);
+                const formattedDate = dateObj.toLocaleDateString('th-TH', {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                // ตรวจสอบBadgeเกรด
+                const badgeClass = log.grade.includes('โดดเด่น') ? 'badge-success' : 'badge-warning';
+
+                tr.innerHTML = `
+                    <td>${formattedDate} น.</td>
+                    <td><strong>${log.teacher}</strong></td>
+                    <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px;">${log.subject}</code></td>
+                    <td>${log.studentId}</td>
+                    <td>${log.studentName}</td>
+                    <td><strong>${log.totalScore}</strong> แต้ม</td>
+                    <td><span class="badge ${badgeClass}">${log.grade}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            statusText.innerText = `✅ อัปเดตข้อมูลสำเร็จ ดึงข้อมูลล่าสุดเมื่อ: ${new Date().toLocaleTimeString('th-TH')} น. (พบทั้งหมด ${logs.length} รายการ)`;
+
+        } catch (error) {
+            statusText.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อกรุณาลองตรวจสอบอินเทอร์เน็ต';
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red; padding: 30px;">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
         }
     }
+
+    // สั่งให้โหลดอัตโนมัติเมื่อเปิดหน้าเว็บขึ้นมาครั้งแรก
+    window.onload = loadAdminLogs;
 </script>
 </body>
 </html>

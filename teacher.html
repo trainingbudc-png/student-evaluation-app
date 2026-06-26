@@ -3,83 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบประเมินผลนิสิต - สำหรับอาจารย์</title>
+    <title>ระบบประเมินผลนิสิตแพทย์ - สำหรับอาจารย์</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #0070f3; margin-bottom: 25px; }
+        .container { max-width: 700px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #0070f3; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
         .form-group { margin-bottom: 20px; }
         label { font-weight: bold; display: block; margin-bottom: 8px; }
-        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        select, input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
         button { width: 100%; padding: 12px; background: #0070f3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         button:hover { background: #0051b3; }
         .student-card { background: #f9f9f9; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .evaluate-zone { margin-top: 20px; padding: 20px; border-top: 2px dashed #0070f3; display: none; }
-        .rating-group { margin-bottom: 15px; }
-        .radio-options { display: flex; gap: 15px; margin-top: 5px; }
+        .evaluate-zone { margin-top: 25px; padding: 20px; border-top: 2px dashed #0070f3; display: none; background-color: #fffaf0; border-radius: 6px; }
+        .rating-group { margin-bottom: 20px; background: #fff; padding: 12px; border-radius: 4px; border-left: 4px solid #0070f3; }
+        .radio-options { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+        .radio-options label { font-weight: normal; background: #f0f2f5; padding: 6px 12px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .radio-options input:checked + span { font-weight: bold; color: #0070f3; }
         .status-msg { text-align: center; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>👨‍🏫 หน้าต่างประเมินผลสำหรับอาจารย์</h2>
+    <h2>👨‍🏫 แบบประเมินการปฏิบัติงานของนิสิตแพทย์</h2>
+    <div class="subtitle">วิชาเลือกเสรี ศูนย์แพทยศาสตรศึกษาชั้นคลินิก</div>
     
     <div class="form-group">
-        <label>ชื่ออาจารย์ผู้ประเมิน:</label>
-        <input type="text" id="teacherName" placeholder="กรอกชื่อ-นามสกุลของอาจารย์">
+        <label>ชื่อ-นามสกุล อาจารย์ผู้ประเมิน:</label>
+        <input type="text" id="teacherName" placeholder="ตัวอย่าง: นายแพทย์วจนะชัย ว่องไว">
     </div>
 
     <div class="form-group">
-        <label>เลือกวิชาที่ต้องการประเมิน:</label>
+        <label>เลือกรายวิชา:</label>
         <select id="subjectSelect" onchange="fetchStudents()">
             <option value="">-- กรุณาเลือกวิชา --</option>
-            <option value="CS101">CS101 - Introduction to Computer Science</option>
-            <option value="CS102">CS102 - Web Programming</option>
+            <option value="499723">499723 - การปฏิบัติงานทางอายุรศาสตร์</option>
+            <option value="499724">499724 - อายุรศาสตร์เฉพาะทาง</option>
+            <option value="499726">499726 - ศัลยศาสตร์พื้นฐาน</option>
+            <option value="499727">499727 - ศัลยศาสตร์ประยุกต์</option>
+            <option value="499746">499746 - เวชปฏิบัติครอบครัว</option>
+            <option value="499751">499751 - รายวิชาโสต ศอ นาสิกวิทยาทั่วไป</option>
+            <option value="499752">499752 - จักษุวิทยาคลินิก</option>
+            <option value="499753">499753 - ประสบการณ์คลินิกทางเวชศาสตร์ฉุกเฉิน</option>
+            <option value="499754">499754 - ประสบการณ์ทางนิติเวชศาสตร์</option>
+            <option value="499756">499756 - การปฏิบัติงานทางเวชศาสตร์ฟื้นฟู</option>
+            <option value="499757">499757 - การปฏิบัติงานทางพยาธิวิทยา</option>
         </select>
     </div>
 
     <div id="studentSection" style="margin-top: 25px;">
-        <label>รายชื่อนิสิตในวิชา:</label>
+        <label>รายชื่อนิสิตแพทย์ในวิชานี้:</label>
         <div id="studentList">
-            <p style="color: #666; text-align: center;">กรุณาเลือกวิชาเพื่อโหลดรายชื่อนิสิต</p>
+            <p style="color: #666; text-align: center;">กรุณาเลือกวิชาเพื่อโหลดรายชื่อนิสิตจากฐานข้อมูล</p>
         </div>
     </div>
 
     <div id="evaluationZone" class="evaluate-zone">
-        <h3 id="targetStudentTitle" style="color: #333; margin-top: 0;">ประเมินนิสิต: -</h3>
+        <h3 id="targetStudentTitle" style="color: #333; margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">ประเมินนิสิต: -</h3>
         
         <div class="rating-group">
-            <label>1. ความตั้งใจและการมีส่วนร่วมในชั้นเรียน</label>
+            <label>1. ความรู้ (คะแนนเต็ม 20)</label>
             <div class="radio-options">
-                <label><input type="radio" name="q1" value="5"> 5 (ดีมาก)</label>
-                <label><input type="radio" name="q1" value="4"> 4</label>
-                <label><input type="radio" name="q1" value="3"> 3</label>
-                <label><input type="radio" name="q1" value="2"> 2</label>
-                <label><input type="radio" name="q1" value="1"> 1 (ปรับปรุง)</label>
+                <label><input type="radio" name="q1" value="20"><span>20 (ดีมาก)</span></label>
+                <label><input type="radio" name="q1" value="15"><span>15 (ดี)</span></label>
+                <label><input type="radio" name="q1" value="10"><span>10 (พอใช้)</span></label>
+                <label><input type="radio" name="q1" value="5"><span>5 (ปรับปรุง)</span></label>
             </div>
         </div>
 
         <div class="rating-group">
-            <label>2. การส่งงานตรงเวลาและความถูกต้องของเนื้อหา</label>
+            <label>2. ทักษะทางคลินิก (การซักประวัติ ตรวจร่างกาย หัตถการ) (คะแนนเต็ม 20)</label>
             <div class="radio-options">
-                <label><input type="radio" name="q2" value="5"> 5</label>
-                <label><input type="radio" name="q2" value="4"> 4</label>
-                <label><input type="radio" name="q2" value="3"> 3</label>
-                <label><input type="radio" name="q2" value="2"> 2</label>
-                <label><input type="radio" name="q2" value="1"> 1</label>
+                <label><input type="radio" name="q2" value="20"><span>20 (ดีมาก)</span></label>
+                <label><input type="radio" name="q2" value="15"><span>15 (ดี)</span></label>
+                <label><input type="radio" name="q2" value="10"><span>10 (พอใช้)</span></label>
+                <label><input type="radio" name="q2" value="5"><span>5 (ปรับปรุง)</span></label>
             </div>
         </div>
 
         <div class="rating-group">
-            <label>3. ทักษะการคิดวิเคราะห์และการแก้ปัญหา</label>
+            <label>3. การเรียนรู้ด้วยตนเอง (คะแนนเต็ม 15)</label>
             <div class="radio-options">
-                <label><input type="radio" name="q3" value="5"> 5</label>
-                <label><input type="radio" name="q3" value="4"> 4</label>
-                <label><input type="radio" name="q3" value="3"> 3</label>
-                <label><input type="radio" name="q3" value="2"> 2</label>
-                <label><input type="radio" name="q3" value="1"> 1</label>
+                <label><input type="radio" name="q3" value="15"><span>15 (ดีมาก)</span></label>
+                <label><input type="radio" name="q3" value="12"><span>12 (ดี)</span></label>
+                <label><input type="radio" name="q3" value="7"><span>7 (พอใช้)</span></label>
+                <label><input type="radio" name="q3" value="5"><span>5 (ปรับปรุง)</span></label>
             </div>
+        </div>
+
+        <div class="rating-group">
+            <label>4. การสื่อสารและมนุษยสัมพันธ์ (คะแนนเต็ม 15)</label>
+            <div class="radio-options">
+                <label><input type="radio" name="q4" value="15"><span>15 (ดีมาก)</span></label>
+                <label><input type="radio" name="q4" value="12"><span>12 (ดี)</span></label>
+                <label><input type="radio" name="q4" value="7"><span>7 (พอใช้)</span></label>
+                <label><input type="radio" name="q4" value="5"><span>5 (ปรับปรุง)</span></label>
+            </div>
+        </div>
+
+        <div class="rating-group">
+            <label>5. ความรับผิดชอบ (คะแนนเต็ม 15)</label>
+            <div class="radio-options">
+                <label><input type="radio" name="q5" value="15"><span>15 (ดีมาก)</span></label>
+                <label><input type="radio" name="q5" value="12"><span>12 (ดี)</span></label>
+                <label><input type="radio" name="q5" value="7"><span>7 (พอใช้)</span></label>
+                <label><input type="radio" name="q5" value="5"><span>5 (ปรับปรุง)</span></label>
+            </div>
+        </div>
+
+        <div class="rating-group">
+            <label>6. เจตคติและจริยธรรม (คะแนนเต็ม 15)</label>
+            <div class="radio-options">
+                <label><input type="radio" name="q6" value="15"><span>15 (ดีมาก)</span></label>
+                <label><input type="radio" name="q6" value="12"><span>12 (ดี)</span></label>
+                <label><input type="radio" name="q6" value="7"><span>7 (พอใช้)</span></label>
+                <label><input type="radio" name="q6" value="5"><span>5 (ปรับปรุง)</span></label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>ความคิดเห็นเพิ่มเติม:</label>
+            <textarea id="evaluationComment" rows="3" placeholder="ระบุความคิดเห็นของอาจารย์ (ถ้ามี)"></textarea>
         </div>
 
         <button onclick="submitEvaluation()">💾 บันทึกผลการประเมิน</button>
@@ -89,31 +134,30 @@
 </div>
 
 <script>
-    // URL Web App ของคุณที่ส่งมา
+    // 🔗 ฝัง URL เว็บแอปของคุณให้เรียบร้อยแล้วตรงนี้ครับ
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec"; 
     
     let selectedStudentId = "";
     let selectedStudentName = "";
 
-    // ฟังก์ชันดึงรายชื่อนิสิตตามวิชาที่เลือก
     async function fetchStudents() {
         const subjectCode = document.getElementById('subjectSelect').value;
         const studentListDiv = document.getElementById('studentList');
-        document.getElementById('evaluationZone').style.display = 'none'; // ซ่อนฟอร์มเก่าก่อน
+        document.getElementById('evaluationZone').style.display = 'none';
         
         if (!subjectCode) {
             studentListDiv.innerHTML = '<p style="color: #666; text-align: center;">กรุณาเลือกวิชาเพื่อโหลดรายชื่อนิสิต</p>';
             return;
         }
 
-        studentListDiv.innerHTML = '<p style="text-align: center;">กำลังโหลดรายชื่อนิสิต...</p>';
+        studentListDiv.innerHTML = '<p style="text-align: center;">กำลังค้นหารายชื่อนิสิตแพทย์จากฐานข้อมูล...</p>';
 
         try {
             const response = await fetch(`${API_URL}?action=getStudentsBySubject&subjectCode=${subjectCode}`);
             const students = await response.json();
             
             if (students.length === 0) {
-                studentListDiv.innerHTML = '<p style="color: red; text-align: center;">ไม่พบรายชื่อนิสิตในวิชานี้</p>';
+                studentListDiv.innerHTML = '<p style="color: red; text-align: center;">❌ ไม่พบรายชื่อนิสิตที่ลงทะเบียนในวิชานี้</p>';
                 return;
             }
 
@@ -123,66 +167,72 @@
                 card.className = 'student-card';
                 card.innerHTML = `
                     <div>
-                        <strong>${std.studentId}</strong> - ${std.studentName}
+                        <strong>รหัส: ${std.studentId}</strong><br>
+                        <span>ชื่อ: ${std.studentName}</span>
                     </div>
-                    <button style="width: auto; padding: 6px 12px; font-size: 14px;" onclick="openEvaluateForm('${std.studentId}', '${std.studentName}')">ประเมิน</button>
+                    <button style="width: auto; padding: 8px 16px; font-size: 14px;" onclick="openEvaluateForm('${std.studentId}', '${std.studentName}')">เลือกประเมิน</button>
                 `;
                 studentListDiv.appendChild(card);
             });
         } catch (error) {
-            studentListDiv.innerHTML = '<p style="color: red; text-align: center;">เกิดข้อผิดพลาดในการดึงข้อมูล</p>';
+            studentListDiv.innerHTML = '<p style="color: red; text-align: center;">เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์ Google</p>';
         }
     }
 
-    // ฟังก์ชันเปิดฟอร์มให้คะแนนนิสิตที่เลือก
     function openEvaluateForm(id, name) {
         selectedStudentId = id;
         selectedStudentName = name;
-        document.getElementById('targetStudentTitle').innerText = `ประเมินนิสิต: ${id} - ${name}`;
+        document.getElementById('targetStudentTitle').innerText = `📝 กำลังประเมิน: ${id} - ${name}`;
         document.getElementById('evaluationZone').style.display = 'block';
         document.getElementById('statusMsg').innerText = '';
+        document.getElementById('evaluationComment').value = '';
         
-        // รีเซ็ตคะแนนเก่า (ถ้ามี)
         const radios = document.querySelectorAll('input[type="radio"]');
         radios.forEach(radio => radio.checked = false);
     }
 
-    // ฟังก์ชันส่งข้อมูลประเมินไปบันทึกที่ Google Sheets
     async function submitEvaluation() {
         const teacherName = document.getElementById('teacherName').value.trim();
         const subjectCode = document.getElementById('subjectSelect').value;
+        const comment = document.getElementById('evaluationComment').value.trim();
         const statusMsg = document.getElementById('statusMsg');
 
         if (!teacherName) {
-            alert('กรุณากรอกชื่ออาจารย์ผู้ประเมินก่อนครับ');
+            alert('กรุณากรอกชื่ออาจารย์ผู้ประเมินก่อนบันทึกครับ');
             return;
         }
 
-        // ดึงคะแนนวิเคราะห์จากวิทยุ (Radio buttons)
         const q1 = document.querySelector('input[name="q1"]:checked')?.value;
         const q2 = document.querySelector('input[name="q2"]:checked')?.value;
         const q3 = document.querySelector('input[name="q3"]:checked')?.value;
+        const q4 = document.querySelector('input[name="q4"]:checked')?.value;
+        const q5 = document.querySelector('input[name="q5"]:checked')?.value;
+        const q6 = document.querySelector('input[name="q6"]:checked')?.value;
 
-        if (!q1 || !q2 || !q3) {
-            alert('กรุณาเลือกคะแนนประเมินให้ครบทุกข้อครับ');
+        if (!q1 || !q2 || !q3 || !q4 || !q5 || !q6) {
+            alert('กรุณาประเมินให้คะแนนครบทั้ง 6 หัวข้อครับ');
             return;
         }
 
         statusMsg.style.color = '#333';
-        statusMsg.innerText = 'กำลังบันทึกข้อมูล...';
+        statusMsg.innerText = 'กำลังบันทึกข้อมูลคะแนนดิบลง Google Sheets...';
 
         const payload = {
             action: "submitEvaluation",
             teacherName: teacherName,
             subjectCode: subjectCode,
             studentId: selectedStudentId,
+            studentName: selectedStudentName,
             score1: q1,
             score2: q2,
-            score3: q3
+            score3: q3,
+            score4: q4,
+            score5: q5,
+            score6: q6,
+            comment: comment
         };
 
         try {
-            // ส่งข้อมูลแบบ POST ไปที่ Apps Script URL
             const response = await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify(payload)
@@ -191,15 +241,16 @@
 
             if (result.result === "success") {
                 statusMsg.style.color = 'green';
-                statusMsg.innerText = `🟢 บันทึกผลประเมินของ ${selectedStudentName} สำเร็จ!`;
+                statusMsg.innerText = `✅ บันทึกผลการประเมินของ ${selectedStudentName} เรียบร้อยแล้ว!`;
                 document.getElementById('evaluationZone').style.display = 'none';
+                fetchStudents(); // รีโหลดรายชื่อใหม่
             } else {
                 statusMsg.style.color = 'red';
-                statusMsg.innerText = '🔴 เกิดข้อผิดพลาดจากระบบหลังบ้าน ไม่สามารถบันทึกได้';
+                statusMsg.innerText = '❌ ระบบเกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้';
             }
         } catch (error) {
             statusMsg.style.color = 'red';
-            statusMsg.innerText = '🔴 เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย';
+            statusMsg.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย';
         }
     }
 </script>
