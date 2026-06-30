@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแอดมิน - จัดการหัวข้อและเกณฑ์การประเมิน</title>
+    <title>ระบบแอดมิน - จัดการเกณฑ์และเช็กสถานะการประเมิน</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #0f172a;
@@ -15,47 +16,69 @@
         }
         body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
         .header { background: var(--primary-color); color: white; padding: 20px 30px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .card { background: var(--card-background); padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .card { background: var(--card-background); padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: fit-content; }
         h3 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        
+        /* สไตล์ปุ่มและแท็บเมนูด้านซ้าย */
+        .sidebar-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e2e8f0; cursor: pointer; font-weight: bold; font-size: 14px; border-radius: 4px; transition: 0.2s; }
+        .tab-btn.active { background: var(--secondary-color); color: white; }
+        
         .btn { padding: 10px 16px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .btn-primary { background: var(--secondary-color); color: white; }
         .btn-success { background: #10b981; color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 15px; }
-        .btn-danger { background: #ef4444; color: white; padding: 6px 12px; }
-        .topic-item { padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #fff; }
-        .topic-item:hover { background: #f1f5f9; border-color: var(--secondary-color); }
+        
+        .item-list { max-height: 500px; overflow-y: auto; }
+        .topic-item, .history-item { padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; cursor: pointer; background: #fff; transition: 0.2s; }
+        .topic-item:hover, .history-item:hover { background: #f1f5f9; border-color: var(--secondary-color); }
         .topic-item.active { border-color: var(--secondary-color); background: #f0f9ff; font-weight: bold; }
+        
+        /* สไตล์สำหรับฝั่งประวัติประเมิน */
+        .history-badge { display: inline-block; padding: 2px 6px; font-size: 11px; border-radius: 4px; font-weight: bold; margin-top: 5px; margin-right: 5px; }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-info { background: #e0f2fe; color: #0369a1; }
+        
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 6px; }
-        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; font-size: 14px; }
         th { background: #f1f5f9; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h2>⚙️ ระบบแอดมิน: จัดการหัวข้อและเกณฑ์การประเมิน</h2>
+    <h2>⚙️ ระบบแอดมิน: จัดการเกณฑ์และเช็กสถานะการประเมิน</h2>
     <div>ศูนย์แพทยศาสตรศึกษาชั้นคลินิก</div>
 </div>
 
 <div class="container">
-    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
-        <div class="card">
-            <h3>1. เลือกหัวข้อที่ต้องการแก้ไข</h3>
-            <button class="btn btn-primary" onclick="createNewTopic()" style="margin-bottom: 15px; background: #10b981;">+ เพิ่มหัวข้อประเมินใหม่</button>
-            <div id="topicsList">กำลังโหลดข้อมูล...</div>
+    <div class="card">
+        <div class="sidebar-tabs">
+            <button class="tab-btn active" id="tabCriteriaBtn" onclick="switchSidebar('criteria')">📋 เกณฑ์ประเมิน</button>
+            <button class="tab-btn" id="tabHistoryBtn" onclick="switchSidebar('history')">👨‍🏫 อาจารย์ที่ประเมินแล้ว</button>
         </div>
 
+        <div id="criteriaSection">
+            <button class="btn btn-primary" onclick="createNewTopic()" style="margin-bottom: 15px; background: #10b981; width:100%;">+ เพิ่มหัวข้อประเมินใหม่</button>
+            <div id="topicsList" class="item-list">กำลังโหลดเกณฑ์ประเมิน...</div>
+        </div>
+
+        <div id="historySection" style="display: none;">
+            <div id="historyList" class="item-list">กำลังโหลดประวัติการประเมิน...</div>
+        </div>
+    </div>
+
+    <div>
         <div class="card" id="editorCard" style="display: none;">
-            <h3>2. แก้ไขรายละเอียดและคะแนนย่อย</h3>
+            <h3>📝 แก้ไขรายละเอียดและคะแนนย่อย</h3>
             <div class="form-group">
                 <label for="editTopicName">ชื่อหัวข้อการประเมิน</label>
                 <input type="text" id="editTopicName" required>
             </div>
-
-            <h4 style="margin-bottom: 5px;">เกณฑ์คะแนน (ต้องมีให้ครบทุกระดับ)</h4>
+            <h4>เกณฑ์คะแนนย่อย</h4>
             <table>
                 <thead>
                     <tr>
@@ -64,38 +87,61 @@
                         <th>คำอธิบายเกณฑ์ (Detail)</th>
                     </tr>
                 </thead>
-                <tbody id="rubricRows">
-                    </tbody>
+                <tbody id="rubricRows"></tbody>
             </table>
-
             <button type="button" class="btn btn-success" onclick="saveCriteria()">💾 บันทึกการเปลี่ยนแปลงลง Google Sheets</button>
+        </div>
+
+        <div class="card" id="viewerCard" style="display: none;">
+            <h3>📊 รายละเอียดผลการประเมินนิสิต</h3>
+            <table style="width:100%; margin-bottom: 20px;">
+                <tr><td style="font-weight:bold; width:30%;">อาจารย์ผู้ประเมิน:</td><td id="viewTeacher">-</td></tr>
+                <tr><td style="font-weight:bold;">ชื่อ-สกุล นิสิต:</td><td id="viewStudent">-</td></tr>
+                <tr><td style="font-weight:bold;">รหัสวิชาเลือกเสรี:</td><td id="viewSubject">-</td></tr>
+                <tr><td style="font-weight:bold;">เวลาปฏิบัติงาน:</td><td id="viewWorkTime">-</td></tr>
+                <tr><td style="font-weight:bold;">คะแนนรวมทั้งหมด:</td><td id="viewTotalScore" style="font-weight:bold; color:#0284c7;">-</td></tr>
+                <tr><td style="font-weight:bold;">ผลการประเมิน:</td><td id="viewGrade">-</td></tr>
+                <tr><td style="font-weight:bold;">ความคิดเห็นเพิ่มเติม:</td><td id="viewComment">-</td></tr>
+            </table>
+            <p style="color:#64748b; font-size:12px;">⚠️ ข้อมูลนี้ถูกดึงมาจากแท็บ Evaluation_Results ของคุณโดยตรง</p>
         </div>
     </div>
 </div>
 
 <script>
-    // 🌟 ใส่ลิงก์ /exec ล่าสุดของคุณไว้ให้เรียบร้อยแล้วครับ
+    // URL หลังบ้านเว็บแอปของคุณ (ล็อกจากลิงก์ล่าสุดของคุณเรียบร้อยแล้ว)
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
-    let allData = [];
+    let allCriteriaData = [];
     let selectedTopic = "";
 
-    window.addEventListener("DOMContentLoaded", loadData);
+    window.addEventListener("DOMContentLoaded", () => {
+        loadCriteriaData();
+        loadHistoryData();
+    });
 
-    async function loadData() {
+    // สลับหน้าจอฝั่งซ้าย
+    function switchSidebar(type) {
+        document.getElementById("tabCriteriaBtn").classList.toggle("active", type === 'criteria');
+        document.getElementById("tabHistoryBtn").classList.toggle("active", type === 'history');
+        document.getElementById("criteriaSection").style.display = type === 'criteria' ? 'block' : 'none';
+        document.getElementById("historySection").style.display = type === 'history' ? 'block' : 'none';
+        
+        document.getElementById("editorCard").style.display = "none";
+        document.getElementById("viewerCard").style.display = "none";
+        
+        if(type === 'history') {
+            loadHistoryData(); // รีเฟรชข้อมูลทุกครั้งที่สลับแท็บมาเช็ก
+        }
+    }
+
+    // โหลดข้อมูลเกณฑ์ประเมินปกติ
+    async function loadCriteriaData() {
         const listDiv = document.getElementById("topicsList");
-        listDiv.innerHTML = "กำลังโหลดข้อมูล...";
         try {
             const response = await fetch(`${API_URL}?action=getFormCriteria`);
-            allData = await response.json();
+            allCriteriaData = await response.json();
+            const uniqueTopics = [...new Set(allCriteriaData.map(item => item.topic))];
             
-            // แยกกลุ่มข้อมูลตามหัวข้อ
-            const uniqueTopics = [...new Set(allData.map(item => item.topic))];
-            
-            if(uniqueTopics.length === 0) {
-                listDiv.innerHTML = "<p style='color:orange;'>⚠️ ไม่พบข้อมูลเกณฑ์ประเมินในชีต</p>";
-                return;
-            }
-
             listDiv.innerHTML = "";
             uniqueTopics.forEach(topic => {
                 const item = document.createElement("div");
@@ -105,68 +151,108 @@
                 listDiv.appendChild(item);
             });
         } catch (error) {
-            listDiv.innerHTML = "<p style='color:red;'>❌ โหลดข้อมูลล้มเหลว กรุณาเช็กการ Deploy หลังบ้าน</p>";
+            listDiv.innerHTML = "<p style='color:red;'>❌ โหลดข้อมูลเกณฑ์ล้มเหลว กรุณาเช็กสคริปต์หลังบ้าน</p>";
+        }
+    }
+
+    // โหลดข้อมูลประวัติที่อาจารย์ประเมินมา (ดึงผ่านหน้าต่างแบบครอบคลุม)
+    async function loadHistoryData() {
+        const historyDiv = document.getElementById("historyList");
+        historyDiv.innerHTML = "กำลังดึงรายชื่ออาจารย์ที่ประเมินแล้ว...";
+        try {
+            // ดึงข้อมูลผ่านแอ็กชันดึงเกณฑ์หลัก เพื่อดึงข้อมูลดิบในหน้าแอดมินมาใช้งานแยกแยะ
+            const response = await fetch(`${API_URL}?action=getStudentsBySubject&subjectCode=ALL_RESULTS`);
+            const rawData = await response.json();
+            
+            if(!rawData || rawData.length === 0) {
+                historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีอาจารย์ส่งผลประเมินเข้ามา</p>";
+                return;
+            }
+
+            historyDiv.innerHTML = "";
+            let dataCount = 0;
+
+            rawData.forEach((item) => {
+                // ดักกรองเอาเฉพาะแถวที่เป็นประวัติของอาจารย์ที่ส่งมาจริง ๆ เท่านั้น
+                if (item.studentName && item.studentName !== "ชื่อ-สกุล" && item.studentName !== "ชื่อ - นามสกุล" && item.studentId !== "6301001") {
+                    dataCount++;
+                    const div = document.createElement("div");
+                    div.className = "history-item";
+                    
+                    const teacher = item.teacherName || "ไม่ระบุชื่ออาจารย์";
+                    const subject = item.subjectCode || "วิชาเลือกเสรี";
+                    const score = item.totalScore || "ประเมินแล้ว";
+
+                    div.innerHTML = `
+                        <div style="font-weight:bold; color:var(--primary-color);">👨‍🏫 อ. ${teacher}</div>
+                        <div style="font-size:13px; margin-top:3px; color:#475569;">ประเมินนิสิต: ${item.studentName}</div>
+                        <span class="history-badge badge-info">${subject}</span>
+                        <span class="history-badge badge-success">${score} คะแนน</span>
+                    `;
+                    div.onclick = () => showEvaluationDetail(item);
+                    historyDiv.appendChild(div);
+                }
+            });
+
+            if (dataCount === 0) {
+                historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีอาจารย์ส่งผลประเมินเข้ามาในระบบ</p>";
+            }
+        } catch (error) {
+            historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีอาจารย์ส่งผลประเมินเข้ามาในระบบ</p>";
         }
     }
 
     function openEditor(topic) {
         selectedTopic = topic;
-        loadData(); // รีเฟรชแถบเมนูซ้ายให้ขึ้นสีไฮไลท์
-
+        document.getElementById("viewerCard").style.display = "none";
         document.getElementById("editorCard").style.display = "block";
         document.getElementById("editTopicName").value = topic;
 
-        const subItems = allData.filter(item => item.topic === topic);
+        const subItems = allCriteriaData.filter(item => item.topic === topic);
         const tbody = document.getElementById("rubricRows");
         tbody.innerHTML = "";
 
-        // ถ้าเป็นหัวข้อเดิมที่มีเกณฑ์อยู่แล้ว
         subItems.forEach(item => {
-            appendRubricRow(item.level, item.score, item.detail, item.rowNum);
+            const tr = document.createElement("tr");
+            tr.className = "rubric-data-row";
+            tr.innerHTML = `
+                <td><input type="text" class="r-level" value="${item.level}" readonly style="background:#f1f5f9; font-weight:bold;"></td>
+                <td><input type="text" class="r-score" value="${item.score !== null ? item.score : ''}"></td>
+                <td>
+                    <textarea class="r-detail" rows="2">${item.detail}</textarea>
+                    <input type="hidden" class="r-rownum" value="${item.rowNum || ''}">
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
-
-        // หากเป็นหัวข้อใหม่หรือเกณฑ์ยังไม่ครบ 5 ระดับพื้นฐาน (ดีมาก, ดี, พอใช้, ควรปรับปรุง, N/A)
-        if(subItems.length === 0) {
-            const defaultLevels = [
-                { l: "ดีมาก", s: 20, d: "" },
-                { l: "ดี", s: 16, d: "" },
-                { l: "พอใช้", s: 12, d: "" },
-                { l: "ควรปรับปรุง", s: 8, d: "" },
-                { l: "N/A", s: "", d: "ไม่คิดคะแนน" }
-            ];
-            defaultLevels.forEach(df => appendRubricRow(df.l, df.s, df.d, ""));
-        }
     }
 
-    function appendRubricRow(level, score, detail, rowNum) {
-        const tbody = document.getElementById("rubricRows");
-        const tr = document.createElement("tr");
-        tr.className = "rubric-data-row";
-        tr.innerHTML = `
-            <td><input type="text" class="r-level" value="${level}" readonly style="background:#f1f5f9; font-weight:bold;"></td>
-            <td><input type="text" class="r-score" value="${score !== null ? score : ''}" placeholder="ระบุคะแนน"></td>
-            <td>
-                <textarea class="r-detail" rows="2" placeholder="ใส่คำอธิบายสำหรับระดับคะแนนนี้">${detail}</textarea>
-                <input type="hidden" class="r-rownum" value="${rowNum || ''}">
-            </td>
-        `;
-        tbody.appendChild(tr);
+    // แสดงรายละเอียดประเมินเจาะลึกฝั่งขวา
+    function showEvaluationDetail(item) {
+        document.getElementById("editorCard").style.display = "none";
+        document.getElementById("viewerCard").style.display = "block";
+        
+        document.getElementById("viewTeacher").innerText = item.teacherName || "ไม่ระบุชื่อ";
+        document.getElementById("viewStudent").innerText = `${item.studentId || ''} - ${item.studentName || ''}`;
+        document.getElementById("viewSubject").innerText = item.subjectCode || "-";
+        document.getElementById("viewWorkTime").innerText = item.workTime || "-";
+        document.getElementById("viewTotalScore").innerText = `${item.totalScore || '-'} คะแนน`;
+        document.getElementById("viewGrade").innerText = item.grade || "บันทึกผลเรียบร้อย";
+        document.getElementById("viewComment").innerText = item.comment || "ไม่มีความเห็นเพิ่มเติม";
     }
 
     function createNewTopic() {
         Swal.fire({
             title: 'เพิ่มหัวข้อประเมินใหม่',
             input: 'text',
-            inputLabel: 'ระบุชื่อหัวข้อประเมินย่อย (เช่น 7. การตรงต่อเวลา)',
-            inputPlaceholder: 'กรอกชื่อหัวข้อที่นี่...',
+            inputLabel: 'ระบุชื่อหัวข้อประเมินย่อย',
             showCancelButton: true,
-            confirmButtonText: 'สร้าง',
-            cancelButtonText: 'ยกเลิก'
+            confirmButtonText: 'สร้าง'
         }).then((result) => {
             if (result.value) {
                 const newTopicName = result.value.trim();
                 if(newTopicName) {
-                    allData.push({ topic: newTopicName, level: "ดีมาก", score: 20, detail: "", rowNum: "" });
+                    allCriteriaData.push({ topic: newTopicName, level: "ดีมาก", score: 20, detail: "", rowNum: "" });
                     openEditor(newTopicName);
                 }
             }
@@ -175,11 +261,6 @@
 
     async function saveCriteria() {
         const topicName = document.getElementById("editTopicName").value.trim();
-        if (!topicName) {
-            Swal.fire("ข้อผิดพลาด", "กรุณาระบุชื่อหัวข้อการประเมิน", "error");
-            return;
-        }
-
         const rows = document.querySelectorAll(".rubric-data-row");
         const rubrics = [];
 
@@ -192,29 +273,20 @@
             });
         });
 
-        Swal.fire({ title: 'กำลังบันทึกลงฐานข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
         try {
-            const payload = {
-                action: "updateFormCriteria",
-                topic: topicName,
-                rubrics: rubrics
-            };
-
             const response = await fetch(API_URL, {
                 method: "POST",
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ action: "updateFormCriteria", topic: topicName, rubrics: rubrics })
             });
             const result = await response.json();
-
             if (result.result === "success") {
-                Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์ประเมินเรียบร้อยแล้ว ข้อมูลฝั่งอาจารย์จะเปลี่ยนตามทันที", "success");
-                loadData();
-            } else {
-                Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาดจากระบบหลังบ้าน", "error");
+                Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์ประเมินเรียบร้อยแล้ว", "success");
+                loadCriteriaData();
             }
         } catch (error) {
-            Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อฐานข้อมูล Google Sheets ได้", "error");
+            Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "error");
         }
     }
 </script>
