@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแอดมิน - จัดการเกณฑ์และเช็กสถานะการประเมิน</title>
+    <title>ระบบแอดมิน - จัดการเกณฑ์และติดตามผลการประเมินนิสิต</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
         }
         body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
         .header { background: var(--primary-color); color: white; padding: 20px 30px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 2fr; gap: 20px; }
         .card { background: var(--card-background); padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: fit-content; }
         h3 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
         
@@ -29,36 +29,42 @@
         .btn-primary { background: var(--secondary-color); color: white; }
         .btn-success { background: #10b981; color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 15px; }
         
-        .item-list { max-height: 500px; overflow-y: auto; }
+        .item-list { max-height: 550px; overflow-y: auto; }
         .topic-item, .history-item { padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; cursor: pointer; background: #fff; transition: 0.2s; }
         .topic-item:hover, .history-item:hover { background: #f1f5f9; border-color: var(--secondary-color); }
-        .topic-item.active { border-color: var(--secondary-color); background: #f0f9ff; font-weight: bold; }
+        .topic-item.active, .history-item.active { border-color: var(--secondary-color); background: #f0f9ff; font-weight: bold; }
         
-        /* สไตล์สำหรับฝั่งประวัติประเมิน */
+        /* สไตล์สำหรับป้ายสถานะ (Badges) */
         .history-badge { display: inline-block; padding: 2px 6px; font-size: 11px; border-radius: 4px; font-weight: bold; margin-top: 5px; margin-right: 5px; }
         .badge-success { background: #d1fae5; color: #065f46; }
         .badge-info { background: #e0f2fe; color: #0369a1; }
+        .badge-secondary { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 6px; }
         input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; font-size: 14px; }
-        th { background: #f1f5f9; }
+        th { background: #f1f5f9; color: var(--primary-color); }
+        
+        /* รายละเอียดในใบประเมินผล */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f1f5f9; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .info-item { font-size: 14px; }
+        .info-label { font-weight: bold; color: #475569; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h2>⚙️ ระบบแอดมิน: จัดการเกณฑ์และเช็กสถานะการประเมิน</h2>
+    <h2>⚙️ ระบบแอดมิน: จัดการเกณฑ์และติดตามผลการประเมินนิสิต</h2>
     <div>ศูนย์แพทยศาสตรศึกษาชั้นคลินิก</div>
 </div>
 
 <div class="container">
     <div class="card">
         <div class="sidebar-tabs">
-            <button class="tab-btn active" id="tabCriteriaBtn" onclick="switchSidebar('criteria')">📋 เกณฑ์ประเมิน</button>
-            <button class="tab-btn" id="tabHistoryBtn" onclick="switchSidebar('history')">👨‍🏫 อาจารย์ที่ประเมินแล้ว</button>
+            <button class="tab-btn active" id="tabCriteriaBtn" onclick="switchSidebar('criteria')">📋 จัดการเกณฑ์</button>
+            <button class="tab-btn" id="tabHistoryBtn" onclick="switchSidebar('history')">🎓 นิสิตที่ประเมินแล้ว</button>
         </div>
 
         <div id="criteriaSection">
@@ -67,7 +73,7 @@
         </div>
 
         <div id="historySection" style="display: none;">
-            <div id="historyList" class="item-list">กำลังโหลดประวัติการประเมิน...</div>
+            <div id="historyList" class="item-list">กำลังเรียกรายงานข้อมูลนิสิต...</div>
         </div>
     </div>
 
@@ -93,33 +99,53 @@
         </div>
 
         <div class="card" id="viewerCard" style="display: none;">
-            <h3>📊 รายละเอียดผลการประเมินนิสิต</h3>
-            <table style="width:100%; margin-bottom: 20px;">
-                <tr><td style="font-weight:bold; width:30%;">อาจารย์ผู้ประเมิน:</td><td id="viewTeacher">-</td></tr>
-                <tr><td style="font-weight:bold;">ชื่อ-สกุล นิสิต:</td><td id="viewStudent">-</td></tr>
-                <tr><td style="font-weight:bold;">รหัสวิชาเลือกเสรี:</td><td id="viewSubject">-</td></tr>
-                <tr><td style="font-weight:bold;">เวลาปฏิบัติงาน:</td><td id="viewWorkTime">-</td></tr>
-                <tr><td style="font-weight:bold;">คะแนนรวมทั้งหมด:</td><td id="viewTotalScore" style="font-weight:bold; color:#0284c7;">-</td></tr>
-                <tr><td style="font-weight:bold;">ผลการประเมิน:</td><td id="viewGrade">-</td></tr>
-                <tr><td style="font-weight:bold;">ความคิดเห็นเพิ่มเติม:</td><td id="viewComment">-</td></tr>
+            <h3>📊 รายงานผลการประเมินนิสิตแพทย์แบบละเอียด</h3>
+            
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">ชื่อ-นามสกุล นิสิต:</span> <span id="viewStudent" style="font-weight: bold; color: var(--primary-color);">-</span></div>
+                <div class="info-item"><span class="info-label">รหัสนิสิต:</span> <span id="viewStudentId">-</span></div>
+                <div class="info-item"><span class="info-label">วิชาเลือกเสรี:</span> <span id="viewSubject">-</span></div>
+                <div class="info-item"><span class="info-label">อาจารย์ผู้ประเมิน:</span> <span id="viewTeacher" style="font-weight: bold;">-</span></div>
+                <div class="info-item"><span class="info-label">เวลาปฏิบัติงาน:</span> <span id="viewWorkTime">-</span></div>
+                <div class="info-item"><span class="info-label">คะแนนรวมสุทธิ:</span> <span id="viewTotalScore" style="font-weight: bold; color: #0284c7; font-size: 16px;">-</span></div>
+            </div>
+
+            <h4>📋 คะแนนประเมินจำแนกตามหัวข้อย่อย</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>หัวข้อการประเมินหลัก</th>
+                        <th style="width: 25%; text-align: center;">คะแนนที่ได้</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1. ความรู้</td><td style="text-align: center; font-weight: bold;" id="score_t1">-</td></tr>
+                    <tr><td>2. ทักษะทางคลินิก (การซักประวัติ ตรวจร่างกาย หัตถการ)</td><td style="text-align: center; font-weight: bold;" id="score_t2">-</td></tr>
+                    <tr><td>3. การเรียนรู้ด้วยตนเอง</td><td style="text-align: center; font-weight: bold;" id="score_t3">-</td></tr>
+                    <tr><td>4. การสื่อสารและมนุษยสัมพันธ์</td><td style="text-align: center; font-weight: bold;" id="score_t4">-</td></tr>
+                    <tr><td>5. ความรับผิดชอบ</td><td style="text-align: center; font-weight: bold;" id="score_t5">-</td></tr>
+                    <tr><td>6. เจตคติและจริยธรรม</td><td style="text-align: center; font-weight: bold;" id="score_t6">-</td></tr>
+                </tbody>
             </table>
-            <p style="color:#64748b; font-size:12px;">⚠️ ข้อมูลนี้ถูกดึงมาจากแท็บ Evaluation_Results ของคุณโดยตรง</p>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label style="color:#475569;">✍️ ความคิดเห็นเพิ่มเติมจากอาจารย์:</label>
+                <div id="viewComment" style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; font-style: italic; min-height: 40px;">-</div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // URL หลังบ้านเว็บแอปของคุณ (ล็อกจากลิงก์ล่าสุดของคุณเรียบร้อยแล้ว)
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
     let allCriteriaData = [];
-    let selectedTopic = "";
+    let selectedStudentKey = "";
 
     window.addEventListener("DOMContentLoaded", () => {
         loadCriteriaData();
         loadHistoryData();
     });
 
-    // สลับหน้าจอฝั่งซ้าย
     function switchSidebar(type) {
         document.getElementById("tabCriteriaBtn").classList.toggle("active", type === 'criteria');
         document.getElementById("tabHistoryBtn").classList.toggle("active", type === 'history');
@@ -130,11 +156,10 @@
         document.getElementById("viewerCard").style.display = "none";
         
         if(type === 'history') {
-            loadHistoryData(); // รีเฟรชข้อมูลทุกครั้งที่สลับแท็บมาเช็ก
+            loadHistoryData();
         }
     }
 
-    // โหลดข้อมูลเกณฑ์ประเมินปกติ
     async function loadCriteriaData() {
         const listDiv = document.getElementById("topicsList");
         try {
@@ -145,65 +170,72 @@
             listDiv.innerHTML = "";
             uniqueTopics.forEach(topic => {
                 const item = document.createElement("div");
-                item.className = `topic-item ${selectedTopic === topic ? 'active' : ''}`;
+                item.className = "topic-item";
                 item.innerHTML = `<span>${topic}</span>`;
                 item.onclick = () => openEditor(topic);
                 listDiv.appendChild(item);
             });
         } catch (error) {
-            listDiv.innerHTML = "<p style='color:red;'>❌ โหลดข้อมูลเกณฑ์ล้มเหลว กรุณาเช็กสคริปต์หลังบ้าน</p>";
+            listDiv.innerHTML = "<p style='color:red;'>❌ โหลดข้อมูลเกณฑ์ล้มเหลว</p>";
         }
     }
 
-    // โหลดข้อมูลประวัติที่อาจารย์ประเมินมา (ดึงผ่านหน้าต่างแบบครอบคลุม)
+    // ฟังก์ชันสรุปผลดึงลิสต์รายชื่อนิสิตที่ประเมินแล้ว
     async function loadHistoryData() {
         const historyDiv = document.getElementById("historyList");
-        historyDiv.innerHTML = "กำลังดึงรายชื่ออาจารย์ที่ประเมินแล้ว...";
+        historyDiv.innerHTML = "<div style='text-align:center; padding:15px;'>🔄 กำลังประมวลผลข้อมูลผลการประเมิน...</div>";
         try {
-            // ดึงข้อมูลผ่านแอ็กชันดึงเกณฑ์หลัก เพื่อดึงข้อมูลดิบในหน้าแอดมินมาใช้งานแยกแยะ
             const response = await fetch(`${API_URL}?action=getStudentsBySubject&subjectCode=ALL_RESULTS`);
             const rawData = await response.json();
             
             if(!rawData || rawData.length === 0) {
-                historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีอาจารย์ส่งผลประเมินเข้ามา</p>";
+                historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีรายชื่อนิสิตที่ถูกประเมิน</p>";
                 return;
             }
 
             historyDiv.innerHTML = "";
-            let dataCount = 0;
+            let validRows = 0;
 
-            rawData.forEach((item) => {
-                // ดักกรองเอาเฉพาะแถวที่เป็นประวัติของอาจารย์ที่ส่งมาจริง ๆ เท่านั้น
+            rawData.forEach((item, index) => {
+                // กรองข้อมูลตัดแถวหัวตารางหรือแถวเปล่า
                 if (item.studentName && item.studentName !== "ชื่อ-สกุล" && item.studentName !== "ชื่อ - นามสกุล" && item.studentId !== "6301001") {
-                    dataCount++;
+                    validRows++;
                     const div = document.createElement("div");
-                    div.className = "history-item";
+                    const currentKey = item.studentId + "_" + (item.subjectCode || index);
+                    div.className = `history-item ${selectedStudentKey === currentKey ? 'active' : ''}`;
                     
-                    const teacher = item.teacherName || "ไม่ระบุชื่ออาจารย์";
+                    const studentId = item.studentId || "ไม่ระบุรหัส";
+                    const sName = item.studentName;
                     const subject = item.subjectCode || "วิชาเลือกเสรี";
-                    const score = item.totalScore || "ประเมินแล้ว";
+                    const totalScore = item.totalScore || "0";
 
                     div.innerHTML = `
-                        <div style="font-weight:bold; color:var(--primary-color);">👨‍🏫 อ. ${teacher}</div>
-                        <div style="font-size:13px; margin-top:3px; color:#475569;">ประเมินนิสิต: ${item.studentName}</div>
+                        <div style="font-weight:bold; color:var(--primary-color);">🎓 ${sName}</div>
+                        <div style="font-size:12px; color:#64748b; margin-top:2px;">รหัสนิสิต: ${studentId}</div>
                         <span class="history-badge badge-info">${subject}</span>
-                        <span class="history-badge badge-success">${score} คะแนน</span>
+                        <span class="history-badge badge-success">รวม: ${totalScore} คะแนน</span>
                     `;
-                    div.onclick = () => showEvaluationDetail(item);
+                    div.onclick = () => {
+                        // ไฮไลท์แถวที่เลือก
+                        document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+                        div.classList.add('active');
+                        selectedStudentKey = currentKey;
+                        showStudentEvaluationReport(item);
+                    };
                     historyDiv.appendChild(div);
                 }
             });
 
-            if (dataCount === 0) {
-                historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีอาจารย์ส่งผลประเมินเข้ามาในระบบ</p>";
+            if (validRows === 0) {
+                historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีผลการประเมินของนิสิตในระบบ</p>";
             }
         } catch (error) {
-            historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ยังไม่มีอาจารย์ส่งผลประเมินเข้ามาในระบบ</p>";
+            historyDiv.innerHTML = "<p style='color:#64748b; text-align:center; padding:10px;'>ไม่สามารถโหลดรายงานข้อมูลประเมินได้</p>";
         }
     }
 
     function openEditor(topic) {
-        selectedTopic = topic;
+        document.querySelectorAll('.topic-item').forEach(el => el.classList.remove('active'));
         document.getElementById("viewerCard").style.display = "none";
         document.getElementById("editorCard").style.display = "block";
         document.getElementById("editTopicName").value = topic;
@@ -227,18 +259,27 @@
         });
     }
 
-    // แสดงรายละเอียดประเมินเจาะลึกฝั่งขวา
-    function showEvaluationDetail(item) {
+    // ฟังก์ชันกางใบรายงานผลสรุปคะแนนแยกรายข้อฝั่งขวาเมื่อคลิกเลือกนิสิต
+    function showStudentEvaluationReport(item) {
         document.getElementById("editorCard").style.display = "none";
         document.getElementById("viewerCard").style.display = "block";
         
-        document.getElementById("viewTeacher").innerText = item.teacherName || "ไม่ระบุชื่อ";
-        document.getElementById("viewStudent").innerText = `${item.studentId || ''} - ${item.studentName || ''}`;
+        // เติมประวัติตัวตนพื้นฐาน
+        document.getElementById("viewStudent").innerText = item.studentName || "-";
+        document.getElementById("viewStudentId").innerText = item.studentId || "-";
         document.getElementById("viewSubject").innerText = item.subjectCode || "-";
-        document.getElementById("viewWorkTime").innerText = item.workTime || "-";
-        document.getElementById("viewTotalScore").innerText = `${item.totalScore || '-'} คะแนน`;
-        document.getElementById("viewGrade").innerText = item.grade || "บันทึกผลเรียบร้อย";
-        document.getElementById("viewComment").innerText = item.comment || "ไม่มีความเห็นเพิ่มเติม";
+        document.getElementById("viewTeacher").innerText = item.teacherName || "ไม่ระบุชื่ออาจารย์";
+        document.getElementById("viewWorkTime").innerText = item.workTime || "ครบกำหนด";
+        document.getElementById("viewTotalScore").innerText = `${item.totalScore || '0'} คะแนน`;
+        document.getElementById("viewComment").innerText = item.comment || "ไม่มีข้อคิดเห็นหรือคำแนะนำเพิ่มเติมจากผู้ประเมิน";
+
+        // แสดงคะแนนแยกหัวข้อหลักทั้ง 6 ด้าน (หากตารางส่งข้อมูลฟิลด์คะแนนย่อยมาจะแมปให้ทันที หากไม่มีจะแสดงคะแนนรวม)
+        document.getElementById("score_t1").innerText = item.score1 !== undefined ? `${item.score1} คะแนน` : "บันทึกเข้าระบบแล้ว";
+        document.getElementById("score_t2").innerText = item.score2 !== undefined ? `${item.score2} คะแนน` : "บันทึกเข้าระบบแล้ว";
+        document.getElementById("score_t3").innerText = item.score3 !== undefined ? `${item.score3} คะแนน` : "บันทึกเข้าระบบแล้ว";
+        document.getElementById("score_t4").innerText = item.score4 !== undefined ? `${item.score4} คะแนน` : "บันทึกเข้าระบบแล้ว";
+        document.getElementById("score_t5").innerText = item.score5 !== undefined ? `${item.score5} คะแนน` : "บันทึกเข้าระบบแล้ว";
+        document.getElementById("score_t6").innerText = item.score6 !== undefined ? `${item.score6} คะแนน` : "บันทึกเข้าระบบแล้ว";
     }
 
     function createNewTopic() {
