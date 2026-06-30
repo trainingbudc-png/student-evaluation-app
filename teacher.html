@@ -14,7 +14,7 @@
             --text-color: #1f2937;
         }
         body {
-            font-family: 'ChulaCharas', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
             margin: 0;
@@ -42,12 +42,60 @@
         }
         select, input[type="text"], textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #d1d5db;
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
         }
+        /* ดีไซน์ปุ่มเลือกนิสิตแบบคลิกเลือกทันที */
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .student-card {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .student-card:hover {
+            border-color: var(--secondary-color);
+            background-color: #eff6ff;
+        }
+        .student-card.selected {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+        }
+        .student-card .id {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .student-card .name {
+            font-size: 16px;
+        }
+        .student-card .status-badge {
+            font-size: 12px;
+            margin-top: 6px;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #f3f4f6;
+        }
+        .student-card.evaluated {
+            opacity: 0.6;
+            background: #f9fafb;
+        }
+
+        /* ส่วนของเกณฑ์ Rubric */
         .rubric-card {
             border: 1px solid #e5e7eb;
             border-radius: 8px;
@@ -77,35 +125,25 @@
             border-radius: 6px;
             background: #fff;
             cursor: pointer;
-            transition: all 0.2s;
         }
         .radio-option:hover {
             background-color: #eff6ff;
-            border-color: var(--secondary-color);
-        }
-        .radio-option input {
-            margin-top: 4px;
         }
         .score-badge {
             font-weight: bold;
             color: var(--secondary-color);
             margin-left: auto;
-            white-space: nowrap;
         }
         .btn-submit {
             background-color: var(--primary-color);
             color: #fff;
-            padding: 12px 24px;
+            padding: 14px;
             border: none;
             border-radius: 6px;
             font-size: 18px;
             cursor: pointer;
             width: 100%;
             font-weight: bold;
-            transition: background 0.2s;
-        }
-        .btn-submit:hover {
-            background-color: #1d4ed8;
         }
     </style>
 </head>
@@ -113,7 +151,6 @@
 
 <div class="container">
     <h2>แบบประเมินการปฏิบัติงานของนิสิตแพทย์ ชั้นปีที่ 6</h2>
-    <p style="text-align: center; color: #6b7280;">วิชาเลือกเสรี ศูนย์แพทยศาสตรศึกษาชั้นคลินิก</p>
     <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
 
     <form id="evaluationForm">
@@ -123,21 +160,19 @@
         </div>
 
         <div class="form-group">
-            <label for="subjectCode">รหัสรายวิชาเลือกเสรี</label>
+            <label for="subjectCode">รายวิชาเลือกเสรี (ดึงข้อมูลอัตโนมัติ)</label>
             <select id="subjectCode" required onchange="loadStudents()">
-                <option value="">-- เลือกรายวิชา --</option>
-                <option value="499723">499723 - การปฏิบัติงานทางอายุรศาสตร์</option>
-                <option value="499724">499724 - อายุรศาสตร์เฉพาะทาง</option>
-                <option value="499726">499726 - ศัลยศาสตร์พื้นฐาน</option>
-                <option value="499751">499751 - รายวิชาโสต ศอ นาสิกวิทยาทั่วไป</option>
+                <option value="">-- กำลังโหลดรายวิชาจากฐานข้อมูล... --</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="studentSelect">รายชื่อนิสิตแพทย์ในวิชา</label>
-            <select id="studentSelect" required disabled>
-                <option value="">-- กรุณาเลือกวิชาก่อน --</option>
-            </select>
+            <label>คลิกเลือกรายชื่อนิสิตแพทย์ที่ต้องการประเมินได้เลย</label>
+            <div id="studentContainer" class="student-grid">
+                <p style="color: #6b7280;">(กรุณาเลือกวิชาเลือกเสรีด้านบนก่อน)</p>
+            </div>
+            <input type="hidden" id="selectedStudentId" required>
+            <input type="hidden" id="selectedStudentName" required>
         </div>
 
         <div class="form-group">
@@ -218,7 +253,7 @@
 
         <div class="form-group">
             <label for="comment">ความคิดเห็นเพิ่มเติม</label>
-            <textarea id="comment" rows="4" placeholder="ระบุจุดเด่นหรือจุดที่ควรพัฒนาเพิ่มเติมสำหรับนิสิตแพทย์รายนี้"></textarea>
+            <textarea id="comment" rows="4" placeholder="ระบุจุดเด่นหรือจุดที่ควรพัฒนาเพิ่มเติม"></textarea>
         </div>
 
         <button type="submit" class="btn-submit">ส่งผลการประเมิน</button>
@@ -226,66 +261,107 @@
 </div>
 
 <script>
-    // แทนที่ด้วย Web App URL ของคุณจริง ๆ
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
 
+    // โหลดรายวิชาอัตโนมัติเมื่อเปิดหน้าเว็บ
+    window.addEventListener("DOMContentLoaded", loadSubjects);
+
+    async function loadSubjects() {
+        const select = document.getElementById("subjectCode");
+        try {
+            const response = await fetch(`${API_URL}?action=getSubjects`);
+            const subjects = await response.json();
+            
+            select.innerHTML = '<option value="">-- เลือกรายวิชาเลือกเสรี --</option>';
+            subjects.forEach(sub => {
+                select.innerHTML += `<option value="${sub.code}">${sub.code} - ${sub.name}</option>`;
+            });
+        } catch (error) {
+            select.innerHTML = '<option value="">❌ เกิดข้อผิดพลาดในการโหลดวิชา</option>';
+        }
+    }
+
+    // โหลดและสร้าง Card รายชื่อนิสิตให้คลิกเลือกได้เลย
     async function loadStudents() {
         const subjectCode = document.getElementById("subjectCode").value;
-        const studentSelect = document.getElementById("studentSelect");
+        const container = document.getElementById("studentContainer");
         
+        document.getElementById("selectedStudentId").value = "";
+        document.getElementById("selectedStudentName").value = "";
+
         if (!subjectCode) {
-            studentSelect.innerHTML = '<option value="">-- กรุณาเลือกวิชาก่อน --</option>';
-            studentSelect.disabled = true;
+            container.innerHTML = '<p style="color: #6b7280;">(กรุณาเลือกวิชาเลือกเสรีด้านบนก่อน)</p>';
             return;
         }
 
-        studentSelect.innerHTML = '<option value="">กำลังโหลดรายชื่อนิสิต...</option>';
-        studentSelect.disabled = true;
+        container.innerHTML = '<p>กำลังโหลดรายชื่อนิสิตในวิชานี้...</p>';
 
         try {
             const response = await fetch(`${API_URL}?action=getStudentsBySubject&subjectCode=${subjectCode}`);
             const students = await response.json();
 
             if (students.length === 0) {
-                studentSelect.innerHTML = '<option value="">❌ ไม่พบนิสิตลงทะเบียนในวิชานี้</option>';
-            } else {
-                studentSelect.innerHTML = '<option value="">-- เลือกชื่อนิสิตแพทย์ --</option>';
-                students.forEach(std => {
-                    studentSelect.innerHTML += `<option value="${std.studentId}" data-name="${std.studentName}">${std.studentId} - ${std.studentName}</option>`;
-                });
-                studentSelect.disabled = false;
+                container.innerHTML = '<p style="color: red; font-weight: bold;">❌ ไม่พบนิสิตแพทย์ที่ลงทะเบียนเรียนในวิชานี้</p>';
+                return;
             }
+
+            container.innerHTML = "";
+            students.forEach(std => {
+                const isEvaluated = std.status === "ประเมินแล้ว";
+                const card = document.createElement("div");
+                card.className = `student-card ${isEvaluated ? 'evaluated' : ''}`;
+                card.innerHTML = `
+                    <div class="id">${std.studentId}</div>
+                    <div class="name">${std.studentName}</div>
+                    <div class="status-badge" style="color: ${isEvaluated ? '#10b981' : '#6b7280'}">${std.status}</div>
+                `;
+                
+                // เหตุการณ์เมื่อคลิกเลือกนิสิต
+                card.addEventListener("click", () => {
+                    document.querySelectorAll(".student-card").forEach(c => c.classList.remove("selected"));
+                    card.classList.add("selected");
+                    document.getElementById("selectedStudentId").value = std.studentId;
+                    document.getElementById("selectedStudentName").value = std.studentName;
+                });
+
+                container.appendChild(card);
+            });
+
         } catch (error) {
-            Swal.fire("ผิดพลาด", "ไม่สามารถดึงข้อมูลรายชื่อนิสิตได้", "error");
-            studentSelect.innerHTML = '<option value="">เกิดข้อผิดพลาดในการโหลด</option>';
+            container.innerHTML = '<p style="color: red;">เกิดข้อผิดพลาดในการดึงข้อมูลรายชื่อ</p>';
         }
     }
 
+    // ยื่นผลการประเมิน
     document.getElementById("evaluationForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         
-        const studentSelect = document.getElementById("studentSelect");
-        const selectedOption = studentSelect.options[studentSelect.selectedIndex];
+        const studentId = document.getElementById("selectedStudentId").value;
+        const studentName = document.getElementById("selectedStudentName").value;
+
+        if (!studentId) {
+            Swal.fire("แจ้งเตือน", "กรุณาคลิกเลือกนิสิตแพทย์ที่ต้องการประเมินก่อนครับ", "warning");
+            return;
+        }
 
         Swal.fire({
             title: 'ยืนยันการบันทึก?',
-            text: "คุณต้องการส่งผลการประเมินนี้เข้าสู่ระบบฐานข้อมูลใช่หรือไม่",
+            text: `ต้องการส่งผลประเมินของ ${studentName} ใช่หรือไม่`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#1e3a8a',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'ใช่, ส่งข้อมูล!',
+            confirmButtonText: 'ยืนยัน',
             cancelButtonText: 'ยกเลิก'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
                 const payload = {
                     action: "submitEvaluation",
                     teacherName: document.getElementById("teacherName").value,
                     subjectCode: document.getElementById("subjectCode").value,
-                    studentId: studentSelect.value,
-                    studentName: selectedOption.getAttribute("data-name"),
+                    studentId: studentId,
+                    studentName: studentName,
                     workTime: document.getElementById("workTime").value,
                     score1: document.querySelector('input[name="q1"]:checked').value,
                     score2: document.querySelector('input[name="q2"]:checked').value,
@@ -297,21 +373,17 @@
                 };
 
                 try {
-                    const response = await fetch(API_URL, {
-                        method: "POST",
-                        body: JSON.stringify(payload)
-                    });
+                    const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
                     const resData = await response.json();
-
                     if (resData.result === "success") {
-                        Swal.fire("สำเร็จ!", "บันทึกข้อมูลการประเมินเรียบร้อยแล้ว", "success");
-                        document.getElementById("evaluationForm").reset();
-                        studentSelect.disabled = true;
+                        Swal.fire("สำเร็จ!", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
+                        loadStudents(); // รีโหลดสถานะการประเมินใหม่
+                        document.getElementById("comment").value = "";
                     } else {
-                        Swal.fire("ล้มเหลว", resData.message || "เกิดข้อผิดพลาดหลังบ้าน", "error");
+                        Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาด", "error");
                     }
                 } catch (error) {
-                    Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "error");
+                    Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อระบบได้", "error");
                 }
             }
         });
