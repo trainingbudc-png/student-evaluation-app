@@ -3,114 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแดชบอร์ดผู้ดูแลระบบ - Admin Dashboard</title>
+    <title>ระบบแอดมิน - จัดการเกณฑ์แบบประเมิน</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { color: #1e293b; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
-        .btn-refresh { padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        .btn-refresh:hover { background: #4338ca; }
-        .table-responsive { margin-top: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; color: #64748b; font-weight: bold; }
-        tr:hover { background-color: #f8fafc; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 13px; font-weight: bold; }
-        .badge-success { background-color: #d1fae5; color: #065f46; }
-        .badge-warning { background-color: #fef3c7; color: #b45309; }
-        .status-text { font-size: 14px; color: #64748b; margin-top: 10px; }
+        :root {
+            --admin-color: #0f172a;
+            --secondary-color: #3b82f6;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+        }
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .admin-header {
+            background-color: var(--admin-color);
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h3 { margin-top: 0; color: var(--admin-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;}
+        .topic-item {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .topic-item:hover { background-color: #f1f5f9; }
+        .topic-item.active {
+            border-color: var(--secondary-color);
+            background-color: #eff6ff;
+            font-weight: bold;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;
+        }
+        .rubric-row {
+            background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px;
+        }
+        .rubric-row-header { font-weight: bold; color: var(--secondary-color); margin-bottom: 8px; }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+        }
+        .btn-primary { background-color: var(--secondary-color); color: #fff; width: 100%; padding: 12px; }
+        .btn-add { background-color: #10b981; color: white; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-        <h2>⚙️ แดชบอร์ดติดตามสถานะการประเมินผล (Admin)</h2>
-        <button class="btn-refresh" onclick="loadAdminLogs()">🔄 อัปเดตดึงข้อมูลล่าสุด</button>
-    </div>
-    
-    <p class="status-text" id="statusText">กดปุ่มด้านบนเพื่อโหลดประวัติการประเมินจาก Google Sheets</p>
+<div class="admin-header">
+    <h2 style="margin:0;">⚙️ ระบบแอดมิน: จัดการหัวข้อและเกณฑ์การประเมิน</h2>
+    <span>ศูนย์แพทยศาสตรศึกษาชั้นคลินิก</span>
+</div>
 
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>วัน-เวลาประเมิน</th>
-                    <th>อาจารย์ผู้ประเมิน</th>
-                    <th>รหัสวิชา</th>
-                    <th>รหัสนิสิต</th>
-                    <th>ชื่อ-นามสกุลนิสิต</th>
-                    <th>คะแนนรวม (100)</th>
-                    <th>ผลการประเมิน</th>
-                </tr>
-            </thead>
-            <tbody id="logTableBody">
-                <tr>
-                    <td colspan="7" style="text-align: center; color: #94a3b8; padding: 30px;">ไม่มีข้อมูลการประเมิน หรือกรุณากดปุ่มเพื่อโหลดข้อมูลล่าสุด</td>
-                </tr>
-            </tbody>
-        </table>
+<div class="main-layout">
+    <div class="card">
+        <h3>1. เลือกหัวข้อที่ต้องการแก้ไข</h3>
+        <button class="btn btn-add" onclick="createNewTopic()">＋ เพิ่มหัวข้อประเมินใหม่</button>
+        <div id="topicList">กำลังโหลดหัวข้อจาก Google Sheets...</div>
+    </div>
+
+    <div class="card" id="formCard" style="display:none;">
+        <h3>2. แก้ไขข้อมูลหัวข้อและระดับคะแนน (Rubric)</h3>
+        <form id="criteriaForm">
+            <div class="form-group">
+                <label>ชื่อหัวข้อการประเมิน</label>
+                <input type="text" id="editTopicName" required placeholder="ตัวอย่าง: 1. ความรู้ทางคลินิก">
+            </div>
+
+            <div id="rubricsContainer">
+                </div>
+
+            <button type="submit" class="btn btn-primary">💾 บันทึกการเปลี่ยนแปลงลง Google Sheets</button>
+        </form>
     </div>
 </div>
 
 <script>
-    // 🔗 ฝัง URL เว็บแอปให้เรียบร้อยแล้วครับ ไม่ต้องแก้ไขอะไรเพิ่ม
-    const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
+    let rawFormDatabase = []; // เก็บเกณฑ์ดิบทั้งหมดจากชีต
+    let uniqueTopics = [];    // เก็บท็อปปิกเดี่ยวๆ
 
-    async function loadAdminLogs() {
-        const statusText = document.getElementById('statusText');
-        const tbody = document.getElementById('logTableBody');
-        
-        statusText.innerText = '⏳ กำลังติดต่อเชื่อมโยงคลังข้อมูลคลาวด์...';
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">กำลังโหลด...</td></tr>`;
+    window.addEventListener("DOMContentLoaded", fetchFormCriteria);
 
+    // ดึงข้อมูลเกณฑ์ทั้งหมดจากแท็บ Form บน Google Sheets
+    async function fetchFormCriteria() {
         try {
-            const response = await fetch(`${API_URL}?action=getAdminLogs`);
-            const logs = await response.json();
-
-            if (logs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 30px;">คลังข้อมูลว่างเปล่า (ยังไม่เคยมีบันทึกการประเมินส่งเข้ามา)</td></tr>`;
-                statusText.innerText = 'โหลดเสร็จสิ้น: ไม่พบข้อมูลบันทึก';
-                return;
-            }
-
-            tbody.innerHTML = '';
-            // เรียงลำดับเอาอันล่าสุดขึ้นก่อน
-            logs.reverse().forEach(log => {
-                const tr = document.createElement('tr');
-                
-                // จัดการ Format วันที่ให้ดูง่ายขึ้น
-                const dateObj = new Date(log.date);
-                const formattedDate = dateObj.toLocaleDateString('th-TH', {
-                    year: 'numeric', month: 'short', day: 'numeric',
-                    hour: '2-digit', minute: '2-digit'
-                });
-
-                // ตรวจสอบBadgeเกรด
-                const badgeClass = log.grade.includes('โดดเด่น') ? 'badge-success' : 'badge-warning';
-
-                tr.innerHTML = `
-                    <td>${formattedDate} น.</td>
-                    <td><strong>${log.teacher}</strong></td>
-                    <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px;">${log.subject}</code></td>
-                    <td>${log.studentId}</td>
-                    <td>${log.studentName}</td>
-                    <td><strong>${log.totalScore}</strong> แต้ม</td>
-                    <td><span class="badge ${badgeClass}">${log.grade}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            statusText.innerText = `✅ อัปเดตข้อมูลสำเร็จ ดึงข้อมูลล่าสุดเมื่อ: ${new Date().toLocaleTimeString('th-TH')} น. (พบทั้งหมด ${logs.length} รายการ)`;
-
+            const response = await fetch(`${API_URL}?action=getFormCriteria`);
+            rawFormDatabase = await response.json();
+            
+            // กรองหาชื่อหัวข้อประเมินแบบไม่ซ้ำ
+            uniqueTopics = [...new Set(rawFormDatabase.map(item => item.topic))];
+            renderTopicList();
         } catch (error) {
-            statusText.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อกรุณาลองตรวจสอบอินเทอร์เน็ต';
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red; padding: 30px;">ไม่สามารถโหลดข้อมูลได้</td></tr>`;
+            document.getElementById("topicList").innerHTML = "❌ โหลดข้อมูลล้มเหลว กรุณาเช็กการ Deploy หลังบ้าน";
         }
     }
 
-    // สั่งให้โหลดอัตโนมัติเมื่อเปิดหน้าเว็บขึ้นมาครั้งแรก
-    window.onload = loadAdminLogs;
+    // แสดงรายชื่อหัวข้อในเมนูฝั่งซ้าย
+    function renderTopicList() {
+        const container = document.getElementById("topicList");
+        container.innerHTML = "";
+        uniqueTopics.forEach(topic => {
+            const div = document.createElement("div");
+            div.className = "topic-item";
+            div.innerText = topic;
+            div.onclick = () => selectTopic(topic, div);
+            container.appendChild(div);
+        });
+    }
+
+    // เมื่อกดคลิกเลือกหัวข้อทางซ้าย ให้ดึงเกณฑ์ย่อยมาโชว์ที่ฟอร์มทางขวา
+    function selectTopic(topicName, element) {
+        document.querySelectorAll(".topic-item").forEach(el => el.classList.remove("active"));
+        if(element) element.classList.add("active");
+
+        document.getElementById("editTopicName").value = topicName;
+        const container = document.getElementById("rubricsContainer");
+        container.innerHTML = "";
+
+        // ดึงเฉพาะรูบริคย่อย 5 ระดับ (ดีมาก - N/A) ของข้อที่เลือก
+        const subItems = rawFormDatabase.filter(item => item.topic === topicName);
+        
+        // ถ้าราการในชีตมีไม่ครบ 5 ระดับ จะเมคสล็อตให้ครบอัตโนมัติ
+        const levels = ["ดีมาก", "ดี", "พอใช้", "ควรปรับปรุง", "N/A"];
+        levels.forEach(lvl => {
+            const exist = subItems.find(s => s.level === lvl) || { rowNum: "", level: lvl, score: "", detail: "" };
+            addRubricRow(exist);
+        });
+
+        document.getElementById("formCard").style.display = "block";
+    }
+
+    // สร้างกล่องกรอกข้อมูลแต่ละระดับความสามารถ (ดีมาก, ดี, พอใช้, ควรปรับปรุง, N/A)
+    function addRubricRow(item) {
+        const container = document.getElementById("rubricsContainer");
+        const div = document.createElement("div");
+        div.className = "rubric-row";
+        div.innerHTML = `
+            <input type="hidden" class="row-num" value="${item.rowNum}">
+            <input type="hidden" class="level-name" value="${item.level}">
+            <div class="rubric-row-header">ระดับ: ${item.level}</div>
+            <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px;">
+                <div>
+                    <label>คะแนนเต็ม</label>
+                    <input type="number" class="level-score" value="${item.score}" placeholder="${item.level === 'N/A' ? 'ไม่คิด' : 'แต้ม'}" ${item.level === 'N/A' ? 'disabled' : ''}>
+                </div>
+                <div>
+                    <label>คำอธิบายเกณฑ์ (รูบริค)</label>
+                    <textarea class="level-detail" rows="2" placeholder="กรอกรายละเอียดความหมายเกณฑ์สำหรับระดับนี้">${item.detail}</textarea>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    // ปุ่มสร้างข้อหัวข้อประเมินใหม่
+    function createNewTopic() {
+        document.querySelectorAll(".topic-item").forEach(el => el.classList.remove("active"));
+        document.getElementById("editTopicName").value = "";
+        const container = document.getElementById("rubricsContainer");
+        container.innerHTML = "";
+        
+        const levels = ["ดีมาก", "ดี", "พอใช้", "ควรปรับปรุง", "N/A"];
+        levels.forEach(lvl => {
+            addRubricRow({ rowNum: "", level: lvl, score: "", detail: "" });
+        });
+        document.getElementById("formCard").style.display = "block";
+        document.getElementById("editTopicName").focus();
+    }
+
+    // บันทึกกลับไปที่ Excel
+    document.getElementById("criteriaForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        Swal.fire({ title: 'กำลังอัปเดตข้อมูลเกณฑ์...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+        const topicName = document.getElementById("editTopicName").value;
+        const rubricRows = document.querySelectorAll(".rubric-row");
+        const rubricsPayload = [];
+
+        rubricRows.forEach(row => {
+            rubricsPayload.push({
+                rowNum: row.querySelector(".row-num").value,
+                level: row.querySelector(".level-name").value,
+                score: row.querySelector(".level-score").value,
+                detail: row.querySelector(".level-detail").value
+            });
+        });
+
+        const payload = {
+            action: "updateFormCriteria",
+            topic: topicName,
+            rubrics: rubricsPayload
+        };
+
+        try {
+            const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+            const result = await response.json();
+            if(result.result === "success") {
+                Swal.fire("สำเร็จ", "อัปเดตเกณฑ์ประเมินลง Google Sheets เรียบร้อยแล้ว ข้อความบนหน้าเว็บอาจารย์จะเปลี่ยนตามทันทีครับ", "success");
+                fetchFormCriteria(); // รีโหลดข้อมูลใหม่
+            } else {
+                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกได้", "error");
+            }
+        } catch (error) {
+            Swal.fire("ผิดพลาด", "การเชื่อมต่อล้มเหลว", "error");
+        }
+    });
 </script>
 </body>
 </html>
