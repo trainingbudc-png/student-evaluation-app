@@ -6,13 +6,7 @@
     <title>แบบประเมินการปฏิบัติงานนิสิตแพทย์ - สำหรับอาจารย์</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root {
-            --primary-color: #1e3a8a;
-            --secondary-color: #3b82f6;
-            --background-color: #f3f4f6;
-            --card-background: #ffffff;
-            --text-color: #1f2937;
-        }
+        :root { --primary-color: #1e3a8a; --secondary-color: #3b82f6; --background-color: #f3f4f6; --card-background: #ffffff; --text-color: #1f2937; }
         body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; background: var(--card-background); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
         h2, h3 { color: var(--primary-color); text-align: center; }
@@ -50,7 +44,7 @@
         <div class="form-group">
             <label for="subjectCode">รายวิชาเลือกเสรี</label>
             <select id="subjectCode" required onchange="loadStudents()">
-                <option value="">-- กำลังโหลดรายวิชา... --</option>
+                <option value="">-- เลือกรายวิชาเลือกเสรี --</option>
             </select>
         </div>
 
@@ -72,7 +66,7 @@
         </div>
 
         <h3>หัวข้อการประเมิน</h3>
-        <div id="dynamicRubricsContainer">กำลังโหลดหัวข้อประเมินล่าสุด...</div>
+        <div id="dynamicRubricsContainer">กำลังโหลดหัวข้อประเมิน...</div>
 
         <div class="form-group" style="margin-top: 20px;">
             <label for="comment">ความคิดเห็นเพิ่มเติม</label>
@@ -84,7 +78,7 @@
 </div>
 
 <script>
-    // ⚠️ แก้ไขจุดนี้: วางลิงก์ URL ที่ลงท้ายด้วย /exec ที่ได้มาจากขั้นตอนที่ 1 ลงในเครื่องหมายคำพูดนี้
+    // ⚠️ แก้ไขจุดนี้: วางลิงก์ Web App ที่ได้จากการ Deploy ใหม่ล่าสุด (ลิงก์ที่ลงท้ายด้วย /exec เท่านั้น)
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
     let activeTopics = [];
 
@@ -98,9 +92,11 @@
         try {
             const response = await fetch(`${API_URL}?action=getSubjects`);
             const subjects = await response.json();
-            select.innerHTML = '<option value="">-- เลือกรายวิชาเลือกเสรี --</option>';
-            subjects.forEach(sub => { select.innerHTML += `<option value="${sub.code}">${sub.code} - ${sub.name}</option>`; });
-        } catch (error) { select.innerHTML = '<option value="">❌ เกิดข้อผิดพลาดในการโหลดวิชา</option>'; }
+            if(subjects.length > 0) {
+                select.innerHTML = '<option value="">-- เลือกรายวิชาเลือกเสรี --</option>';
+                subjects.forEach(sub => { select.innerHTML += `<option value="${sub.code}">${sub.code} - ${sub.name}</option>`; });
+            }
+        } catch (error) { }
     }
 
     async function loadStudents() {
@@ -178,7 +174,7 @@
                 container.appendChild(card);
             });
         } catch (error) {
-            container.innerHTML = "<p style="color:red;">❌ ไม่สามารถโหลดหัวข้อประเมินจาก Google Sheets ได้</p>";
+            container.innerHTML = "<p style='color:red;'>เกิดปัญหาการเชื่อมต่อระบบ</p>";
         }
     }
 
