@@ -47,7 +47,6 @@
         label { display: block; font-weight: bold; margin-bottom: 6px; }
         input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
         
-        /* สไตล์ Dropdown ตัวเลือกคะแนนสำหรับแอดมิน */
         .score-select-dropdown { width: 100%; padding: 8px; border: 2px solid #0284c7; border-radius: 4px; font-family: 'Sarabun', sans-serif; font-weight: bold; font-size: 14px; color: #0284c7; background-color: #fff; cursor: pointer; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -217,7 +216,7 @@
                 <textarea id="viewComment" rows="3" placeholder="ระบุความคิดเห็นที่ต้องการเปลี่ยนแปลง..."></textarea>
             </div>
 
-            <button type="button" class="btn btn-success" style="background:#0284c7; margin-top:20px;" onclick="saveStudentEvaluationOverride()">💾 บันทึกการแก้ไขผลการประเมินนิสิต</button>
+            <button type="button" class="btn btn-success" style="background:#0284c7; margin-top:20px;" id="btnSaveEval" onclick="saveStudentEvaluationOverride()">💾 บันทึกการแก้ไขผลการประเมินนิสิต</button>
         </div>
     </div>
 </div>
@@ -293,7 +292,7 @@
         document.getElementById("viewerCard").style.display = "none";
 
         const filtered = evaluationCache.filter(item => {
-            const idMatch = item.studentId ? item.studentId.toLowerCase().includes(searchText) : false;
+            const idMatch = item.studentId ? String(item.studentId).toLowerCase().includes(searchText) : false;
             const nameMatch = item.studentName ? item.studentName.toLowerCase().includes(searchText) : false;
             return idMatch || nameMatch;
         });
@@ -349,11 +348,13 @@
 
         const s = item.rawScores || [0,0,0,0,0,0];
         
-        // ฟังก์ชันช่วยแมปค่าคะแนนเดิมเข้า Dropdown
         const setSelectValue = (id, val) => {
             const el = document.getElementById(id);
-            if(val === "-" || val === "NA" || val === "" || val === undefined) { el.value = "0"; }
-            else { el.value = String(val); }
+            if(val === "-" || val === "NA" || val === "" || val === undefined || val === null) { 
+                el.value = "0"; 
+            } else { 
+                el.value = String(val); 
+            }
         };
 
         setSelectValue("score_t1", s[0]);
@@ -384,11 +385,14 @@
 
     async function saveStudentEvaluationOverride() {
         const rowId = document.getElementById("editRowId").value;
-        if(!rowId) return;
+        if(!rowId) {
+            Swal.fire("ข้อผิดพลาด", "ไม่พบ Row ID ของแถวที่ต้องการบันทึก", "error");
+            return;
+        }
 
         const payload = {
             action: "updateStudentEvaluation",
-            rowId: rowId,
+            rowId: Number(rowId),
             score1: document.getElementById("score_t1").value,
             score2: document.getElementById("score_t2").value,
             score3: document.getElementById("score_t3").value,
@@ -398,20 +402,31 @@
             comment: document.getElementById("viewComment").value.trim()
         };
 
-        Swal.fire({ title: 'กำลังประมวลผลและบันทึกคะแนนใหม่...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        Swal.fire({ 
+            title: 'กำลังบันทึกคะแนนใหม่...', 
+            text: 'กรุณารอสักครู่ ระบบกำลังจัดเก็บข้อมูลลงฐานข้อมูลชีต',
+            allowOutsideClick: false, 
+            didOpen: () => { Swal.showLoading(); } 
+        });
 
         try {
-            const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+            const response = await fetch(API_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload) 
+            });
             const result = await response.json();
+            
             if(result.result === "success") {
-                await Swal.fire("แก้ไขสำเร็จ!", "ระบบได้คำนวณเกรดและบันทึกคะแนนใหม่ลง Google Sheets เรียบร้อย", "success");
+                await Swal.fire("แก้ไขสำเร็จ!", "ระบบได้บันทึกคะแนนและคำนวณเกรดใหม่ลง Google Sheets เรียบร้อยครับ", "success");
                 await prefetchHistoryData();
                 executeSearch();
             } else {
-                Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาดจากระบบหลังบ้าน", "error");
+                Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาดจากระบบหลังบ้าน: " + (result.message || 'Unknown'), "error");
             }
         } catch (error) {
-            Swal.fire("ข้อผิดพลาด", "ไม่สามารถเชื่อมต่อฐานข้อมูลสคริปต์ได้", "error");
+            console.error(error);
+            Swal.fire("ข้อผิดพลาด", "ไม่สามารถส่งข้อมูลไปบันทึกได้ กรุณาตรวจสอบการตั้งค่าเว็บแอปหลังบ้าน", "error");
         }
     }
 
@@ -477,6 +492,7 @@
         try {
             const response = await fetch(API_URL, {
                 method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ action: "updateFormCriteria", topic: topicName, rubrics: rubrics })
             });
             const result = await response.json();
