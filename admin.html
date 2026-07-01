@@ -80,7 +80,7 @@
 
         <div id="historySection" style="display: none;">
             <div class="search-box-wrapper">
-                <label for="studentSearchInput" style="font-size: 13px; color: #475569;">ค้นหารายชื่อนิสิต (พิมพ์แล้วแสดงผลทันที):</label>
+                <label for="studentSearchInput" style="font-size: 13px; color: #475569;">ค้นหารายชื่อนิสิต:</label>
                 <input type="text" id="studentSearchInput" class="search-input" placeholder="พิมพ์ รหัสนิสิต หรือ ชื่อ-นามสกุล..." oninput="executeLiveSearch()">
             </div>
             <div id="historyList" class="item-list">
@@ -210,7 +210,7 @@
             </table>
 
             <div class="form-group" style="margin-top: 20px;">
-                <label style="font-weight: bold; color:#0f172a;">✍️ ความคิดเห็นเพิ่มเติมจากอาจารย์ (แก้ไขเพิ่มเติมตรงนี้ได้):</label>
+                <label style="font-weight: bold; color:#0f172a;">✍️ ความคิดเห็นเพิ่มเติมจากอาจารย์:</label>
                 <textarea id="viewComment" rows="3" placeholder="ระบุความคิดเห็นที่ต้องการเปลี่ยนแปลง..."></textarea>
             </div>
 
@@ -224,7 +224,7 @@
     let allCriteriaData = [];
     let evaluationCache = []; 
     let selectedStudentKey = "";
-    let isDataLoaded = false; // ตัวแปรสถานะตรวจสอบความเร็วเซิร์ฟเวอร์
+    let isDataLoaded = false;
 
     window.addEventListener("DOMContentLoaded", () => {
         loadCriteriaData();
@@ -243,7 +243,6 @@
         if(type === 'history') {
             document.getElementById("studentSearchInput").value = ""; 
             if (!isDataLoaded) {
-                // หากเซิร์ฟเวอร์ยังดึงข้อมูลไม่เสร็จ จะขึ้นสถานะโหลด โดยจะไม่แสดงบล็อกแดงผิดพลาด
                 document.getElementById("historyList").innerHTML = `
                     <div class="empty-placeholder">🔄 กำลังดึงรายชื่อนิสิตทั้งหมดจากฐานข้อมูล...</div>
                 `;
@@ -277,22 +276,24 @@
         try {
             const response = await fetch(`${API_URL}?action=getEvaluationResults`);
             const rawData = await response.json();
+            
+            // เพิ่ม Log เพื่อช่วยแอดมิน Debug ผ่าน Console ดูว่าข้อมูลจากชีตส่งมาหน้าตาแบบไหน
+            console.log("Raw Data from Google Sheets:", rawData);
+
             evaluationCache = rawData.map((item, idx) => {
                 return {
                     ...item,
-                    rowId: item.rowId || (idx + 2)
+                    rowId: item.rowId || (idx + 2),
+                    // ป้องกันค่าว่างหลุดไปทำระบบพัง
+                    studentName: item.studentName || item.name || "ไม่ระบุชื่อ",
+                    studentId: item.studentId || item.id || "ไม่มีรหัส"
                 };
             });
             
-            isDataLoaded = true; // ยืนยันข้อมูลเข้าสู่ Cache เรียบร้อย
+            isDataLoaded = true;
             
             if(document.getElementById("historySection").style.display === "block") {
-                const currentSearch = document.getElementById("studentSearchInput").value.trim();
-                if(!currentSearch) {
-                    renderStudentList(evaluationCache);
-                } else {
-                    executeLiveSearch();
-                }
+                executeLiveSearch();
             }
         } catch (error) {
             console.error("Prefetch failed", error);
@@ -317,6 +318,7 @@
         renderStudentList(filtered);
     }
 
+    // แก้ไขฟังก์ชันนี้: เอาตัวเช็คเงื่อนไขจุกจิกออก เพื่อบังคับให้วาดรายชื่อขึ้นหน้าจอแน่นอน 100%
     function renderStudentList(dataList) {
         const historyDiv = document.getElementById("historyList");
         if(!dataList || dataList.length === 0) {
@@ -329,7 +331,8 @@
 
         historyDiv.innerHTML = "";
         dataList.forEach((item) => {
-            if (item.studentName && item.studentName !== "ชื่อนิสิต" && item.studentId !== "") {
+            // ตัดเงื่อนไขเช็คคอลัมน์เดิมออก เพื่อให้ยอมแสดงผลทุกแถวที่มีข้อมูล
+            if (item.studentName !== "ชื่อนิสิต") {
                 const div = document.createElement("div");
                 const currentKey = item.studentId + "_" + item.rowId;
                 div.className = `history-item ${selectedStudentKey === currentKey ? 'active' : ''}`;
@@ -337,8 +340,8 @@
                 div.innerHTML = `
                     <div style="font-weight:bold; color:var(--primary-color);">🎓 ${item.studentName}</div>
                     <div style="font-size:12px; color:#64748b; margin-top:2px;">รหัส: ${item.studentId}</div>
-                    <span class="history-badge badge-info">${item.subjectCode || 'เลือกเสรี'}</span>
-                    <span class="history-badge badge-success">รวม: ${item.totalScore} คะแนน</span>
+                    <span class="history-badge badge-info">${item.subjectCode || item.subject || 'เลือกเสรี'}</span>
+                    <span class="history-badge badge-success">รวม: ${item.totalScore || 0} คะแนน</span>
                 `;
                 div.onclick = () => {
                     document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
@@ -349,6 +352,11 @@
                 historyDiv.appendChild(div);
             }
         });
+
+        // กรณีที่ลูปแล้วไม่มีอะไรแสดงผลเลย
+        if (historyDiv.innerHTML === "") {
+            historyDiv.innerHTML = `<div class="empty-placeholder">⚠️ ดึงแถวข้อมูลสำเร็จ แต่ไม่มีรายชื่อที่แสดงผลได้</div>`;
+        }
     }
 
     function showStudentEvaluationReport(item) {
@@ -358,7 +366,7 @@
         document.getElementById("editRowId").value = item.rowId;
         document.getElementById("viewStudent").innerText = item.studentName || "-";
         document.getElementById("viewStudentId").innerText = item.studentId || "-";
-        document.getElementById("viewSubject").innerText = item.subjectCode || "-";
+        document.getElementById("viewSubject").innerText = item.subjectCode || item.subject || "-";
         document.getElementById("viewTeacher").innerText = item.teacherName || "-";
         document.getElementById("viewWorkTime").innerText = item.workTime || "-";
         document.getElementById("viewComment").value = item.comment || "";
@@ -403,7 +411,7 @@
     async function saveStudentEvaluationOverride() {
         const rowId = document.getElementById("editRowId").value;
         if(!rowId) {
-            Swal.fire("ข้อผิดพลาด", "ไม่พบ Row ID ของแถวที่ต้องการบันทึกในระบบหน้าเว็บ", "error");
+            Swal.fire("ข้อผิดพลาด", "ไม่พบ Row ID", "error");
             return;
         }
 
@@ -421,7 +429,7 @@
 
         Swal.fire({ 
             title: 'กำลังบันทึกคะแนนใหม่...', 
-            text: 'กรุณารอสักครู่ ระบบกำลังจัดเก็บข้อมูลลงฐานข้อมูลชีต',
+            text: 'กรุณารอสักครู่',
             allowOutsideClick: false, 
             didOpen: () => { Swal.showLoading(); } 
         });
@@ -435,15 +443,13 @@
             const result = await response.json();
             
             if(result.result === "success") {
-                await Swal.fire("แก้ไขสำเร็จ!", "ระบบได้บันทึกคะแนนและคำนวณเกรดใหม่ลง Google Sheets เรียบร้อยครับ", "success");
+                await Swal.fire("แก้ไขสำเร็จ!", "ระบบบันทึกเรียบร้อย", "success");
                 await prefetchHistoryData();
-                executeLiveSearch();
             } else {
-                Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาดจากระบบหลังบ้าน: " + (result.message || 'Unknown'), "error");
+                Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาด: " + (result.message || 'Unknown'), "error");
             }
         } catch (error) {
-            console.error(error);
-            Swal.fire("ข้อผิดพลาด", "ไม่สามารถส่งข้อมูลไปบันทึกได้ กรุณาตรวจสอบการตั้งค่าเว็บแอปหลังบ้าน", "error");
+            Swal.fire("ข้อผิดพลาด", "ไม่สามารถบันทึกได้", "error");
         }
     }
 
