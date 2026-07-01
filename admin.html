@@ -277,61 +277,47 @@
             const response = await fetch(`${API_URL}?action=getEvaluationResults`);
             const rawData = await response.json();
             
-            // เพิ่ม Log เพื่อช่วยแอดมิน Debug ผ่าน Console ดูว่าข้อมูลจากชีตส่งมาหน้าตาแบบไหน
-            console.log("Raw Data from Google Sheets:", rawData);
-
             evaluationCache = rawData.map((item, idx) => {
                 return {
                     ...item,
                     rowId: item.rowId || (idx + 2),
-                    // ป้องกันค่าว่างหลุดไปทำระบบพัง
                     studentName: item.studentName || item.name || "ไม่ระบุชื่อ",
                     studentId: item.studentId || item.id || "ไม่มีรหัส"
                 };
             });
             
             isDataLoaded = true;
-            
             if(document.getElementById("historySection").style.display === "block") {
                 executeLiveSearch();
             }
         } catch (error) {
-            console.error("Prefetch failed", error);
             document.getElementById("historyList").innerHTML = "<div style='color:red;text-align:center;'>❌ โหลดข้อมูลรายชื่อผิดพลาด</div>";
         }
     }
 
     function executeLiveSearch() {
         const searchText = document.getElementById("studentSearchInput").value.trim().toLowerCase();
-        
         if(!searchText) {
             renderStudentList(evaluationCache);
             return;
         }
-
         const filtered = evaluationCache.filter(item => {
             const idMatch = item.studentId ? String(item.studentId).toLowerCase().includes(searchText) : false;
             const nameMatch = item.studentName ? item.studentName.toLowerCase().includes(searchText) : false;
             return idMatch || nameMatch;
         });
-
         renderStudentList(filtered);
     }
 
-    // แก้ไขฟังก์ชันนี้: เอาตัวเช็คเงื่อนไขจุกจิกออก เพื่อบังคับให้วาดรายชื่อขึ้นหน้าจอแน่นอน 100%
     function renderStudentList(dataList) {
         const historyDiv = document.getElementById("historyList");
         if(!dataList || dataList.length === 0) {
-            historyDiv.innerHTML = `
-                <div class="empty-placeholder" style="color:#ef4444; border-color:#fca5a5;">
-                    ❌ ไม่พบรายชื่อนิสิตตามที่ระบุในระบบ
-                </div>`;
+            historyDiv.innerHTML = `<div class="empty-placeholder" style="color:#ef4444; border-color:#fca5a5;">❌ ไม่พบรายชื่อนิสิตตามที่ระบุในระบบ</div>`;
             return;
         }
 
         historyDiv.innerHTML = "";
         dataList.forEach((item) => {
-            // ตัดเงื่อนไขเช็คคอลัมน์เดิมออก เพื่อให้ยอมแสดงผลทุกแถวที่มีข้อมูล
             if (item.studentName !== "ชื่อนิสิต") {
                 const div = document.createElement("div");
                 const currentKey = item.studentId + "_" + item.rowId;
@@ -352,11 +338,6 @@
                 historyDiv.appendChild(div);
             }
         });
-
-        // กรณีที่ลูปแล้วไม่มีอะไรแสดงผลเลย
-        if (historyDiv.innerHTML === "") {
-            historyDiv.innerHTML = `<div class="empty-placeholder">⚠️ ดึงแถวข้อมูลสำเร็จ แต่ไม่มีรายชื่อที่แสดงผลได้</div>`;
-        }
     }
 
     function showStudentEvaluationReport(item) {
@@ -372,7 +353,6 @@
         document.getElementById("viewComment").value = item.comment || "";
 
         const s = item.rawScores || [0,0,0,0,0,0];
-        
         const setSelectValue = (id, val) => {
             const el = document.getElementById(id);
             if(val === "-" || val === "NA" || val === "" || val === undefined || val === null) { 
@@ -443,8 +423,17 @@
             const result = await response.json();
             
             if(result.result === "success") {
+                // อัปเดต Cache ทันทีเพื่อให้แสดงตัวเลขถูกต้องบนหน้าจอหลังกดตกลง
+                const currentTotal = Number(payload.score1) + Number(payload.score2) + Number(payload.score3) + Number(payload.score4) + Number(payload.score5) + Number(payload.score6);
+                const foundIndex = evaluationCache.findIndex(item => item.rowId == rowId);
+                if(foundIndex !== -1) {
+                    evaluationCache[foundIndex].rawScores = [payload.score1, payload.score2, payload.score3, payload.score4, payload.score5, payload.score6];
+                    evaluationCache[foundIndex].totalScore = currentTotal;
+                    evaluationCache[foundIndex].comment = payload.comment;
+                }
+                
                 await Swal.fire("แก้ไขสำเร็จ!", "ระบบบันทึกเรียบร้อย", "success");
-                await prefetchHistoryData();
+                renderStudentList(evaluationCache);
             } else {
                 Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาด: " + (result.message || 'Unknown'), "error");
             }
