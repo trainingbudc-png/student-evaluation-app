@@ -273,7 +273,14 @@
     async function prefetchHistoryData() {
         try {
             const response = await fetch(`${API_URL}?action=getEvaluationResults`);
-            evaluationCache = await response.json();
+            const rawData = await response.json();
+            // ปรับปรุงการ Map: ผูก rowId จากลำดับ index ในชีตกันเหนียวไว้ก่อนกรณีฝั่งหลังบ้านไม่ส่งมา
+            evaluationCache = rawData.map((item, idx) => {
+                return {
+                    ...item,
+                    rowId: item.rowId || (idx + 2) // แถวข้อมูลใน Google Sheets มักเริ่มที่แถว 2
+                };
+            });
         } catch (error) {
             console.error("Prefetch failed");
         }
@@ -311,10 +318,10 @@
         }
 
         historyDiv.innerHTML = "";
-        dataList.forEach((item, index) => {
+        dataList.forEach((item) => {
             if (item.studentName && item.studentName !== "ชื่อนิสิต" && item.studentId !== "") {
                 const div = document.createElement("div");
-                const currentKey = item.studentId + "_" + index;
+                const currentKey = item.studentId + "_" + item.rowId;
                 div.className = `history-item ${selectedStudentKey === currentKey ? 'active' : ''}`;
                 
                 div.innerHTML = `
@@ -338,7 +345,8 @@
         document.getElementById("editorCard").style.display = "none";
         document.getElementById("viewerCard").style.display = "block";
         
-        document.getElementById("editRowId").value = item.rowId || "";
+        // จุดสำคัญ: ทำการยัดค่าลงตัวแปร Hidden ป้องกันปัญหาแถวว่าง
+        document.getElementById("editRowId").value = item.rowId;
         document.getElementById("viewStudent").innerText = item.studentName || "-";
         document.getElementById("viewStudentId").innerText = item.studentId || "-";
         document.getElementById("viewSubject").innerText = item.subjectCode || "-";
@@ -386,7 +394,7 @@
     async function saveStudentEvaluationOverride() {
         const rowId = document.getElementById("editRowId").value;
         if(!rowId) {
-            Swal.fire("ข้อผิดพลาด", "ไม่พบ Row ID ของแถวที่ต้องการบันทึก", "error");
+            Swal.fire("ข้อผิดพลาด", "ไม่พบ Row ID ของแถวที่ต้องการบันทึกในระบบหน้าเว็บ", "error");
             return;
         }
 
