@@ -30,7 +30,7 @@
         .btn-success:hover { background: #059669; }
         
         .search-box-wrapper { background: #f1f5f9; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #cbd5e1; }
-        .search-input { width: 100%; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 14px; margin-bottom: 0px; transition: 0.2s; }
+        .search-input { width: 100%; padding: 10px 12px; border: 2px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 14px; transition: 0.2s; }
         .search-input:focus { border-color: var(--secondary-color); outline: none; }
         
         .item-list { max-height: 450px; overflow-y: auto; }
@@ -277,12 +277,19 @@
             const response = await fetch(`${API_URL}?action=getEvaluationResults`);
             const rawData = await response.json();
             
+            // แก้ไขการแมปโครงสร้างตัวแปรให้ตรงตามฟังก์ชันหลังบ้านเวอร์ชันล่าสุด
             evaluationCache = rawData.map((item, idx) => {
                 return {
-                    ...item,
                     rowId: item.rowId || (idx + 2),
-                    studentName: item.studentName || item.name || "ไม่ระบุชื่อ",
-                    studentId: item.studentId || item.id || "ไม่มีรหัส"
+                    studentId: item.studentId || "ไม่มีรหัส",
+                    studentName: item.studentName || "ไม่ระบุชื่อ",
+                    subjectCode: item.subjectCode || item.subject || "-",
+                    timestamp: item.timestamp || "",
+                    workTime: item.workTime || "-",
+                    teacherName: item.teacherName || "ไม่ระบุอาจารย์",
+                    rawScores: item.rawScores || [0,0,0,0,0,0],
+                    totalScore: item.totalScore || 0,
+                    comment: item.comment || ""
                 };
             });
             
@@ -318,7 +325,7 @@
 
         historyDiv.innerHTML = "";
         dataList.forEach((item) => {
-            if (item.studentName !== "ชื่อนิสิต") {
+            if (item.studentName !== "ชื่อนิสิต" && item.studentId !== "รหัสนิสิต") {
                 const div = document.createElement("div");
                 const currentKey = item.studentId + "_" + item.rowId;
                 div.className = `history-item ${selectedStudentKey === currentKey ? 'active' : ''}`;
@@ -326,7 +333,7 @@
                 div.innerHTML = `
                     <div style="font-weight:bold; color:var(--primary-color);">🎓 ${item.studentName}</div>
                     <div style="font-size:12px; color:#64748b; margin-top:2px;">รหัส: ${item.studentId}</div>
-                    <span class="history-badge badge-info">${item.subjectCode || item.subject || 'เลือกเสรี'}</span>
+                    <span class="history-badge badge-info">วิชา: ${item.subjectCode}</span>
                     <span class="history-badge badge-success">รวม: ${item.totalScore || 0} คะแนน</span>
                 `;
                 div.onclick = () => {
@@ -347,7 +354,7 @@
         document.getElementById("editRowId").value = item.rowId;
         document.getElementById("viewStudent").innerText = item.studentName || "-";
         document.getElementById("viewStudentId").innerText = item.studentId || "-";
-        document.getElementById("viewSubject").innerText = item.subjectCode || item.subject || "-";
+        document.getElementById("viewSubject").innerText = item.subjectCode || "-";
         document.getElementById("viewTeacher").innerText = item.teacherName || "-";
         document.getElementById("viewWorkTime").innerText = item.workTime || "-";
         document.getElementById("viewComment").value = item.comment || "";
@@ -423,7 +430,6 @@
             const result = await response.json();
             
             if(result.result === "success") {
-                // อัปเดต Cache ทันทีเพื่อให้แสดงตัวเลขถูกต้องบนหน้าจอหลังกดตกลง
                 const currentTotal = Number(payload.score1) + Number(payload.score2) + Number(payload.score3) + Number(payload.score4) + Number(payload.score5) + Number(payload.score6);
                 const foundIndex = evaluationCache.findIndex(item => item.rowId == rowId);
                 if(foundIndex !== -1) {
