@@ -3,155 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแอดมิน - ตรวจสอบผลการประเมินนิสิต</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <title>ระบบตรวจสอบผลการประเมิน - สำหรับนิสิตแพทย์</title>
     <style>
-        :root {
-            --primary-color: #0f172a;
-            --secondary-color: #0284c7;
-            --background-color: #f8fafc;
-            --card-background: #ffffff;
-            --text-color: #334155;
-        }
-        body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .header { background: var(--primary-color); color: white; padding: 20px 30px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .card { background: var(--card-background); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f1f5f9; color: #475569; font-weight: bold; }
-        tr:hover { background-color: #f8fafc; }
-        .btn-edit { background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-edit:hover { background: #bae6fd; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 550px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #10b981; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; }
+        select, input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; background: #10b981; color: white; border: none; padding: 14px; font-size: 16px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+        button:hover { background: #059669; }
+        .result-box { margin-top: 30px; padding: 20px; border-radius: 6px; display: none; text-align: center; }
+        .status-evaluated { background-color: #d1fae5; border: 1px solid #10b981; color: #065f46; }
+        .status-not-evaluated { background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; }
+        .score-display { margin-top: 15px; font-size: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div>
-        <h1 style="margin:0; font-size:24px;">ระบบจัดการและตรวจสอบผลการประเมิน</h1>
-        <p style="margin:5px 0 0 0; opacity:0.8;">ฝ่ายแพทยศาสตรศึกษา (แอดมิน)</p>
-    </div>
-    <div style="font-weight:bold; background:#0284c7; padding:10px 15px; border-radius:6px;">ฐานข้อมูล Cloud Connect</div>
-</div>
-
 <div class="container">
-    <div class="card">
-        <h2 style="margin-top:0; color:var(--primary-color);">ตารางสรุปคะแนนประเมินนิสิตแพทย์ทั้งหมด</h2>
-        <div style="overflow-x: auto;">
-            <table id="resultsTable">
-                <thead>
-                    <tr>
-                        <th>แถวชีต</th>
-                        <th>รหัสนิสิต</th>
-                        <th>ชื่อ-นามสกุล</th>
-                        <th>วิชา</th>
-                        <th>ผู้ประเมิน</th>
-                        <th>คะแนนข้อ 1-6</th>
-                        <th>รวม</th>
-                        <th>เกรด</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="9" style="text-align:center; padding:30px; color:#888;">⏳ กำลังเชื่อมต่อดึงข้อมูลสดจากระบบฐานข้อมูล Sheets...</td></tr>
-                </tbody>
-            </table>
+    <h2>ระบบตรวจสอบผลการประเมิน</h2>
+    <div class="subtitle">คณะแพทยศาสตร์ (สำหรับนิสิตแพทย์)</div>
+    
+    <div class="form-group">
+        <label for="studentId">รหัสนิสิตแพทย์ (8 หลัก)</label>
+        <input type="text" id="studentId" placeholder="ตัวอย่าง: 63460580" maxlength="8">
+    </div>
+
+    <div class="form-group">
+        <label for="subjectCode">เลือกรายวิชา / หอผู้ป่วย</label>
+        <select id="subjectCode">
+            <option value="">-- กำลังโหลดรายวิชา --</option>
+        </select>
+    </div>
+
+    <button onclick="checkEvaluation()">🔎 ตรวจสอบสถานะและคะแนน</button>
+
+    <div id="resultBox" class="result-box">
+        <div id="statusTitle" style="font-size: 18px; font-weight: bold;"></div>
+        <div id="scoreZone" style="display: none;">
+            <div class="score-display">คะแนนรวมที่ได้: <span id="totalScoreText" style="color: #10b981; font-size: 24px;">0</span> / 100 คะแนน</div>
+            <div class="score-display">เกรดประเมินผล: <span id="gradeText" style="color: #2563eb; font-size: 24px;">-</span></div>
         </div>
     </div>
 </div>
 
 <script>
-    // 🔗 แก้ไขกลับมาใช้ URL ของคุณเพื่อให้ข้อมูลดึงมาแสดงผลในตารางได้ถูกต้องแล้วครับ
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
 
-    document.addEventListener("DOMContentLoaded", loadEvaluationData);
+    document.addEventListener("DOMContentLoaded", () => {
+        loadSubjects();
+    });
 
-    async function loadEvaluationData() {
+    async function loadSubjects() {
+        const select = document.getElementById('subjectCode');
         try {
-            const res = await fetch(`${API_URL}?action=getEvaluationResultsData`);
-            const data = await res.json();
-            const tbody = document.querySelector("#resultsTable tbody");
-            tbody.innerHTML = "";
-
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px;">📭 ยังไม่มีข้อมูลบันทึกการประเมินเข้ามาในระบบ</td></tr>`;
-                return;
-            }
-
-            data.forEach(row => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>#${row.rowId}</strong></td>
-                    <td>${row.studentId}</td>
-                    <td>${row.studentName}</td>
-                    <td><small>${row.subjectId} - ${row.subjectName}</small></td>
-                    <td>${row.assessor}</td>
-                    <td>${row.score1}, ${row.score2}, ${row.score3}, ${row.score4}, ${row.score5}, ${row.score6}</td>
-                    <td><span style="font-weight:bold; color:#0284c7;">${row.totalScore}</span></td>
-                    <td><span style="padding:4px 8px; background:#f0fdf4; color:#16a34a; font-weight:bold; border-radius:4px;">${row.grade}</span></td>
-                    <td><button class="btn-edit" onclick="editScore(${JSON.stringify(row)})">✏️ แก้ไข</button></td>
-                `;
-                tbody.appendChild(tr);
+            const response = await fetch(`${API_URL}?action=getSubjects`);
+            const subjects = await response.json();
+            select.innerHTML = '<option value="">-- เลือกรายวิชา --</option>';
+            subjects.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.id;
+                opt.innerText = `${sub.id} - ${sub.name}`;
+                select.appendChild(opt);
             });
         } catch (e) {
-            document.querySelector("#resultsTable tbody").innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ${e.toString()}</td></tr>`;
+            select.innerHTML = '<option value="">❌ โหลดวิชาล้มเหลว กรุณารีเฟรชหน้าเว็บ</option>';
         }
     }
 
-    function editScore(rowData) {
-        Swal.fire({
-            title: `แก้ไขคะแนนสด: ${rowData.studentName}`,
-            html: `
-                <div style="text-align:left; display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:10px;">
-                    <label>ข้อ 1: <input type="number" id="md_s1" value="${rowData.score1}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 2: <input type="number" id="md_s2" value="${rowData.score2}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 3: <input type="number" id="md_s3" value="${rowData.score3}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 4: <input type="number" id="md_s4" value="${rowData.score4}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 5: <input type="number" id="md_s5" value="${rowData.score5}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 6: <input type="number" id="md_s6" value="${rowData.score6}" class="swal2-input" style="margin:0; width:80%;"></label>
-                </div>
-                <div style="padding: 0 10px; text-align: left;">
-                    <label style="display:block; margin-top:10px;">ความคิดเห็นผู้ประเมิน:</label>
-                    <textarea id="md_comment" class="swal2-textarea" style="width:90%; margin:5px 0;">${rowData.comment || ''}</textarea>
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: '💾 อัปเดตชีตสด',
-            focusConfirm: false,
-            preConfirm: () => {
-                return {
-                    rowId: rowData.rowId,
-                    score1: document.getElementById("md_s1").value,
-                    score2: document.getElementById("md_s2").value,
-                    score3: document.getElementById("md_s3").value,
-                    score4: document.getElementById("md_s4").value,
-                    score5: document.getElementById("md_s5").value,
-                    score6: document.getElementById("md_s6").value,
-                    comment: document.getElementById("md_comment").value
-                }
+    async function checkEvaluation() {
+        const studentId = document.getElementById('studentId').value.trim();
+        const subjectCode = document.getElementById('subjectCode').value;
+        const resultBox = document.getElementById('resultBox');
+        const statusTitle = document.getElementById('statusTitle');
+        const scoreZone = document.getElementById('scoreZone');
+
+        if (studentId.length !== 8) {
+            alert('กรุณากรอกรหัสนิสิตให้ถูกต้องครบ 8 หลักก่อนครับ');
+            return;
+        }
+        if (!subjectCode) {
+            alert('กรุณาเลือกรายวิชาที่ต้องการตรวจสอบครับ');
+            return;
+        }
+
+        resultBox.style.display = 'block';
+        resultBox.className = 'result-box';
+        statusTitle.innerText = '⏳ กำลังค้นหาข้อมูลการประเมิน...';
+        scoreZone.style.display = 'none';
+
+        try {
+            const response = await fetch(`${API_URL}?action=checkStatus&studentId=${studentId}&subjectCode=${subjectCode}`);
+            const data = await response.json();
+
+            if (data.status === "ได้รับการประเมินแล้ว") {
+                resultBox.classList.add('status-evaluated');
+                statusTitle.innerText = '✅ อาจารย์ได้บันทึกผลการประเมินให้คุณแล้ว';
+                document.getElementById('totalScoreText').innerText = data.totalScore;
+                document.getElementById('gradeText').innerText = data.grade;
+                scoreZone.style.display = 'block';
+            } else {
+                resultBox.classList.add('status-not-evaluated');
+                statusTitle.innerText = '⚠️ ยังไม่พบผลการประเมินในระบบคลังข้อมูล';
+                scoreZone.style.display = 'none';
             }
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังส่งข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-                try {
-                    const res = await fetch(API_URL, {
-                        method: "POST",
-                        body: JSON.stringify({ action: "updateStudentEvaluation", ...result.value })
-                    });
-                    const data = await res.json();
-                    if (data.result === "success") {
-                        await Swal.fire("สำเร็จ!", "แก้ไขคะแนนดิสิตเรียบร้อยแล้ว", "success");
-                        location.reload();
-                    } else {
-                        Swal.fire("ล้มเหลว", data.message, "error");
-                    }
-                } catch (e) {
-                    Swal.fire("ผิดพลาด", e.toString(), "error");
-                }
-            }
-        });
+        } catch (error) {
+            resultBox.style.display = 'block';
+            statusTitle.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อกรุณาลองใหม่อีกครั้ง';
+            scoreZone.style.display = 'none';
+        }
     }
 </script>
 </body>
