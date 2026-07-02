@@ -52,7 +52,68 @@
         </div>
 
         <h3 style="text-align: left; margin-top: 40px; margin-bottom: 20px; color: var(--primary-color);">📝 ส่วนที่ 2: เกณฑ์การประเมินผล</h3>
-        <div id="criteriaContainer"></div>
+        
+        <div id="criteriaContainer">
+            <div class="criteria-card">
+                <div class="criteria-title">1. ความรู้</div>
+                <div class="radio-group">
+                    <label class="radio-option"><input type="radio" name="q_1" value="20"> <div><strong>ดีมาก (20 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีควารู้และสามารถอภิปรายและนำความรู้ไปใช้ทางคลินิกได้ดีมาก</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_1" value="15"> <div><strong>ดี (15 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีความรู้ อภิปรายและนำความรู้ไปใช้ทางคลินิกได้ดี</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_1" value="10"> <div><strong>พอใช้ (10 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีความรู้บ้าง การประยุกต์ความรู้ในการดูแลผู้ป่วยดีพอควร</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_1" value="5"> <div><strong>ควรปรับปรุง (5 คะแนน)</strong><br><span style="font-size:14px; color:#555;">ขาดความรู้ที่สำคัญ ประยุกต์ใช้ทางคลินิกได้น้อย ต้องการคำชี้แนะ</span></div></label>
+                </div>
+            </div>
+
+            <div class="criteria-card">
+                <div class="criteria-title">2. ทักษะทางคลินิก (การซักประวัติ ตรวจร่างกาย หัตถการ)</div>
+                <div class="radio-group">
+                    <label class="radio-option"><input type="radio" name="q_2" value="20"> <div><strong>ดีมาก (20 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีทักษะในทางคลินิกครบถ้วน</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_2" value="15"> <div><strong>ดี (15 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีทักษะในทางคลินิกในเกณฑ์ดี</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_2" value="10"> <div><strong>พอใช้ (10 คะแนน)</strong><br><span style="font-size:14px; color:#555;">ยังขาดทักษะในทางคลินิกในบางด้าน</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_2" value="5"> <div><strong>ควรปรับปรุง (5 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีทักษะด้านคลินิกน้อยมากไม่สามารถนำมาใช้ในการวินิจฉัยและดูแลผู้ป่วยได้</span></div></label>
+                </div>
+            </div>
+
+            <div class="criteria-card">
+                <div class="criteria-title">3. การเรียนรู้ด้วยตนเองและการแก้ไขปัญหา</div>
+                <div class="radio-group">
+                    <label class="radio-option"><input type="radio" name="q_3" value="15"> <div><strong>ดีมาก (15 คะแนน)</strong><br><span style="font-size:14px; color:#555;">ศึกษาค้นคว้าหาความรู้เพิ่มเติมด้วยตนเองสม่ำเสมอ แสวงหาแนวทางแก้ไขปัญหาอย่างเป็นระบบ</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_3" value="12"> <div><strong>ดี (12 คะแนน)</strong><br><span style="font-size:14px; color:#555;">ศึกษาค้นคว้าเพิ่มเติมเมื่อได้รับคำแนะนำ สามารถแก้ไขปัญหาเฉพาะหน้าได้ดี</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_3" value="7"> <div><strong>พอใช้ (7 คะแนน)</strong><br><span style="font-size:14px; color:#555;">ศึกษาค้นคว้าบ้างเป็นบางครั้ง ต้องการการกระตุ้นและแนะนำในการแก้ไขปัญหา</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_3" value="5"> <div><strong>ควรปรับปรุง (5 คะแนน)</strong><br><span style="font-size:14px; color:#555;">ไม่ศึกษาค้นคว้าเพิ่มเติม ขาดทักษะในการคิดวิเคราะห์และแก้ไขปัญหา</span></div></label>
+                </div>
+            </div>
+
+            <div class="criteria-card">
+                <div class="criteria-title">4. การสื่อสารและมนุษยสัมพันธ์</div>
+                <div class="radio-group">
+                    <label class="radio-option"><input type="radio" name="q_4" value="15"> <div><strong>ดีมาก (15 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีทักษะในการสื่อสารดีมาก สุภาพ มีกาลเทศะ และ มีมนุษยสัมพันธ์ เป็นที่ชื่นชมของบุคลากร ผู้ป่วย และญาติผู้ป่วย</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_4" value="12"> <div><strong>ดี (12 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีทักษะในการสื่อสารดี มนุษยสัมพันธ์ที่ดีกับบุคลากรผู้ป่วย และญาติผู้ป่วย</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_4" value="7"> <div><strong>พอใช้ (7 คะแนน)</strong><br><span style="font-size:14px; color:#555;">สามารถทำงานได้กับบุคลากรอาจประสบปัญหาบ้างในการสื่อสารกับผู้ป่วยหรือญาติผู้ป่วยในบางครั้ง</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_4" value="5"> <div><strong>ควรปรับปรุง (5 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีปัญหาในการทำงานกับบุคลากรอื่นและ ขาดทักษะพื้นฐานในการสื่อสารกับผู้ป่วย และญาติผู้ป่วย</span></div></label>
+                </div>
+            </div>
+
+            <div class="criteria-card">
+                <div class="criteria-title">5. ความรับผิดชอบ</div>
+                <div class="radio-group">
+                    <label class="radio-option"><input type="radio" name="q_5" value="15"> <div><strong>ดีมาก (15 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีความรับผิดชอบดีมาก มักทำหน้าที่ต่างๆ ที่อยู่ในความรับผิดชอบของตนได้ดีเกินความคาดหมาย</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_5" value="12"> <div><strong>ดี (12 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีความรับผิดชอบดี ดูแลงานในความรับผิดชอบของตนได้ตามความคาดหมาย</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_5" value="7"> <div><strong>พอใช้ (7 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีความรับผิดชอบพอใช้ได้ มีบางครั้งที่อาจารย์ หรือบุคลากรอื่นต้องช่วยแบ่งเบาภาระในการดูแลผู้ป่วยในความรับผิดชอบ</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_5" value="5"> <div><strong>ควรปรับปรุง (5 คะแนน)</strong><br><span style="font-size:14px; color:#555;">แสดงถึงการขาดความรับผิดชอบในภาระหน้าที่ที่ได้รับมอบหมายเป็นประจำ</span></div></label>
+                </div>
+            </div>
+
+            <div class="criteria-card">
+                <div class="criteria-title">6. เจตคติและจริยธรรม</div>
+                <div class="radio-group">
+                    <label class="radio-option"><input type="radio" name="q_6" value="15"> <div><strong>ดีมาก (15 คะแนน)</strong><br><span style="font-size:14px; color:#555;">แสดงถึงความเป็นวิชาชีพเช่นตรงเวลา คำนึงถึงประโยชน์ของผู้ป่วย ซื่อสัตย์ ไว้วางใจได้ดีมากเป็นแบบอย่างได้</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_6" value="12"> <div><strong>ดี (12 คะแนน)</strong><br><span style="font-size:14px; color:#555;">พฤติกรรมเหมาะสมตามหลักจรรยาบรรณวิชาชีพ ตรงต่อเวลา ปฏิบัติตนดี</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_6" value="7"> <div><strong>พอใช้ (7 คะแนน)</strong><br><span style="font-size:14px; color:#555;">พฤติกรรมทั่วไปยอมรับได้ แต่ต้องตักเตือนในบางเรื่อง เช่น การมาสาย หรือความกระตือรือร้น</span></div></label>
+                    <label class="radio-option"><input type="radio" name="q_6" value="5"> <div><strong>ควรปรับปรุง (5 คะแนน)</strong><br><span style="font-size:14px; color:#555;">มีพฤติกรรมที่ไม่เหมาะสม ไม่ตรงต่อเวลา ขาดความซื่อสัตย์ หรือไม่เคารพสิทธิ์ผู้ป่วย</span></div></label>
+                </div>
+            </div>
+        </div>
 
         <div class="form-group" style="margin-top: 30px;">
             <label for="comment">ความคิดเห็นเพิ่มเติม / ข้อเสนอแนะ เพื่อการพัฒนา</label>
@@ -65,7 +126,6 @@
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
-    let activeTopics = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         loadInitialData();
@@ -84,14 +144,9 @@
                 opt.innerText = `${s.id} - ${s.name}`;
                 subSelect.appendChild(opt);
             });
-
-            const resForm = await fetch(`${API_URL}?action=getFormCriteria`);
-            activeTopics = await resForm.json();
-            renderCriteria(activeTopics);
-
             Swal.close();
         } catch (e) {
-            Swal.fire("ผิดพลาด", "ไม่สามารถโหลดโครงสร้างข้อมูลจากคลาวด์ได้", "error");
+            Swal.fire("ผิดพลาด", "ไม่สามารถโหลดรายวิชาได้", "error");
         }
     }
 
@@ -119,30 +174,6 @@
         }
     }
 
-    function renderCriteria(topics) {
-        const container = document.getElementById("criteriaContainer");
-        container.innerHTML = "";
-        topics.forEach((topic, index) => {
-            const qNum = index + 1;
-            let card = document.createElement("div");
-            card.className = "criteria-card";
-            
-            let html = `<div class="criteria-title">${qNum}. ${topic.title}</div>`;
-            html += `<div class="radio-group">`;
-            topic.options.forEach(opt => {
-                html += `
-                    <label class="radio-option">
-                        <input type="radio" name="q_${qNum}" value="${opt.score}">
-                        <div><strong>${opt.label} (${opt.score} คะแนน)</strong><br><span style="font-size:14px; color:#555;">${opt.desc}</span></div>
-                    </label>
-                `;
-            });
-            html += `</div>`;
-            card.innerHTML = html;
-            container.appendChild(card);
-        });
-    }
-
     document.getElementById("submitBtn").addEventListener("click", async () => {
         const subId = document.getElementById("subjectSelect").value;
         const stuId = document.getElementById("studentSelect").value;
@@ -156,9 +187,9 @@
         }
 
         let answeredAll = true;
-        activeTopics.forEach((_, index) => {
-            if(!document.querySelector(`input[name="q_${index+1}"]:checked`)) answeredAll = false;
-        });
+        for (let i = 1; i <= 6; i++) {
+            if(!document.querySelector(`input[name="q_${i}"]:checked`)) answeredAll = false;
+        }
 
         if(!answeredAll) {
             Swal.fire("คำเตือน", "กรุณาตอบคำถามหัวข้อการประเมินให้ครบทุกข้อครับ", "warning");
@@ -186,11 +217,10 @@
                     comment: document.getElementById("comment").value
                 };
 
-                activeTopics.forEach((topic, index) => {
-                    const qNum = index + 1;
-                    const selectedRadio = document.querySelector(`input[name="q_${qNum}"]:checked`);
-                    payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "0";
-                });
+                for (let i = 1; i <= 6; i++) {
+                    const selectedRadio = document.querySelector(`input[name="q_${i}"]:checked`);
+                    payload[`score${i}`] = selectedRadio ? selectedRadio.value : "0";
+                }
 
                 try {
                     const response = await fetch(API_URL, { 
