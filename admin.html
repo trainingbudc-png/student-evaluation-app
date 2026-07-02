@@ -16,146 +16,353 @@
         }
         body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
         .header { background: var(--primary-color); color: white; padding: 20px 30px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .card { background: var(--card-background); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+        .sidebar { background: var(--card-background); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; height: fit-content; }
+        .main-content { display: flex; flex-direction: column; gap: 24px; }
+        .card { background: var(--card-background); border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        h2, h3 { margin-top: 0; color: var(--primary-color); }
+        .topic-list { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .topic-item { padding: 12px 16px; background: #f1f5f9; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 500; border: 1px solid transparent; }
+        .topic-item:hover { background: #e2e8f0; color: var(--secondary-color); }
+        .topic-item.active { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f1f5f9; color: #475569; font-weight: bold; }
-        tr:hover { background-color: #f8fafc; }
-        .btn-action-container { display: flex; gap: 6px; }
-        .btn-edit { background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-edit:hover { background: #bae6fd; }
-        .btn-view { background: #ffedd5; color: #ea580c; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-view:hover { background: #fed7aa; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; }
+        .btn { background: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'Sarabun', sans-serif; }
+        .btn:hover { opacity: 0.9; }
+        .btn-success { background: #10b981; }
+        .input-text, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 15px; }
+        .grid-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 15px; }
+        .score-box { background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .score-box span { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
+        .score-box strong { font-size: 16px; color: var(--primary-color); }
+        .search-box { margin-bottom: 15px; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #f1f5f9; color: #475569; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef9c3; color: #a16207; }
+        .badge-danger { background: #fee2e2; color: #b91c1c; }
+        .tab-menu { display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .tab-btn { background: none; border: none; padding: 8px 16px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 16px; font-weight: bold; color: #64748b; }
+        .tab-btn.active { color: var(--secondary-color); border-bottom: 3px solid var(--secondary-color); margin-bottom: -13px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div>
-        <h1 style="margin:0; font-size:24px;">ระบบจัดการและตรวจสอบผลการประเมิน</h1>
-        <p style="margin:5px 0 0 0; opacity:0.8;">ฝ่ายแพทยศาสตรศึกษา (แอดมิน)</p>
-    </div>
-    <div style="font-weight:bold; background:#0284c7; padding:10px 15px; border-radius:6px;">ฐานข้อมูล Cloud Connect</div>
+    <div style="font-size: 22px; font-weight: bold;">🏥 ระบบบริหารจัดการและตรวจสอบผลการประเมินนิสิตแพทย์</div>
+    <div id="adminName" style="font-weight: bold; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px;">👤 Administrator</div>
 </div>
 
-<div class="container">
-    <div class="card">
-        <h2 style="margin-top:0; color:var(--primary-color);">ตารางสรุปคะแนนประเมินนิสิตแพทย์ทั้งหมด</h2>
-        <div style="overflow-x: auto;">
-            <table id="resultsTable">
-                <thead>
-                    <tr>
-                        <th>แถวชีต</th>
-                        <th>รหัสนิสิต</th>
-                        <th>ชื่อ-นามสกุล</th>
-                        <th>วิชา</th>
-                        <th>ผู้ประเมิน</th>
-                        <th>คะแนนข้อ 1-6</th>
-                        <th>รวม</th>
-                        <th>เกรด</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="9" style="text-align:center; padding:30px; color:#888;">⏳ กำลังเชื่อมต่อดึงข้อมูลสดจากระบบฐานข้อมูล Sheets...</td></tr>
-                </tbody>
-            </table>
+<div class="tab-menu">
+    <button class="tab-btn active" onclick="switchTab('results')">📊 ผลการประเมินทั้งหมด</button>
+    <button class="tab-btn" onclick="switchTab('criteria')">⚙️ ตั้งค่าเกณฑ์รูบริคส์</button>
+</div>
+
+<div id="tab-results" class="container" style="max-width:1300px; margin:0 auto; display:grid; grid-template-columns:350px 1fr; gap:24px;">
+    <div class="sidebar">
+        <h3>รายชื่อนิสิตที่ประเมินแล้ว</h3>
+        <div class="search-box">
+            <input type="text" id="searchStudent" class="input-text" placeholder="🔍 ค้นหาชื่อ หรือ รหัสนิสิต..." onkeyup="filterStudentList()">
+        </div>
+        <div id="studentEvalList" class="topic-list" style="max-height: 500px; overflow-y: auto;">
+            <div style="color:#64748b; text-align:center; padding:20px;">กำลังโหลดรายชื่อ...</div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div id="placeholderCard" class="card" style="text-align: center; padding: 60px color: #64748b;">
+            <span style="font-size: 48px;">📊</span>
+            <p style="margin-top: 15px; font-size: 16px;">กรุณาเลือกรายชื่อนิสิตจากแถบด้านซ้ายเพื่อดูรายละเอียดผลการประเมินและจัดการข้อมูล</p>
+        </div>
+
+        <div id="viewResultsCard" class="card" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px;">
+                <div>
+                    <h2 id="viewStudentName" style="margin-bottom: 5px;">-</h2>
+                    <span id="viewStudentId" style="color:#64748b; font-weight:bold;">รหัส: -</span> | 
+                    <span id="viewSubject" style="color:#0284c7; font-weight:bold;">วิชา: -</span>
+                </div>
+                <div style="text-align: right;">
+                    <div id="viewTotalScore" style="font-size: 24px; font-weight: bold; color: #10b981;">0 คะแนน</div>
+                    <span id="viewWorkTime" class="badge">เวลาปฏิบัติงาน: -</span>
+                </div>
+            </div>
+            
+            <h3>คะแนนรายข้อ (Competencies)</h3>
+            <div class="grid-scores">
+                <div class="score-box"><span>1. ความรู้</span><strong id="score_v1">-</strong></div>
+                <div class="score-box"><span>2. ทักษะคลินิก</span><strong id="score_v2">-</strong></div>
+                <div class="score-box"><span>3. การเรียนรู้ด้วยตนเอง</span><strong id="score_v3">-</strong></div>
+                <div class="score-box"><span>4. การสื่อสาร</span><strong id="score_v4">-</strong></div>
+                <div class="score-box"><span>5. ความรับผิดชอบ</span><strong id="score_v5">-</strong></div>
+                <div class="score-box"><span>6. เจตคติและจริยธรรม</span><strong id="score_v6">-</strong></div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3>ความคิดเห็นเพิ่มเติมจากอาจารย์</h3>
+                <div id="viewComment" style="background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; min-height:60px; white-space: pre-wrap;">-</div>
+            </div>
+
+            <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: right;">
+                <span id="viewTeacherName" style="color:#64748b; font-size:14px; display:block; margin-bottom:10px;">ผู้ประเมิน: -</span>
+                <button class="btn btn-success" onclick="openEditScoresModal()">✏️ แก้ไขคะแนนนิสิตคนนี้</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="tab-criteria" class="container" style="display: none;">
+    <div class="sidebar">
+        <h3>หัวข้อการประเมิน</h3>
+        <div id="criteriaTopics" class="topic-list">
+            <div style="color:#64748b; text-align:center; padding:20px;">กำลังโหลดหัวข้อ...</div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div id="viewerCard" class="card" style="text-align: center; padding: 60px; color: #64748b;">
+            <span style="font-size: 48px;">⚙️</span>
+            <p style="margin-top: 15px; font-size: 16px;">กรุณาเลือกหัวข้อการประเมินจากด้านซ้าย เพื่อตรวจสอบหรือแก้ไขรายละเอียดเกณฑ์คะแนนรูบริคส์</p>
+        </div>
+        <div id="editorCard" class="card" style="display: none;">
+            <h2 style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">🛠️ แก้ไขเกณฑ์การให้คะแนน</h2>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-weight: bold; display: block; margin-bottom: 6px;">หัวข้อหลัก</label>
+                <input type="text" id="editTopicName" class="input-text" readonly style="background: #f1f5f9; font-weight: bold;">
+            </div>
+            <form id="criteriaForm">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;">ระดับคำจำกัดความ</th>
+                            <th style="width: 100px; text-align: center;">คะแนน</th>
+                            <th>คำอธิบายรายละเอียดเกณฑ์รูบริคส์</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rubricRows"></tbody>
+                </table>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button type="submit" class="btn">💾 บันทึกการอัปเดตเกณฑ์</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
+    // 🔗 ใส่ URL ของแอดมินตรงนี้ให้เรียบร้อยแล้วครับ
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
 
-    document.addEventListener("DOMContentLoaded", loadEvaluationData);
+    let allCriteriaData = [];
+    let allEvaluationResults = [];
+    let currentSelectedEval = null;
 
-    async function loadEvaluationData() {
-        try {
-            const res = await fetch(`${API_URL}?action=getEvaluationResultsData`);
-            const data = await res.json();
-            const tbody = document.querySelector("#resultsTable tbody");
-            tbody.innerHTML = "";
+    window.addEventListener("DOMContentLoaded", () => {
+        loadEvaluationResults();
+        loadCriteriaData();
+    });
 
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px;">📭 ยังไม่มีข้อมูลบันทึกการประเมินเข้ามาในระบบ</td></tr>`;
-                return;
-            }
-
-            data.forEach(row => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>#${row.rowId}</strong></td>
-                    <td>${row.studentId}</td>
-                    <td>${row.studentName}</td>
-                    <td><small>${row.subjectId} - ${row.subjectName}</small></td>
-                    <td>${row.assessor}</td>
-                    <td>${row.score1}, ${row.score2}, ${row.score3}, ${row.score4}, ${row.score5}, ${row.score6}</td>
-                    <td><span style="font-weight:bold; color:#0284c7;">${row.totalScore}</span></td>
-                    <td><span style="padding:4px 8px; background:#f0fdf4; color:#16a34a; font-weight:bold; border-radius:4px;">${row.grade}</span></td>
-                    <td>
-                        <div class="btn-action-container">
-                            <button class="btn-edit" onclick="editScore(${JSON.stringify(row)})">✏️ แก้ไข</button>
-                            <button class="btn-view" onclick="viewDetails(${JSON.stringify(row)})">📄 ดูประวัติ</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } catch (e) {
-            document.querySelector("#resultsTable tbody").innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ${e.toString()}</td></tr>`;
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        if (tab === 'results') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById("tab-results").style.display = "grid";
+            document.getElementById("tab-criteria").style.display = "none";
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById("tab-results").style.display = "none";
+            document.getElementById("tab-criteria").style.display = "grid";
         }
     }
 
-    function viewDetails(rowData) {
-        Swal.fire({
-            title: `📋 รายละเอียดผลการประเมิน`,
-            html: `
-                <div style="text-align:left; font-size:15px; line-height: 1.6;">
-                    <p><strong>นิสิต:</strong> ${rowData.studentId} - ${rowData.studentName}</p>
-                    <p><strong>วิชา:</strong> ${rowData.subjectId} - ${rowData.subjectName}</p>
-                    <p><strong>ผู้ประเมิน:</strong> ${rowData.assessor}</p>
-                    <hr>
-                    <p><strong>คะแนนแยกข้อ:</strong></p>
-                    <ul>
-                        <li>ความรู้: ${rowData.score1} คะแนน</li>
-                        <li>ทักษะคลินิก: ${rowData.score2} คะแนน</li>
-                        <li>การเรียนรู้ด้วยตนเอง: ${rowData.score3} คะแนน</li>
-                        <li>การสื่อสาร: ${rowData.score4} คะแนน</li>
-                        <li>ความรับผิดชอบ: ${rowData.score5} คะแนน</li>
-                        <li>เจตคติ/จริยธรรม: ${rowData.score6} คะแนน</li>
-                    </ul>
-                    <p><strong>คะแนนรวม:</strong> ${rowData.totalScore} คะแนน (${rowData.grade})</p>
-                    <p><strong>ข้อเสนอแนะเพิ่มเติม:</strong> ${rowData.comment || '-'}</p>
-                </div>
-            `,
-            confirmButtonText: 'ปิดหน้าต่าง'
+    async function loadEvaluationResults() {
+        try {
+            const res = await fetch(`${API_URL}?action=getEvaluationResults`);
+            allEvaluationResults = await res.json();
+            renderStudentEvalList(allEvaluationResults);
+        } catch (e) {
+            document.getElementById("studentEvalList").innerHTML = `<div style="color:red; text-align:center;">โหลดล้มเหลว: ${e}</div>`;
+        }
+    }
+
+    function renderStudentEvalList(data) {
+        const listContainer = document.getElementById("studentEvalList");
+        listContainer.innerHTML = "";
+        if (data.length === 0) {
+            listContainer.innerHTML = `<div style="color:#64748b; text-align:center; padding:20px;">ไม่พบข้อมูลการประเมิน</div>`;
+            return;
+        }
+        data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "topic-item";
+            div.id = `eval-item-${item.rowId}`;
+            div.innerHTML = `
+                <div style="font-weight:bold;">${item.studentName || 'ไม่ทราบชื่อ'}</div>
+                <div style="font-size:12px; color:#64748b; margin-top:2px;">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
+                <div style="font-size:12px; color:#10b981; font-weight:bold; margin-top:2px;">รวม: ${item.totalScore} คะแนน</div>
+            `;
+            div.onclick = () => selectEvaluationItem(item);
+            listContainer.appendChild(div);
         });
     }
 
-    function editScore(rowData) {
+    function filterStudentList() {
+        const query = document.getElementById("searchStudent").value.toLowerCase().trim();
+        const filtered = allEvaluationResults.filter(item => 
+            String(item.studentName).toLowerCase().includes(query) || 
+            String(item.studentId).toLowerCase().includes(query)
+        );
+        renderStudentEvalList(filtered);
+    }
+
+    function selectEvaluationItem(item) {
+        currentSelectedEval = item;
+        document.querySelectorAll('#studentEvalList .topic-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`eval-item-${item.rowId}`).classList.add('active');
+        
+        document.getElementById("placeholderCard").style.display = "none";
+        document.getElementById("viewResultsCard").style.display = "block";
+        
+        document.getElementById("viewStudentName").innerText = item.studentName || "-";
+        document.getElementById("viewStudentId").innerText = `รหัส: ${item.studentId}`;
+        document.getElementById("viewSubject").innerText = `วิชา: ${item.subjectCode} - ${item.subjectName || ''}`;
+        document.getElementById("viewWorkTime").innerText = `เวลาปฏิบัติงาน: ${item.workTime || '-'}`;
+        document.getElementById("viewComment").innerText = item.comment || "ไม่มีความคิดเห็นเพิ่มเติม";
+        document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุชื่ออาจารย์'}`;
+        
+        const s = item.scores || ["-","-","-","-","-","-"];
+        document.getElementById("score_v1").innerText = `${s[0]} คะแนน`;
+        document.getElementById("score_v2").innerText = `${s[1]} คะแนน`;
+        document.getElementById("score_v3").innerText = `${s[2]} คะแนน`;
+        document.getElementById("score_v4").innerText = `${s[3]} คะแนน`;
+        document.getElementById("score_v5").innerText = `${s[4]} คะแนน`;
+        document.getElementById("score_v6").innerText = `${s[5]} คะแนน`;
+        
+        const total = Number(item.totalScore) || 0;
+        let grade = "ผ่านเกณฑ์";
+        if (total >= 78) grade = "🌟 โดดเด่น";
+        else if (total < 48) grade = "ควรปรับปรุง";
+        
+        document.getElementById("viewTotalScore").innerText = `${total} คะแนน (${grade})`;
+    }
+
+    function openCriteriaViewer(topic) {
+        document.querySelectorAll('.topic-item').forEach(el => el.classList.remove('active'));
+        document.getElementById("viewerCard").style.display = "none";
+        document.getElementById("editorCard").style.display = "block";
+        document.getElementById("editTopicName").value = topic;
+
+        const subItems = allCriteriaData.filter(item => item.topic === topic);
+        const tbody = document.getElementById("rubricRows");
+        tbody.innerHTML = "";
+
+        subItems.forEach(item => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="font-weight:bold; color:#0f172a;">${item.level}</td>
+                <td style="text-align:center; font-weight:bold; color:#0284c7;">${item.score !== null ? item.score : '-'}</td>
+                <td>
+                    <input type="hidden" class="row-num-input" value="${item.rowNum}">
+                    <input type="hidden" class="level-input" value="${item.level}">
+                    <input type="hidden" class="score-input" value="${item.score}">
+                    <textarea class="detail-input" rows="2" style="width:100%; box-sizing:border-box;">${item.detail || ''}</textarea>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function loadCriteriaData() {
+        try {
+            const res = await fetch(`${API_URL}?action=getFormCriteria`);
+            allCriteriaData = await res.json();
+            
+            const uniqueTopics = [...new Set(allCriteriaData.map(item => item.topic))].filter(Boolean);
+            const container = document.getElementById("criteriaTopics");
+            container.innerHTML = "";
+            
+            uniqueTopics.forEach(topic => {
+                const div = document.createElement("div");
+                div.className = "topic-item";
+                div.innerText = topic;
+                div.onclick = () => {
+                    openCriteriaViewer(topic);
+                    div.classList.add('active');
+                };
+                container.appendChild(div);
+            });
+        } catch (e) {
+            document.getElementById("criteriaTopics").innerHTML = `<div style="color:red; text-align:center;">โหลดล้มเหลว: ${e}</div>`;
+        }
+    }
+
+    document.getElementById("criteriaForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        
+        const rubrics = [];
+        const rows = document.querySelectorAll("#rubricRows tr");
+        rows.forEach(row => {
+            rubrics.push({
+                rowNum: row.querySelector(".row-num-input").value,
+                level: row.querySelector(".level-input").value,
+                score: row.querySelector(".score-input").value,
+                detail: row.querySelector(".detail-input").value
+            });
+        });
+
+        try {
+            const res = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "updateFormCriteria", rubrics: rubrics })
+            });
+            const data = await res.json();
+            if (data.result === "success") {
+                Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์คะแนนรูบริคส์เรียบร้อยแล้ว", "success");
+                loadCriteriaData();
+            } else {
+                Swal.fire("ล้มเหลว", data.message || "เกิดข้อผิดพลาด", "error");
+            }
+        } catch (err) {
+            Swal.fire("ผิดพลาด", err.toString(), "error");
+        }
+    });
+
+    function openEditScoresModal() {
+        if (!currentSelectedEval) return;
+        const s = currentSelectedEval.scores || [0,0,0,0,0,0];
+        
         Swal.fire({
-            title: `แก้ไขคะแนนสด: ${rowData.studentName}`,
+            title: `✏️ แก้ไขคะแนน\n${currentSelectedEval.studentName}`,
             html: `
-                <div style="text-align:left; display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:10px;">
-                    <label>ข้อ 1: <input type="number" id="md_s1" value="${rowData.score1}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 2: <input type="number" id="md_s2" value="${rowData.score2}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 3: <input type="number" id="md_s3" value="${rowData.score3}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 4: <input type="number" id="md_s4" value="${rowData.score4}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 5: <input type="number" id="md_s5" value="${rowData.score5}" class="swal2-input" style="margin:0; width:80%;"></label>
-                    <label>ข้อ 6: <input type="number" id="md_s6" value="${rowData.score6}" class="swal2-input" style="margin:0; width:80%;"></label>
-                </div>
-                <div style="padding: 0 10px; text-align: left;">
-                    <label style="display:block; margin-top:10px;">ความคิดเห็นผู้ประเมิน:</label>
-                    <textarea id="md_comment" class="swal2-textarea" style="width:90%; margin:5px 0;">${rowData.comment || ''}</textarea>
+                <div style="text-align:left; font-family:'Sarabun',sans-serif; font-size:14px;">
+                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">1. ความรู้ (เต็ม 20)</label>
+                    <input type="number" id="md_s1" class="swal2-input" value="${s[0]}" style="margin:0; width:100%;">
+                    
+                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">2. ทักษะคลินิก (เต็ม 20)</label>
+                    <input type="number" id="md_s2" class="swal2-input" value="${s[1]}" style="margin:0; width:100%;">
+                    
+                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">3. การเรียนรู้ด้วยตนเอง (เต็ม 15)</label>
+                    <input type="number" id="md_s3" class="swal2-input" value="${s[2]}" style="margin:0; width:100%;">
+                    
+                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">4. การสื่อสาร (เต็ม 15)</label>
+                    <input type="number" id="md_s4" class="swal2-input" value="${s[3]}" style="margin:0; width:100%;">
+                    
+                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">5. ความรับผิดชอบ (เต็ม 15)</label>
+                    <input type="number" id="md_s5" class="swal2-input" value="${s[4]}" style="margin:0; width:100%;">
+                    
+                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">6. เจตคติและจริยธรรม (เต็ม 15)</label>
+                    <input type="number" id="md_s6" class="swal2-input" value="${s[5]}" style="margin:0; width:100%;">
+                    
+                    <label style="font-weight:bold; display:block; margin:12px 0 4px;">ความคิดเห็นเพิ่มเติม</label>
+                    <textarea id="md_comment" class="swal2-textarea" style="margin:0; width:100%; height:80px;">${currentSelectedEval.comment || ''}</textarea>
                 </div>
             `,
             showCancelButton: true,
-            confirmButtonText: '💾 อัปเดตชีตสด',
-            focusConfirm: false,
+            confirmButtonText: '💾 บันทึกการแก้ไข',
+            cancelButtonText: 'ยกเลิก',
             preConfirm: () => {
                 return {
-                    rowId: rowData.rowId,
+                    rowId: currentSelectedEval.rowId,
                     score1: document.getElementById("md_s1").value,
                     score2: document.getElementById("md_s2").value,
                     score3: document.getElementById("md_s3").value,
