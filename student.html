@@ -12,63 +12,69 @@
         .form-group { margin-bottom: 20px; }
         label { font-weight: bold; display: block; margin-bottom: 8px; }
         select, input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; background: #10b981; color: white; padding: 14px; border: none; border-radius: 4px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button { width: 100%; background: #10b981; color: white; border: none; padding: 14px; font-size: 16px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
         button:hover { background: #059669; }
-        .result-box { margin-top: 30px; padding: 20px; border-radius: 6px; display: none; }
-        .status-evaluated { background-color: #e6fffa; border: 1px solid #319795; color: #234e52; }
-        .status-not-evaluated { background-color: #fffaf0; border: 1px solid #dd6b20; color: #742a2a; }
-        .score-zone { font-size: 32px; text-align: center; margin: 15px 0; font-weight: bold; color: #2b6cb0; }
-        .grade-zone { text-align: center; font-size: 18px; font-weight: bold; }
+        .result-box { margin-top: 30px; padding: 20px; border-radius: 6px; display: none; text-align: center; }
+        .status-evaluated { background-color: #d1fae5; border: 1px solid #10b981; color: #065f46; }
+        .status-not-evaluated { background-color: #fef3c7; border: 1px solid #f59e0b; color: #92400e; }
+        .score-display { margin-top: 15px; font-size: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🩺 คลังข้อมูลผลการประเมินนิสิตแพทย์</h2>
-    <p class="subtitle">ระบบสำหรับนิสิตสืบค้นสถานะการส่งผลรูบริคส์รายวิชาชั้นคลินิก</p>
+    <h2>ระบบตรวจสอบผลการประเมิน</h2>
+    <div class="subtitle">คณะแพทยศาสตร์ (สำหรับนิสิตแพทย์)</div>
     
     <div class="form-group">
-        <label for="studentId">🆔 รหัสนิสิตแพทย์ (8 หลัก)</label>
-        <input type="text" id="studentId" placeholder="ตัวอย่าง: 64460084" maxlength="8">
+        <label for="studentId">รหัสนิสิตแพทย์ (8 หลัก)</label>
+        <input type="text" id="studentId" placeholder="ตัวอย่าง: 63460580" maxlength="8">
     </div>
 
     <div class="form-group">
-        <label for="subjectCode">📚 เลือกรายวิชาที่ต้องการสืบค้น</label>
+        <label for="subjectCode">เลือกรายวิชา / หอผู้ป่วย</label>
         <select id="subjectCode">
-            <option value="">-- กรุณาเลือกรายวิชา --</option>
+            <option value="">-- กำลังโหลดรายวิชา --</option>
         </select>
     </div>
 
-    <button onclick="checkEvaluationStatus()">🔍 ตรวจสอบคะแนนประเมิน</button>
+    <button onclick="checkEvaluation()">🔎 ตรวจสอบสถานะและคะแนน</button>
 
     <div id="resultBox" class="result-box">
-        <h4 id="statusTitle" style="margin-top:0; margin-bottom:10px;">-</h4>
-        <div id="scoreZone" class="score-zone" style="display:none;">
-            <span id="totalScoreText">0</span> <span style="font-size:16px;">คะแนนเต็ม 100</span>
-            <div id="gradeText" class="grade-zone" style="margin-top: 10px; font-size: 20px;">-</div>
+        <div id="statusTitle" style="font-size: 18px; font-weight: bold;"></div>
+        <div id="scoreZone" style="display: none;">
+            <div class="score-display">คะแนนรวมที่ได้: <span id="totalScoreText" style="color: #10b981; font-size: 24px;">0</span> / 100 คะแนน</div>
+            <div class="score-display">เกรดประเมินผล: <span id="gradeText" style="color: #2563eb; font-size: 24px;">-</span></div>
         </div>
     </div>
 </div>
 
 <script>
-    // 🔗 ใส่ URL ของแอดมินตรงนี้ให้เรียบร้อยแล้วครับ
+    // ฝัน URL ของ Google Apps Script เรียบร้อยแล้ว
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
 
-    window.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const response = await fetch(`${API_URL}?action=getSubjects`);
-            const data = await response.json();
-            const select = document.getElementById("subjectCode");
-            data.forEach(sub => {
-                const opt = document.createElement("option");
-                opt.value = sub.code;
-                opt.innerText = `${sub.code} - ${sub.name}`;
-                select.appendChild(opt);
-            });
-        } catch (error) { alert("ล้มเหลวในการเชื่อมต่อคลังรายวิชา"); }
+    document.addEventListener("DOMContentLoaded", () => {
+        loadSubjects();
     });
 
-    async function checkEvaluationStatus() {
+    async function loadSubjects() {
+        const select = document.getElementById('subjectCode');
+        try {
+            const response = await fetch(`${API_URL}?action=getSubjects`);
+            const subjects = await response.json();
+            select.innerHTML = '<option value="">-- เลือกรายวิชา --</option>';
+            subjects.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.id;
+                opt.innerText = `${sub.id} - ${sub.name}`;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            select.innerHTML = '<option value="">❌ โหลดวิชาล้มเหลว กรุณารีเฟรชหน้าเว็บ</option>';
+        }
+    }
+
+    async function checkEvaluation() {
         const studentId = document.getElementById('studentId').value.trim();
         const subjectCode = document.getElementById('subjectCode').value;
         const resultBox = document.getElementById('resultBox');

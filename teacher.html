@@ -13,249 +13,175 @@
         h2, h3 { color: var(--primary-color); text-align: center; }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; }
-        select, input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
-        
-        .student-list-container {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;
-            max-height: 280px; overflow-y: auto; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;
-        }
-        .student-item {
-            background: #ffffff; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px;
-            cursor: pointer; transition: all 0.2s; font-size: 15px; text-align: center; color: #475569;
-        }
-        .student-item:hover:not(.disabled) { border-color: #bae6fd; background: #f0f9ff; }
-        .student-item.active { background: var(--secondary-color); color: white; border-color: var(--primary-color); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .student-item.disabled { background: #f1f5f9; border-color: #e2e8f0; cursor: not-allowed; opacity: 0.7; }
-        
-        .student-list-container::-webkit-scrollbar { width: 8px; }
-        .student-list-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        .student-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .student-list-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        .rubric-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 25px; }
-        .rubric-table th, .rubric-table td { padding: 12px; border: 1px solid #cbd5e1; text-align: left; }
-        .rubric-table th { background-color: #f8fafc; }
-        .radio-cell { text-align: center; width: 60px; }
-        .btn-submit { background-color: var(--primary-color); color: white; padding: 14px 28px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; transition: background-color 0.2s; font-family: 'Sarabun', sans-serif; }
+        select, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 16px; }
+        .criteria-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .criteria-title { font-weight: bold; color: var(--primary-color); font-size: 18px; margin-bottom: 10px; }
+        .radio-group { display: flex; flex-direction: column; gap: 10px; }
+        .radio-option { display: flex; align-items: flex-start; gap: 10px; background: white; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; }
+        .radio-option:hover { background: #f0fdf4; border-color: #10b981; }
+        .radio-option input { margin-top: 4px; }
+        .btn-submit { background-color: var(--primary-color); color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; margin-top: 20px; }
         .btn-submit:hover { background-color: #1e40af; }
-        .competency-title { background: #e0f2fe; color: #0369a1; padding: 10px 15px; border-radius: 6px; font-weight: bold; margin-top: 30px; margin-bottom: 10px; font-size: 16px; border-left: 5px solid #0284c7; }
-        .error-box { background: #fee2e2; color: #ef4444; border: 1px solid #f87171; padding: 15px; border-radius: 6px; text-align: center; font-weight: bold; margin: 20px 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📋 แบบประเมินผลการปฏิบัติงานนิสิตแพทย์ ชั้นคลินิก</h2>
-    <p style="text-align: center; color: #555;">กรุณาเลือกวิชาและรายชื่อนิสิตเพื่อดำเนินการให้คะแนนตามเกณฑ์รูบริคส์</p>
-    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+    <h2>แบบประเมินผลการปฏิบัติงานนิสิตแพทย์</h2>
+    <h3 style="font-weight: normal; margin-top: -10px;">ชั้นคลินิก (สำหรับอาจารย์ผู้ประเมิน)</h3>
+    <hr style="border: 0; height: 1px; background: #e5e7eb; margin: 25px 0;">
 
     <form id="evalForm">
         <div class="form-group">
-            <label for="teacherName">👤 ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
-            <input type="text" id="teacherName" required placeholder="ตัวอย่าง: นพ.สมชาย ตั้งใจดี">
-        </div>
-
-        <div class="form-group">
-            <label for="subjectCode">📚 เลือกรายวิชาปฏิบัติงาน</label>
-            <select id="subjectCode" required onchange="loadStudents()">
-                <option value="">-- กรุณาเลือกวิชา --</option>
+            <label for="subjectSelect">1. เลือกรายวิชาที่ทำจับคู่เรียน</label>
+            <select id="subjectSelect" onchange="loadStudents()">
+                <option value="">-- กำลังโหลดรายวิชา --</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>🎓 เลือกรายชื่อนิสิตแพทย์ (คลิกที่ชื่อ)</label>
-            <div id="studentListContainer" class="student-list-container">
-                <div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">
-                    -- กรุณาเลือกวิชาก่อนเพื่อแสดงรายชื่อนิสิต --
-                </div>
-            </div>
-            <input type="hidden" id="selectedStudentId">
-            <input type="hidden" id="selectedStudentName">
+            <label for="studentSelect">2. เลือกรายชื่อนิสิตแพทย์ที่ต้องการประเมิน</label>
+            <select id="studentSelect">
+                <option value="">-- กรุณาเลือกรายวิชาก่อน --</option>
+            </select>
         </div>
 
-        <div id="criteriaContainer">
-            <p style="text-align: center; color: #666; padding: 20px;">🔄 กำลังโหลดเกณฑ์ประเมินจากฐานข้อมูล...</p>
+        <div class="form-group">
+            <label for="assessorName">3. ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
+            <input type="text" id="assessorName" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:16px;" placeholder="ระบุชื่ออาจารย์">
         </div>
+
+        <h3 style="text-align: left; margin-top: 40px; margin-bottom: 20px; color: var(--primary-color);">📝 ส่วนที่ 2: เกณฑ์การประเมินผล</h3>
+        <div id="criteriaContainer"></div>
 
         <div class="form-group" style="margin-top: 30px;">
-            <label for="comment">💬 ความคิดเห็นเพิ่มเติมและข้อเสนอแนะเพื่อพัฒนา</label>
-            <textarea id="comment" rows="4" placeholder="ระบุจุดเด่นหรือจุดที่ควรปรับปรุงเพิ่มเติมให้กับนิสิตแพทย์..."></textarea>
+            <label for="comment">ความคิดเห็นเพิ่มเติม / ข้อเสนอแนะ เพื่อการพัฒนา</label>
+            <textarea id="comment" rows="4" placeholder="กรอกข้อเสนอแนะเพิ่มเติม..."></textarea>
         </div>
 
-        <button type="submit" class="btn-submit">💾 บันทึกและส่งผลการประเมินเข้าระบบ</button>
+        <button type="button" id="submitBtn" class="btn-submit">💾 บันทึกและส่งผลการประเมิน</button>
     </form>
 </div>
 
 <script>
-    // 🔗 แปะลิงก์ Web App (Deploy ใหม่) ของอาจารย์ตรงนี้ครับ!
+    // ฝัน URL ของ Google Apps Script เรียบร้อยแล้ว
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
-
-    let allStudents = [];
     let activeTopics = [];
 
-    window.addEventListener("DOMContentLoaded", () => {
-        loadSubjects();
-        loadCriteria();
+    document.addEventListener("DOMContentLoaded", () => {
+        loadInitialData();
     });
 
-    async function loadSubjects() {
+    async function loadInitialData() {
+        Swal.fire({ title: 'กำลังโหลดข้อมูลระบบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
         try {
-            const response = await fetch(`${API_URL}?action=getSubjects&t=${new Date().getTime()}`);
-            const data = await response.json();
-            const select = document.getElementById("subjectCode");
-            data.forEach(sub => {
-                const opt = document.createElement("option");
-                opt.value = sub.code;
-                opt.innerText = `${sub.code} - ${sub.name}`;
-                select.appendChild(opt);
+            const resSub = await fetch(`${API_URL}?action=getSubjects`);
+            const subjects = await resSub.json();
+            const subSelect = document.getElementById("subjectSelect");
+            subSelect.innerHTML = '<option value="">-- เลือกรายวิชา --</option>';
+            subjects.forEach(s => {
+                let opt = document.createElement("option");
+                opt.value = s.id;
+                opt.innerText = `${s.id} - ${s.name}`;
+                subSelect.appendChild(opt);
             });
-        } catch (error) { console.error("โหลดรายวิชาล้มเหลว:", error); }
+
+            const resForm = await fetch(`${API_URL}?action=getFormCriteria`);
+            activeTopics = await resForm.json();
+            renderCriteria(activeTopics);
+
+            Swal.close();
+        } catch (e) {
+            Swal.fire("ผิดพลาด", "ไม่สามารถโหลดโครงสร้างข้อมูลจากคลาวด์ได้", "error");
+        }
     }
 
     async function loadStudents() {
-        const subCode = document.getElementById("subjectCode").value;
-        const container = document.getElementById("studentListContainer");
-        
-        document.getElementById("selectedStudentId").value = "";
-        document.getElementById("selectedStudentName").value = "";
-        
-        if (!subCode) {
-            container.innerHTML = `<div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">-- กรุณาเลือกวิชาก่อนเพื่อแสดงรายชื่อนิสิต --</div>`;
+        const subId = document.getElementById("subjectSelect").value;
+        const stuSelect = document.getElementById("studentSelect");
+        if (!subId) {
+            stuSelect.innerHTML = '<option value="">-- กรุณาเลือกรายวิชาก่อน --</option>';
             return;
         }
-
-        container.innerHTML = `<div style="color: #0284c7; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">⏳ กำลังโหลดรายชื่อนิสิต...</div>`;
-
+        stuSelect.innerHTML = '<option value="">-- กำลังดึงรายชื่อนิสิต... --</option>';
         try {
-            const response = await fetch(`${API_URL}?action=getStudentsList&t=${new Date().getTime()}`);
-            allStudents = await response.json();
-            const filtered = allStudents.filter(s => String(s.subjectCode).trim() === String(subCode).trim());
-            
-            container.innerHTML = "";
-            if (filtered.length === 0) {
-                container.innerHTML = `<div style="color: #ef4444; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0; font-weight: bold;">❌ ไม่พบนิสิตลงทะเบียนในวิชานี้</div>`;
-            } else {
-                filtered.forEach(s => {
-                    const div = document.createElement("div");
-                    
-                    if (s.isEvaluated) {
-                        div.className = "student-item disabled";
-                        div.innerHTML = `
-                            <div style="font-size:12px; color:#64748b;">${s.studentId}</div>
-                            <div style="font-weight:bold; margin-top:2px; color:#94a3b8; text-decoration: line-through;">${s.studentName}</div>
-                            <div style="font-size:12px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
-                        `;
-                        div.onclick = () => {
-                            Swal.fire({ icon: 'info', title: 'ประเมินไปแล้ว', text: 'นิสิตคนนี้ได้รับการประเมินในวิชานี้เรียบร้อยแล้วครับ' });
-                        };
-                    } else {
-                        div.className = "student-item";
-                        div.innerHTML = `
-                            <div style="font-size:12px; opacity:0.8;">${s.studentId}</div>
-                            <div style="font-weight:bold; margin-top:2px;">${s.studentName}</div>
-                        `;
-                        div.onclick = () => {
-                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-                            div.classList.add('active');
-                            document.getElementById("selectedStudentId").value = s.studentId;
-                            document.getElementById("selectedStudentName").value = s.studentName;
-                        };
-                    }
-                    container.appendChild(div);
-                });
-            }
-        } catch (e) { 
-            container.innerHTML = `<div style="color: #ef4444; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">⚠️ เกิดข้อผิดพลาดในการโหลดรายชื่อ</div>`; 
-        }
-    }
-
-    async function loadCriteria() {
-        const container = document.getElementById("criteriaContainer");
-        try {
-            const response = await fetch(`${API_URL}?action=getFormCriteria&t=${new Date().getTime()}`);
-            const text = await response.text();
-            let data;
-            
-            try {
-                data = JSON.parse(text);
-            } catch(err) {
-                throw new Error("ลิงก์ API ผิด หรือไม่ได้เชื่อมต่อ (เซิร์ฟเวอร์ไม่ได้ส่งค่ากลับมาเป็นข้อมูลประเมิน)");
-            }
-
-            if (data.result === "error") throw new Error(data.message);
-            
-            if (!Array.isArray(data) || data.length === 0) {
-                container.innerHTML = `<div class="error-box">❌ ไม่พบข้อมูลเกณฑ์ประเมิน<br><small style="color:#7f1d1d; font-weight:normal;">กรุณาตรวจสอบใน Google Sheets ว่าแท็บ "Form" มีข้อมูลหัวข้อและคะแนนครบถ้วนหรือไม่</small></div>`;
-                return;
-            }
-
-            activeTopics = [...new Set(data.map(item => item.topic))].filter(Boolean);
-            container.innerHTML = "";
-
-            activeTopics.forEach((topic, index) => {
-                const qNum = index + 1;
-                const rows = data.filter(item => item.topic === topic);
-                
-                const titleDiv = document.createElement("div");
-                titleDiv.className = "competency-title";
-                titleDiv.innerText = topic;
-                container.appendChild(titleDiv);
-
-                const table = document.createElement("table");
-                table.className = "rubric-table";
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th style="width: 50px; text-align:center;">เลือก</th>
-                            <th style="width: 100px;">ระดับ</th>
-                            <th style="width: 60px; text-align:center;">คะแนน</th>
-                            <th>คำอธิบายเกณฑ์และขอบเขตพฤติกรรม</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                `;
-                
-                const tbody = table.querySelector("tbody");
-                rows.forEach(r => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="radio-cell"><input type="radio" name="q_${qNum}" value="${r.score}" required style="transform: scale(1.3); cursor:pointer;"></td>
-                        <td style="font-weight:bold; color:#1e3a8a;">${r.level}</td>
-                        <td style="text-align:center; font-weight:bold; color:#3b82f6;">${r.score}</td>
-                        <td style="font-size:14px; color:#4b5563;">${r.detail || '-'}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                container.appendChild(table);
+            const res = await fetch(`${API_URL}?action=getStudentsList&subjectId=${subId}`);
+            const students = await res.json();
+            stuSelect.innerHTML = '<option value="">-- เลือกรายชื่อนิสิต --</option>';
+            students.forEach(st => {
+                let opt = document.createElement("option");
+                opt.value = st.id;
+                opt.innerText = `${st.id} - ${st.name} [สถานะ: ${st.status}]`;
+                if(st.status === "✅ ประเมินแล้ว") opt.disabled = true;
+                stuSelect.appendChild(opt);
             });
-        } catch (err) { 
-            container.innerHTML = `<div class="error-box">⚠️ โหลดเกณฑ์การประเมินล้มเหลว<br><small style="color:#7f1d1d; font-weight:normal;">สาเหตุ: ${err.message}</small></div>`; 
+        } catch (e) {
+            stuSelect.innerHTML = '<option value="">❌ ดึงข้อมูลล้มเหลว</option>';
         }
     }
 
-    document.getElementById("evalForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
+    function renderCriteria(topics) {
+        const container = document.getElementById("criteriaContainer");
+        container.innerHTML = "";
+        topics.forEach((topic, index) => {
+            const qNum = index + 1;
+            let card = document.createElement("div");
+            card.className = "criteria-card";
+            
+            let html = `<div class="criteria-title">${qNum}. ${topic.title}</div>`;
+            html += `<div class="radio-group">`;
+            topic.options.forEach(opt => {
+                html += `
+                    <label class="radio-option">
+                        <input type="radio" name="q_${qNum}" value="${opt.score}">
+                        <div><strong>${opt.label} (${opt.score} คะแนน)</strong><br><span style="font-size:14px; color:#555;">${opt.desc}</span></div>
+                    </label>
+                `;
+            });
+            html += `</div>`;
+            card.innerHTML = html;
+            container.appendChild(card);
+        });
+    }
 
-        const studentId = document.getElementById("selectedStudentId").value;
-        const studentName = document.getElementById("selectedStudentName").value;
+    document.getElementById("submitBtn").addEventListener("click", async () => {
+        const subId = document.getElementById("subjectSelect").value;
+        const stuId = document.getElementById("studentSelect").value;
+        const assessor = document.getElementById("assessorName").value.trim();
+        const studentSelectText = document.getElementById("studentSelect");
+        const studentName = studentSelectText.options[studentSelectText.selectedIndex]?.text.split(" - ")[1]?.split(" [")[0] || "";
 
-        if (!studentId) {
-            Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกนิสิต!', text: 'กรุณาคลิกที่รายชื่อนิสิตในกล่องตัวเลือกก่อนครับ' });
+        if(!subId || !stuId || !assessor) {
+            Swal.fire("คำเตือน", "กรุณากรอกข้อมูลส่วนหัวข้อและผู้ประเมินให้ครบถ้วนครับ", "warning");
             return;
         }
-        
+
+        let answeredAll = true;
+        activeTopics.forEach((_, index) => {
+            if(!document.querySelector(`input[name="q_${index+1}"]:checked`)) answeredAll = false;
+        });
+
+        if(!answeredAll) {
+            Swal.fire("คำเตือน", "กรุณาตอบคำถามหัวข้อการประเมินให้ครบทุกข้อครับ", "warning");
+            return;
+        }
+
         Swal.fire({
-            title: `ยืนยันส่งผลประเมิน?\n${studentName}`,
-            icon: 'question', showCancelButton: true, confirmButtonText: 'ใช่, บันทึกเลย', cancelButtonText: 'ตรวจสอบอีกครั้ง'
+            title: 'ยืนยันการบันทึก?',
+            text: "ตรวจสอบคะแนนให้เรียบร้อยก่อนส่งฐานข้อมูล ไม่สามารถกลับมาแก้ไขเองได้",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#1e3a8a',
+            confirmButtonText: 'ยืนยันส่งข้อมูล'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังประมวลผลข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                Swal.fire({ title: 'กำลังบันทึกคะแนน...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                 
-                const payload = {
+                let payload = {
                     action: "submitEvaluation",
-                    teacherName: document.getElementById("teacherName").value,
-                    subjectCode: document.getElementById("subjectCode").value,
-                    studentId: studentId,
+                    studentId: stuId,
+                    subjectId: subId,
+                    assessorName: assessor,
                     studentName: studentName,
                     workTime: "", 
                     comment: document.getElementById("comment").value
@@ -263,25 +189,24 @@
 
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
-                    const selectedRadio = document.querySelector(`input[name="q_${qNum}"]:checked`);
+                    const selectedRadio = document.querySelector(`input[name=\"q_${qNum}\"]:checked`);
                     payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "0";
                 });
 
                 try {
                     const response = await fetch(API_URL, { 
-                        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) 
-                    });
+                        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) \r\n                    });
                     const resData = await response.json();
                     
-                    if (resData.result === "success") {
-                        await Swal.fire("สำเร็จ!", "บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว", "success");
+                    if (resData.result === \"success\") {
+                        await Swal.fire(\"สำเร็จ!\", \"บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว\", \"success\");
                         loadStudents(); 
-                        document.getElementById("comment").value = "";
-                        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+                        document.getElementById(\"comment\").value = \"\";
+                        document.querySelectorAll('input[type=\"radio\"]').forEach(r => r.checked = false);
                     } else { 
-                        Swal.fire("ล้มเหลว", resData.message || "เกิดข้อผิดพลาดจากระบบฐานข้อมูล", "error"); 
+                        Swal.fire(\"ล้มเหลว\", resData.message || \"เกิดข้อผิดพลาดจากระบบฐานข้อมูล\", \"error\"); 
                     }
-                } catch (error) { Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "error"); }
+                } catch (error) { Swal.fire(\"ผิดพลาด\", \"ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้\", \"error\"); }
             }
         });
     });
