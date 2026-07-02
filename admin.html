@@ -22,8 +22,11 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
         th { background-color: #f1f5f9; color: #475569; font-weight: bold; }
         tr:hover { background-color: #f8fafc; }
+        .btn-action-container { display: flex; gap: 6px; }
         .btn-edit { background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-edit:hover { background: #bae6fd; }
+        .btn-view { background: #ffedd5; color: #ea580c; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-view:hover { background: #fed7aa; }
     </style>
 </head>
 <body>
@@ -90,13 +93,44 @@
                     <td>${row.score1}, ${row.score2}, ${row.score3}, ${row.score4}, ${row.score5}, ${row.score6}</td>
                     <td><span style="font-weight:bold; color:#0284c7;">${row.totalScore}</span></td>
                     <td><span style="padding:4px 8px; background:#f0fdf4; color:#16a34a; font-weight:bold; border-radius:4px;">${row.grade}</span></td>
-                    <td><button class="btn-edit" onclick="editScore(${JSON.stringify(row)})">✏️ แก้ไข</button></td>
+                    <td>
+                        <div class="btn-action-container">
+                            <button class="btn-edit" onclick="editScore(${JSON.stringify(row)})">✏️ แก้ไข</button>
+                            <button class="btn-view" onclick="viewDetails(${JSON.stringify(row)})">📄 ดูประวัติ</button>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         } catch (e) {
             document.querySelector("#resultsTable tbody").innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ${e.toString()}</td></tr>`;
         }
+    }
+
+    function viewDetails(rowData) {
+        Swal.fire({
+            title: `📋 รายละเอียดผลการประเมิน`,
+            html: `
+                <div style="text-align:left; font-size:15px; line-height: 1.6;">
+                    <p><strong>นิสิต:</strong> ${rowData.studentId} - ${rowData.studentName}</p>
+                    <p><strong>วิชา:</strong> ${rowData.subjectId} - ${rowData.subjectName}</p>
+                    <p><strong>ผู้ประเมิน:</strong> ${rowData.assessor}</p>
+                    <hr>
+                    <p><strong>คะแนนแยกข้อ:</strong></p>
+                    <ul>
+                        <li>ความรู้: ${rowData.score1} คะแนน</li>
+                        <li>ทักษะคลินิก: ${rowData.score2} คะแนน</li>
+                        <li>การเรียนรู้ด้วยตนเอง: ${rowData.score3} คะแนน</li>
+                        <li>การสื่อสาร: ${rowData.score4} คะแนน</li>
+                        <li>ความรับผิดชอบ: ${rowData.score5} คะแนน</li>
+                        <li>เจตคติ/จริยธรรม: ${rowData.score6} คะแนน</li>
+                    </ul>
+                    <p><strong>คะแนนรวม:</strong> ${rowData.totalScore} คะแนน (${rowData.grade})</p>
+                    <p><strong>ข้อเสนอแนะเพิ่มเติม:</strong> ${rowData.comment || '-'}</p>
+                </div>
+            `,
+            confirmButtonText: 'ปิดหน้าต่าง'
+        });
     }
 
     function editScore(rowData) {
