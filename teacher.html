@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>แบบประเมินการปฏิบัติงานนิสิตแพทย์ - สำหรับอาจารย์</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary-color: #1e3a8a; --secondary-color: #3b82f6; --background-color: #f3f4f6; --card-background: #ffffff; --text-color: #1f2937; }
         body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
@@ -12,193 +13,188 @@
         h2, h3 { color: var(--primary-color); text-align: center; }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; }
-        select, input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 10px; }
-        .student-card { padding: 15px; border: 2px solid #e5e7eb; border-radius: 8px; background: #fff; cursor: pointer; text-align: center; transition: all 0.2s ease; }
-        .student-card:hover { border-color: var(--secondary-color); background-color: #eff6ff; }
-        .student-card.selected { border-color: #10b981; background-color: #ecfdf5; font-weight: bold; box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }
-        .student-card .id { font-size: 14px; color: #6b7280; margin-bottom: 4px; }
-        .student-card .status-badge { font-size: 12px; margin-top: 6px; display: inline-block; padding: 2px 8px; border-radius: 12px; background: #f3f4f6; }
-        .student-card.evaluated { opacity: 0.6; background: #f9fafb; }
-        .rubric-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #f9fafb; }
-        .rubric-title { font-size: 18px; font-weight: bold; color: var(--primary-color); margin-bottom: 12px; border-bottom: 2px solid var(--secondary-color); padding-bottom: 5px; }
-        .radio-group { display: flex; flex-direction: column; gap: 10px; }
-        .radio-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; background: #fff; cursor: pointer; }
-        .radio-option:hover { background-color: #eff6ff; }
-        .score-badge { font-weight: bold; color: var(--secondary-color); margin-left: auto; white-space: nowrap; }
-        .btn-submit { background-color: var(--primary-color); color: #fff; padding: 14px; border: none; border-radius: 6px; font-size: 18px; cursor: pointer; width: 100%; font-weight: bold; }
+        select, input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+        .rubric-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 25px; }
+        .rubric-table th, .rubric-table td { padding: 12px; border: 1px solid #cbd5e1; text-align: left; }
+        .rubric-table th { background-color: #f8fafc; }
+        .radio-cell { text-align: center; width: 60px; }
+        .btn-submit { background-color: var(--primary-color); color: white; padding: 14px 28px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; transition: background-color 0.2s; font-family: 'Sarabun', sans-serif; }
+        .btn-submit:hover { background-color: #1e40af; }
+        .competency-title { background: #e0f2fe; color: #0369a1; padding: 10px 15px; border-radius: 6px; font-weight: bold; margin-top: 30px; margin-bottom: 10px; font-size: 16px; border-left: 5px solid #0284c7; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>แบบประเมินการปฏิบัติงานของนิสิตแพทย์ ชั้นปีที่ 6</h2>
-    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+    <h2>📋 แบบประเมินผลการปฏิบัติงานนิสิตแพทย์ ชั้นคลินิก</h2>
+    <p style="text-align: center; color: #555;">กรุณาเลือกวิชาและรายชื่อนิสิตเพื่อดำเนินการให้คะแนนตามเกณฑ์รูบริคส์</p>
+    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
 
-    <form id="evaluationForm">
+    <form id="evalForm">
         <div class="form-group">
-            <label for="teacherName">ชื่อ-สกุล อาจารย์ผู้ประเมิน</label>
-            <input type="text" id="teacherName" required placeholder="กรุณากรอกชื่อ-นามสกุลของท่าน">
+            <label for="teacherName">👤 ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
+            <input type="text" id="teacherName" required placeholder="ตัวอย่าง: นพ.สมชาย ตั้งใจดี">
         </div>
 
         <div class="form-group">
-            <label for="subjectCode">รายวิชาเลือกเสรี</label>
+            <label for="subjectCode">📚 เลือกรายวิชาปฏิบัติงาน</label>
             <select id="subjectCode" required onchange="loadStudents()">
-                <option value="">-- เลือกรายวิชาเลือกเสรี --</option>
+                <option value="">-- กรุณาเลือกวิชา --</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>คลิกเลือกรายชื่อนิสิตแพทย์ที่ต้องการประเมิน</label>
-            <div id="studentContainer" class="student-grid">
-                <p style="color: #6b7280;">(กรุณาเลือกวิชาเลือกเสรีด้านบนก่อน)</p>
-            </div>
-            <input type="hidden" id="selectedStudentId" required>
-            <input type="hidden" id="selectedStudentName" required>
-        </div>
-
-        <div class="form-group">
-            <label for="workTime">เวลาฝึกปฏิบัติงาน</label>
-            <select id="workTime" required>
-                <option value="ครบ">ครบ</option>
-                <option value="ไม่ครบ">ไม่ครบ</option>
+            <label for="studentSelect">🎓 รายชื่อนิสิตแพทย์ (ในวิชานี้)</label>
+            <select id="studentSelect" required disabled>
+                <option value="">-- กรุณาเลือกนิสิต --</option>
             </select>
         </div>
 
-        <h3>หัวข้อการประเมิน</h3>
-        <div id="dynamicRubricsContainer">กำลังโหลดหัวข้อประเมิน...</div>
-
-        <div class="form-group" style="margin-top: 20px;">
-            <label for="comment">ความคิดเห็นเพิ่มเติม</label>
-            <textarea id="comment" rows="4" placeholder="ระบุจุดเด่นหรือจุดที่ควรพัฒนาเพิ่มเติม"></textarea>
+        <div class="form-group">
+            <label for="workTime">⏳ ระยะเวลา/ช่วงเวลาปฏิบัติงาน</label>
+            <input type="text" id="workTime" required placeholder="ตัวอย่าง: 15 มิ.ย. 2568 - 29 มิ.ย. 2568">
         </div>
 
-        <button type="submit" class="btn-submit">ส่งผลการประเมิน</button>
+        <div id="criteriaContainer">
+            <p style="text-align: center; color: #666; padding: 20px;">🔄 กำลังโหลดเกณฑ์ประเมินจากฐานข้อมูล...</p>
+        </div>
+
+        <div class="form-group" style="margin-top: 30px;">
+            <label for="comment">💬 ความคิดเห็นเพิ่มเติมและข้อเสนอแนะเพื่อพัฒนา</label>
+            <textarea id="comment" rows="4" placeholder="ระบุจุดเด่นหรือจุดที่ควรปรับปรุงเพิ่มเติมให้กับนิสิตแพทย์..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">💾 บันทึกและส่งผลการประเมินเข้าระบบ</button>
     </form>
 </div>
 
 <script>
-    // ⚠️ แก้ไขจุดนี้: วางลิงก์ Web App ที่ได้จากการ Deploy ใหม่ล่าสุด (ลิงก์ที่ลงท้ายด้วย /exec เท่านั้น)
+    // 🔗 ใส่ URL ของแอดมินตรงนี้ให้เรียบร้อยแล้วครับ
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
+
+    let allStudents = [];
     let activeTopics = [];
 
     window.addEventListener("DOMContentLoaded", () => {
         loadSubjects();
-        loadDynamicRubrics();
+        loadCriteria();
     });
 
     async function loadSubjects() {
-        const select = document.getElementById("subjectCode");
         try {
             const response = await fetch(`${API_URL}?action=getSubjects`);
-            const subjects = await response.json();
-            if(subjects.length > 0) {
-                select.innerHTML = '<option value="">-- เลือกรายวิชาเลือกเสรี --</option>';
-                subjects.forEach(sub => { select.innerHTML += `<option value="${sub.code}">${sub.code} - ${sub.name}</option>`; });
-            }
-        } catch (error) { }
+            const data = await response.json();
+            const select = document.getElementById("subjectCode");
+            data.forEach(sub => {
+                const opt = document.createElement("option");
+                opt.value = sub.code;
+                opt.innerText = `${sub.code} - ${sub.name}`;
+                select.appendChild(opt);
+            });
+        } catch (error) { alert("ไม่สามารถดึงข้อมูลรายวิชาได้ครับ"); }
     }
 
     async function loadStudents() {
-        const subjectCode = document.getElementById("subjectCode").value;
-        const container = document.getElementById("studentContainer");
-        document.getElementById("selectedStudentId").value = "";
-        document.getElementById("selectedStudentName").value = "";
-
-        if (!subjectCode) {
-            container.innerHTML = '<p style="color: #6b7280;">(กรุณาเลือกวิชาเลือกเสรีด้านบนก่อน)</p>';
+        const subCode = document.getElementById("subjectCode").value;
+        const studentSelect = document.getElementById("studentSelect");
+        studentSelect.innerHTML = '<option value="">-- กรุณาเลือกนิสิต --</option>';
+        
+        if (!subCode) {
+            studentSelect.disabled = true;
             return;
         }
-        container.innerHTML = '<p>กำลังโหลดรายชื่อนิสิต...</p>';
 
         try {
-            const response = await fetch(`${API_URL}?action=getStudentsBySubject&subjectCode=${subjectCode}`);
-            const students = await response.json();
-            if (students.length === 0) {
-                container.innerHTML = '<p style="color: red; font-weight: bold;">❌ ไม่พบนิสิตในวิชานี้</p>';
-                return;
+            if (allStudents.length === 0) {
+                const response = await fetch(`${API_URL}?action=getStudentsList`);
+                allStudents = await response.json();
             }
-            container.innerHTML = "";
-            students.forEach(std => {
-                const isEvaluated = std.status === "ประเมินแล้ว";
-                const card = document.createElement("div");
-                card.className = `student-card ${isEvaluated ? 'evaluated' : ''}`;
-                card.innerHTML = `
-                    <div class="id">${std.studentId}</div>
-                    <div class="name">${std.studentName}</div>
-                    <div class="status-badge" style="color: ${isEvaluated ? '#10b981' : '#6b7280'}">${std.status}</div>
-                `;
-                card.addEventListener("click", () => {
-                    document.querySelectorAll(".student-card").forEach(c => c.classList.remove("selected"));
-                    card.classList.add("selected");
-                    document.getElementById("selectedStudentId").value = std.studentId;
-                    document.getElementById("selectedStudentName").value = std.studentName;
+            
+            const filtered = allStudents.filter(s => String(s.subjectCode).trim() === String(subCode).trim());
+            
+            if (filtered.length === 0) {
+                const opt = document.createElement("option");
+                opt.innerText = "❌ ไม่พบนิสิตลงทะเบียนในวิชานี้";
+                studentSelect.appendChild(opt);
+                studentSelect.disabled = true;
+            } else {
+                filtered.forEach(s => {
+                    const opt = document.createElement("option");
+                    opt.value = s.studentId;
+                    opt.innerText = `${s.studentId} - ${s.studentName}`;
+                    studentSelect.appendChild(opt);
                 });
-                container.appendChild(card);
-            });
-        } catch (error) { container.innerHTML = '<p style="color: red;">เกิดข้อผิดพลาดในการดึงข้อมูล</p>'; }
+                studentSelect.disabled = false;
+            }
+        } catch (e) { alert("เกิดข้อผิดพลาดในการโหลดรายชื่อนิสิตครับ"); }
     }
 
-    async function loadDynamicRubrics() {
-        const container = document.getElementById("dynamicRubricsContainer");
+    async function loadCriteria() {
         try {
             const response = await fetch(`${API_URL}?action=getFormCriteria`);
-            const criteria = await response.json();
+            const data = await response.json();
             
-            activeTopics = [...new Set(criteria.map(item => item.topic))];
+            activeTopics = [...new Set(data.map(item => item.topic))].filter(Boolean);
+            const container = document.getElementById("criteriaContainer");
             container.innerHTML = "";
 
             activeTopics.forEach((topic, index) => {
                 const qNum = index + 1;
-                const subItems = criteria.filter(item => item.topic === topic);
-                const card = document.createElement("div");
-                card.className = "rubric-card";
+                const rows = data.filter(item => item.topic === topic);
                 
-                let html = `<div class="rubric-title">${topic}</div><div class="radio-group">`;
-                subItems.forEach(item => {
-                    const isNA = item.level === "N/A" || item.score === "" || item.score === null;
-                    const displayScore = isNA ? "ไม่คิดคะแนน" : `${item.score} คะแนน`;
-                    const scoreVal = isNA ? "NA" : item.score;
-                    const badgeColor = isNA ? "#9ca3af" : "var(--secondary-color)";
+                const titleDiv = document.createElement("div");
+                titleDiv.className = "competency-title";
+                titleDiv.innerText = topic;
+                container.appendChild(titleDiv);
 
-                    html += `
-                        <label class="radio-option">
-                            <input type="radio" name="q_${qNum}" value="${scoreVal}" required>
-                            <span><strong>${item.level}:</strong> ${item.detail}</span>
-                            <span class="score-badge" style="color: ${badgeColor}">(${displayScore})</span>
-                        </label>
+                const table = document.createElement("table");
+                table.className = "rubric-table";
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align:center;">เลือก</th>
+                            <th style="width: 100px;">ระดับ</th>
+                            <th style="width: 60px; text-align:center;">คะแนน</th>
+                            <th>คำอธิบายเกณฑ์และขอบเขตพฤติกรรม</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                
+                const tbody = table.querySelector("tbody");
+                rows.forEach(r => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td class="radio-cell"><input type="radio" name="q_${qNum}" value="${r.score}" required style="transform: scale(1.3); cursor:pointer;"></td>
+                        <td style="font-weight:bold; color:#1e3a8a;">${r.level}</td>
+                        <td style="text-align:center; font-weight:bold; color:#3b82f6;">${r.score}</td>
+                        <td style="font-size:14px; color:#4b5563;">${r.detail || '-'}</td>
                     `;
+                    tbody.appendChild(tr);
                 });
-                html += `</div>`;
-                card.innerHTML = html;
-                container.appendChild(card);
+                container.appendChild(table);
             });
-        } catch (error) {
-            container.innerHTML = "<p style='color:red;'>เกิดปัญหาการเชื่อมต่อระบบ</p>";
-        }
+        } catch (err) { document.getElementById("criteriaContainer").innerHTML = `<p style="color:red; text-align:center;">โหลดเกณฑ์รูบริคส์ล้มเหลว: ${err}</p>`; }
     }
 
-    document.getElementById("evaluationForm").addEventListener("submit", async function(e) {
+    document.getElementById("evalForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const studentId = document.getElementById("selectedStudentId").value;
-        const studentName = document.getElementById("selectedStudentName").value;
-
-        if (!studentId) {
-            Swal.fire("แจ้งเตือน", "กรุณาคลิกเลือกนิสิตแพทย์ที่ต้องการประเมินก่อนครับ", "warning");
-            return;
-        }
-
+        
         Swal.fire({
-            title: 'ยืนยันการบันทึก?',
-            text: `ต้องการส่งผลประเมินของ ${studentName}`,
-            icon: 'warning',
+            title: 'ยืนยันการบันทึกข้อมูลหรือไม่?',
+            text: "เมื่อกดตกลง คะแนนจะส่งตรงเข้าคลังฐานข้อมูลทันที",
+            icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#1e3a8a',
-            confirmButtonText: 'ยืนยัน',
-            cancelButtonText: 'ยกเลิก'
+            confirmButtonText: 'ใช่, บันทึกเลย',
+            cancelButtonText: 'ตรวจสอบอีกครั้ง'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                Swal.fire({ title: 'กำลังประมวลผลข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                
+                const studentSelect = document.getElementById("studentSelect");
+                const studentId = studentSelect.value;
+                const studentName = studentSelect.options[studentSelect.selectedIndex].text.split(" - ")[1];
 
                 const payload = {
                     action: "submitEvaluation",
@@ -213,19 +209,26 @@
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
                     const selectedRadio = document.querySelector(`input[name="q_${qNum}"]:checked`);
-                    payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "NA";
+                    payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "0";
                 });
 
                 try {
-                    const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+                    const response = await fetch(API_URL, { 
+                        method: "POST", 
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify(payload) 
+                    });
                     const resData = await response.json();
+                    
                     if (resData.result === "success") {
-                        Swal.fire("สำเร็จ!", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
-                        loadStudents();
+                        await Swal.fire("สำเร็จ!", "บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว", "success");
                         document.getElementById("comment").value = "";
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-                    } else { Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาด", "error"); }
-                } catch (error) { Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อระบบได้", "error"); }
+                        document.getElementById("studentSelect").value = "";
+                    } else { 
+                        Swal.fire("ล้มเหลว", "เกิดข้อผิดพลาดจากระบบฐานข้อมูล", "error"); 
+                    }
+                } catch (error) { Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "error"); }
             }
         });
     });
