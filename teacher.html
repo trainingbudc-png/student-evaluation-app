@@ -7,28 +7,154 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-color: #1e3a8a; --secondary-color: #3b82f6; --background-color: #f3f4f6; --card-background: #ffffff; --text-color: #1f2937; }
-        body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: var(--card-background); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        h2, h3 { color: var(--primary-color); text-align: center; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; }
-        select, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 16px; }
-        .criteria-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-        .criteria-title { font-weight: bold; color: var(--primary-color); font-size: 18px; margin-bottom: 10px; }
-        .radio-group { display: flex; flex-direction: column; gap: 10px; }
-        .radio-option { display: flex; align-items: flex-start; gap: 10px; background: white; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; }
-        .radio-option:hover { background: #f0fdf4; border-color: #10b981; }
-        .radio-option input { margin-top: 4px; }
-        .btn-submit { background-color: var(--primary-color); color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: background 0.2s; margin-top: 20px; }
-        .btn-submit:hover { background-color: #1e40af; }
+        :root {
+            --primary-color: #1e3a8a;      /* น้ำเงินเข้ม */
+            --secondary-color: #3b82f6;    /* ฟ้า */
+            --background-color: #f3f4f6;   /* เทาอ่อน */
+            --card-background: #ffffff;    /* ขาว */
+            --text-color: #1f2937;         /* เทาเข้ม */
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: normal;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 16px;
+        }
+
+        /* การตกแต่งสไตล์ข้อคำถามการประเมิน */
+        .criteria-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .criteria-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover {
+            background: #f0fdf4; /* เขียวอ่อนตอนชี้ */
+            border-color: #10b981;
+        }
+
+        .radio-option input {
+            margin-top: 4px;
+        }
+
+        .radio-option-text strong {
+            display: block;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .radio-option-text span {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            background-color: #1e40af;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>แบบประเมินผลการปฏิบัติงานนิสิตแพทย์</h2>
-    <h3 style="font-weight: normal; margin-top: -10px;">ชั้นคลินิก (สำหรับอาจารย์ผู้ประเมิน)</h3>
+    <h3>ชั้นคลินิก (สำหรับอาจารย์ผู้ประเมิน)</h3>
     <hr style="border: 0; height: 1px; background: #e5e7eb; margin: 25px 0;">
 
     <form id="evalForm">
@@ -48,15 +174,17 @@
 
         <div class="form-group">
             <label for="assessorName">3. ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
-            <input type="text" id="assessorName" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:16px;" placeholder="ระบุชื่ออาจารย์">
+            <input type="text" id="assessorName" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" placeholder="ระบุชื่ออาจารย์">
         </div>
 
         <h3 style="text-align: left; margin-top: 40px; margin-bottom: 20px; color: var(--primary-color);">📝 ส่วนที่ 2: เกณฑ์การประเมินผล</h3>
-        <div id="criteriaContainer"></div>
+        <div id="criteriaContainer">
+            <p style="text-align: center; color: #888;">⏳ กำลังโหลดข้อคำถามประเมิน...</p>
+        </div>
 
         <div class="form-group" style="margin-top: 30px;">
             <label for="comment">ความคิดเห็นเพิ่มเติม / ข้อเสนอแนะ เพื่อการพัฒนา</label>
-            <textarea id="comment" rows="4" placeholder="กรอกข้อเสนอแนะเพิ่มเติม..."></textarea>
+            <textarea id="comment" rows="4" placeholder="กรอกข้อเสนอแนะเพิ่มเติมเพื่อให้นิสิตนำไปปรับปรุงตัว..."></textarea>
         </div>
 
         <button type="button" id="submitBtn" class="btn-submit">💾 บันทึกและส่งผลการประเมิน</button>
@@ -64,17 +192,25 @@
 </div>
 
 <script>
-    // ฝัน URL ของ Google Apps Script เรียบร้อยแล้ว
+    // 🔗 เปลี่ยน URL ให้เป็นของคุณเรียบร้อยแล้ว ป้องกันข้อมูลไม่โหลด
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
-    let activeTopics = [];
+    
+    let activeTopics = []; // เก็บโครงสร้างคำถามที่ดึงมาจากชีต
 
+    // หน้าเว็บเปิดมาให้โหลดรายวิชาและหัวข้อประเมินทันที
     document.addEventListener("DOMContentLoaded", () => {
         loadInitialData();
     });
 
     async function loadInitialData() {
-        Swal.fire({ title: 'กำลังโหลดข้อมูลระบบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        Swal.fire({
+            title: 'กำลังโหลดข้อมูลระบบ...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
         try {
+            // 1. โหลดรายวิชา
             const resSub = await fetch(`${API_URL}?action=getSubjects`);
             const subjects = await resSub.json();
             const subSelect = document.getElementById("subjectSelect");
@@ -86,43 +222,57 @@
                 subSelect.appendChild(opt);
             });
 
+            // 2. โหลดหัวข้อฟอร์มประเมินจากชีต Form
             const resForm = await fetch(`${API_URL}?action=getFormCriteria`);
             activeTopics = await resForm.json();
             renderCriteria(activeTopics);
 
             Swal.close();
         } catch (e) {
-            Swal.fire("ผิดพลาด", "ไม่สามารถโหลดโครงสร้างข้อมูลจากคลาวด์ได้", "error");
+            console.error(e);
+            Swal.fire("ผิดพลาด", "ไม่สามารถโหลดโครงสร้างข้อมูลจากคลาวด์ได้ กรุณารีเฟรชหน้าเว็บ", "error");
         }
     }
 
+    // ฟังก์ชันดึงรายชื่อนิสิตตามวิชาที่เลือก
     async function loadStudents() {
         const subId = document.getElementById("subjectSelect").value;
         const stuSelect = document.getElementById("studentSelect");
+
         if (!subId) {
             stuSelect.innerHTML = '<option value="">-- กรุณาเลือกรายวิชาก่อน --</option>';
             return;
         }
-        stuSelect.innerHTML = '<option value="">-- กำลังดึงรายชื่อนิสิต... --</option>';
+
+        stuSelect.innerHTML = '<option value="">-- กำลังดึงรายชื่อนิสิตในกลุ่ม... --</option>';
+
         try {
             const res = await fetch(`${API_URL}?action=getStudentsList&subjectId=${subId}`);
             const students = await res.json();
+            
             stuSelect.innerHTML = '<option value="">-- เลือกรายชื่อนิสิต --</option>';
             students.forEach(st => {
                 let opt = document.createElement("option");
                 opt.value = st.id;
                 opt.innerText = `${st.id} - ${st.name} [สถานะ: ${st.status}]`;
-                if(st.status === "✅ ประเมินแล้ว") opt.disabled = true;
+                
+                // 🛑 ฟังก์ชันบล็อกนิสิตที่คุณทำไว้: ถ้านิสิตประเมินแล้ว จะคลิกเลือกไม่ได้!
+                if(st.status === "✅ ประเมินแล้ว") {
+                    opt.disabled = true;
+                    opt.style.color = "#9ca3af";
+                }
                 stuSelect.appendChild(opt);
             });
         } catch (e) {
-            stuSelect.innerHTML = '<option value="">❌ ดึงข้อมูลล้มเหลว</option>';
+            stuSelect.innerHTML = '<option value="">❌ ดึงข้อมูลรายชื่อนิสิตล้มเหลว</option>';
         }
     }
 
+    // ฟังก์ชันวาดโครงสร้างข้อคำถามแบบวิทยุ (Radio)
     function renderCriteria(topics) {
         const container = document.getElementById("criteriaContainer");
         container.innerHTML = "";
+
         topics.forEach((topic, index) => {
             const qNum = index + 1;
             let card = document.createElement("div");
@@ -130,53 +280,68 @@
             
             let html = `<div class="criteria-title">${qNum}. ${topic.title}</div>`;
             html += `<div class="radio-group">`;
+            
             topic.options.forEach(opt => {
                 html += `
                     <label class="radio-option">
                         <input type="radio" name="q_${qNum}" value="${opt.score}">
-                        <div><strong>${opt.label} (${opt.score} คะแนน)</strong><br><span style="font-size:14px; color:#555;">${opt.desc}</span></div>
+                        <div class="radio-option-text">
+                            <strong>${opt.label} (${opt.score} คะแนน)</strong>
+                            <span>${opt.desc}</span>
+                        </div>
                     </label>
                 `;
             });
+            
             html += `</div>`;
             card.innerHTML = html;
             container.appendChild(card);
         });
     }
 
+    // ปุ่มบันทึกข้อมูล
     document.getElementById("submitBtn").addEventListener("click", async () => {
         const subId = document.getElementById("subjectSelect").value;
         const stuId = document.getElementById("studentSelect").value;
         const assessor = document.getElementById("assessorName").value.trim();
+        
         const studentSelectText = document.getElementById("studentSelect");
         const studentName = studentSelectText.options[studentSelectText.selectedIndex]?.text.split(" - ")[1]?.split(" [")[0] || "";
 
         if(!subId || !stuId || !assessor) {
-            Swal.fire("คำเตือน", "กรุณากรอกข้อมูลส่วนหัวข้อและผู้ประเมินให้ครบถ้วนครับ", "warning");
+            Swal.fire("คำเตือน", "กรุณากรอกข้อมูลรายวิชา นิสิต และชื่ออาจารย์ผู้ประเมินให้ครบถ้วนก่อนครับ", "warning");
             return;
         }
 
+        // เช็กว่าตอบครบทุกข้อไหม
         let answeredAll = true;
         activeTopics.forEach((_, index) => {
-            if(!document.querySelector(`input[name="q_${index+1}"]:checked`)) answeredAll = false;
+            if(!document.querySelector(`input[name="q_${index+1}"]:checked`)) {
+                answeredAll = false;
+            }
         });
 
         if(!answeredAll) {
-            Swal.fire("คำเตือน", "กรุณาตอบคำถามหัวข้อการประเมินให้ครบทุกข้อครับ", "warning");
+            Swal.fire("คำเตือน", "กรุณาติ๊กคะแนนหัวข้อการประเมินให้ครบทุกข้อก่อนส่งครับ", "warning");
             return;
         }
 
         Swal.fire({
             title: 'ยืนยันการบันทึก?',
-            text: "ตรวจสอบคะแนนให้เรียบร้อยก่อนส่งฐานข้อมูล ไม่สามารถกลับมาแก้ไขเองได้",
+            text: `คุณกำลังจะส่งผลการประเมินของ ${studentName} เข้าสู่คลังข้อมูลกลาง`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#1e3a8a',
             confirmButtonText: 'ยืนยันส่งข้อมูล'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังบันทึกคะแนน...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                Swal.fire({
+                    title: 'กำลังบันทึกคะแนน...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
                 
+                // ดึงคะแนนแต่ละข้อใส่ Object
                 let payload = {
                     action: "submitEvaluation",
                     studentId: stuId,
@@ -189,24 +354,29 @@
 
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
-                    const selectedRadio = document.querySelector(`input[name=\"q_${qNum}\"]:checked`);
+                    const selectedRadio = document.querySelector(`input[name="q_${qNum}"]:checked`);
                     payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "0";
                 });
 
                 try {
-                    const response = await fetch(API_URL, { 
-                        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) \r\n                    });
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify(payload)
+                    });
                     const resData = await response.json();
                     
-                    if (resData.result === \"success\") {
-                        await Swal.fire(\"สำเร็จ!\", \"บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว\", \"success\");
-                        loadStudents(); 
-                        document.getElementById(\"comment\").value = \"\";
-                        document.querySelectorAll('input[type=\"radio\"]').forEach(r => r.checked = false);
-                    } else { 
-                        Swal.fire(\"ล้มเหลว\", resData.message || \"เกิดข้อผิดพลาดจากระบบฐานข้อมูล\", \"error\"); 
+                    if (resData.result === "success") {
+                        await Swal.fire("สำเร็จ!", "บันทึกผลการประเมินนิสิตแพทย์เรียบร้อยแล้ว", "success");
+                        loadStudents(); // รีโหลดรายชื่อเพื่อล็อกคนเดิม
+                        document.getElementById("comment").value = "";
+                        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+                    } else {
+                        Swal.fire("ล้มเหลว", resData.message || "เกิดข้อผิดพลาดจากฝั่ง Sheets", "error");
                     }
-                } catch (error) { Swal.fire(\"ผิดพลาด\", \"ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้\", \"error\"); }
+                } catch (error) {
+                    Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อระบบฐานข้อมูลคลาวด์ได้", "error");
+                }
             }
         });
     });
