@@ -88,7 +88,7 @@
 </div>
 
 <script>
-    // 🔗 URL ปัจจุบัน
+    // 🔗 URL ปัจจุบันของคุณ
     const API_URL = "https://script.google.com/macros/s/AKfycby-NJ261ieZ5r37krHBdcK4dbJmxD0ZYhapsrgmBKtZorzjVPGAi643QrBWc72GHVEY/exec";
 
     let allStudents = [];
@@ -101,7 +101,8 @@
 
     async function loadSubjects() {
         try {
-            const response = await fetch(`${API_URL}?action=getSubjects`);
+            // เพิ่มการกัน Cache
+            const response = await fetch(`${API_URL}?action=getSubjects&t=${new Date().getTime()}`);
             const data = await response.json();
             const select = document.getElementById("subjectCode");
             data.forEach(sub => {
@@ -128,8 +129,8 @@
         container.innerHTML = `<div style="color: #0284c7; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">⏳ กำลังโหลดรายชื่อนิสิต...</div>`;
 
         try {
-            // บังคับดึงข้อมูลใหม่เสมอเพื่อให้สถานะอัปเดตตลอดเวลา
-            const response = await fetch(`${API_URL}?action=getStudentsList`);
+            // บังคับดึงข้อมูลใหม่เสมอเพื่อให้สถานะอัปเดตตลอดเวลา (กันเบราว์เซอร์จำค่าเก่า)
+            const response = await fetch(`${API_URL}?action=getStudentsList&t=${new Date().getTime()}`);
             allStudents = await response.json();
             
             const filtered = allStudents.filter(s => String(s.subjectCode).trim() === String(subCode).trim());
@@ -178,7 +179,8 @@
 
     async function loadCriteria() {
         try {
-            const response = await fetch(`${API_URL}?action=getFormCriteria`);
+            // เพิ่มการกัน Cache
+            const response = await fetch(`${API_URL}?action=getFormCriteria&t=${new Date().getTime()}`);
             const data = await response.json();
             
             activeTopics = [...new Set(data.map(item => item.topic))].filter(Boolean);
@@ -277,7 +279,7 @@
                     
                     if (resData.result === "success") {
                         await Swal.fire("สำเร็จ!", "บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว", "success");
-                        // โหลดรายชื่อใหม่เพื่อให้นิสิตคนที่เพิ่งประเมินไปกลายเป็นสีเทา
+                        // โหลดรายชื่อใหม่เพื่อให้นิสิตคนที่เพิ่งประเมินไปกลายเป็นสีเทาทันที
                         loadStudents(); 
                         
                         document.getElementById("comment").value = "";
