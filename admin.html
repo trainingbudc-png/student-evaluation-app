@@ -230,12 +230,14 @@
         document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุชื่ออาจารย์'}`;
         
         const s = item.scores || ["-","-","-","-","-","-"];
-        document.getElementById("score_v1").innerText = `${s[0]} คะแนน`;
-        document.getElementById("score_v2").innerText = `${s[1]} คะแนน`;
-        document.getElementById("score_v3").innerText = `${s[2]} คะแนน`;
-        document.getElementById("score_v4").innerText = `${s[3]} คะแนน`;
-        document.getElementById("score_v5").innerText = `${s[4]} คะแนน`;
-        document.getElementById("score_v6").innerText = `${s[5]} คะแนน`;
+        
+        // ตรวจสอบว่ามีข้อมูลคะแนนถูกส่งมาจากหลังบ้านแบบแยกฟิลด์หรือแบบอาร์เรย์ (รองรับทั้งสองแบบ)
+        document.getElementById("score_v1").innerText = `${item.score1 !== undefined ? item.score1 : s[0]} คะแนน`;
+        document.getElementById("score_v2").innerText = `${item.score2 !== undefined ? item.score2 : s[1]} คะแนน`;
+        document.getElementById("score_v3").innerText = `${item.score3 !== undefined ? item.score3 : s[2]} คะแนน`;
+        document.getElementById("score_v4").innerText = `${item.score4 !== undefined ? item.score4 : s[3]} คะแนน`;
+        document.getElementById("score_v5").innerText = `${item.score5 !== undefined ? item.score5 : s[4]} คะแนน`;
+        document.getElementById("score_v6").innerText = `${item.score6 !== undefined ? item.score6 : s[5]} คะแนน`;
         
         const total = Number(item.totalScore) || 0;
         let grade = "ผ่านเกณฑ์";
@@ -331,27 +333,35 @@
         if (!currentSelectedEval) return;
         const s = currentSelectedEval.scores || [0,0,0,0,0,0];
         
+        // ดึงคะแนนปัจจุบันมารอในช่อง (รองรับโครงสร้างข้อมูลที่ส่งมาจากหลังบ้าน)
+        const v1 = currentSelectedEval.score1 !== undefined ? currentSelectedEval.score1 : s[0];
+        const v2 = currentSelectedEval.score2 !== undefined ? currentSelectedEval.score2 : s[1];
+        const v3 = currentSelectedEval.score3 !== undefined ? currentSelectedEval.score3 : s[2];
+        const v4 = currentSelectedEval.score4 !== undefined ? currentSelectedEval.score4 : s[3];
+        const v5 = currentSelectedEval.score5 !== undefined ? currentSelectedEval.score5 : s[4];
+        const v6 = currentSelectedEval.score6 !== undefined ? currentSelectedEval.score6 : s[5];
+        
         Swal.fire({
             title: `✏️ แก้ไขคะแนน\n${currentSelectedEval.studentName}`,
             html: `
                 <div style="text-align:left; font-family:'Sarabun',sans-serif; font-size:14px;">
                     <label style="font-weight:bold; display:block; margin:8px 0 4px;">1. ความรู้ (เต็ม 20)</label>
-                    <input type="number" id="md_s1" class="swal2-input" value="${s[0]}" style="margin:0; width:100%;">
+                    <input type="number" id="md_s1" class="swal2-input" value="${v1}" style="margin:0; width:100%;">
                     
                     <label style="font-weight:bold; display:block; margin:8px 0 4px;">2. ทักษะคลินิก (เต็ม 20)</label>
-                    <input type="number" id="md_s2" class="swal2-input" value="${s[1]}" style="margin:0; width:100%;">
+                    <input type="number" id="md_s2" class="swal2-input" value="${v2}" style="margin:0; width:100%;">
                     
                     <label style="font-weight:bold; display:block; margin:8px 0 4px;">3. การเรียนรู้ด้วยตนเอง (เต็ม 15)</label>
-                    <input type="number" id="md_s3" class="swal2-input" value="${s[2]}" style="margin:0; width:100%;">
+                    <input type="number" id="md_s3" class="swal2-input" value="${v3}" style="margin:0; width:100%;">
                     
                     <label style="font-weight:bold; display:block; margin:8px 0 4px;">4. การสื่อสาร (เต็ม 15)</label>
-                    <input type="number" id="md_s4" class="swal2-input" value="${s[3]}" style="margin:0; width:100%;">
+                    <input type="number" id="md_s4" class="swal2-input" value="${v4}" style="margin:0; width:100%;">
                     
                     <label style="font-weight:bold; display:block; margin:8px 0 4px;">5. ความรับผิดชอบ (เต็ม 15)</label>
-                    <input type="number" id="md_s5" class="swal2-input" value="${s[4]}" style="margin:0; width:100%;">
+                    <input type="number" id="md_s5" class="swal2-input" value="${v5}" style="margin:0; width:100%;">
                     
                     <label style="font-weight:bold; display:block; margin:8px 0 4px;">6. เจตคติและจริยธรรม (เต็ม 15)</label>
-                    <input type="number" id="md_s6" class="swal2-input" value="${s[5]}" style="margin:0; width:100%;">
+                    <input type="number" id="md_s6" class="swal2-input" value="${v6}" style="margin:0; width:100%;">
                     
                     <label style="font-weight:bold; display:block; margin:12px 0 4px;">ความคิดเห็นเพิ่มเติม</label>
                     <textarea id="md_comment" class="swal2-textarea" style="margin:0; width:100%; height:80px;">${currentSelectedEval.comment || ''}</textarea>
@@ -362,7 +372,9 @@
             cancelButtonText: 'ยกเลิก',
             preConfirm: () => {
                 return {
-                    rowId: currentSelectedEval.rowId,
+                    rowId: currentSelectedEval.rowId, // ส่งเผื่อไว้
+                    studentId: currentSelectedEval.studentId, // ส่งให้ระบบหลังบ้านใช้ค้นหา
+                    subjectCode: currentSelectedEval.subjectCode, // ส่งให้ระบบหลังบ้านใช้ค้นหา
                     score1: document.getElementById("md_s1").value,
                     score2: document.getElementById("md_s2").value,
                     score3: document.getElementById("md_s3").value,
@@ -376,11 +388,23 @@
             if (result.isConfirmed) {
                 Swal.fire({ title: 'กำลังส่งข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                 try {
-                    const res = await fetch(API_URL, {
-                        method: "POST",
-                        body: JSON.stringify({ action: "updateStudentEvaluation", ...result.value })
+                    // 🔥 เปลี่ยนจาก POST เป็น GET แล้วต่อค่าผ่าน URL เพื่อปลดล็อกระบบความปลอดภัยของ Google
+                    const queryParams = new URLSearchParams({
+                        action: "updateStudentEvaluation",
+                        studentId: result.value.studentId,
+                        subjectCode: result.value.subjectCode,
+                        score1: result.value.score1,
+                        score2: result.value.score2,
+                        score3: result.value.score3,
+                        score4: result.value.score4,
+                        score5: result.value.score5,
+                        score6: result.value.score6,
+                        comment: result.value.comment
                     });
+
+                    const res = await fetch(`${API_URL}?${queryParams.toString()}`);
                     const data = await res.json();
+                    
                     if (data.result === "success") {
                         await Swal.fire("สำเร็จ!", "แก้ไขคะแนนดิสิตเรียบร้อยแล้ว", "success");
                         location.reload();
