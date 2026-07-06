@@ -4,48 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบตรวจสอบผลการประเมิน - สำหรับนิสิตแพทย์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 550px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #10b981; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
-        .form-group { margin-bottom: 20px; }
-        label { font-weight: bold; display: block; margin-bottom: 8px; }
-        select, input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; background: #10b981; color: white; padding: 14px; border: none; border-radius: 4px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #059669; }
-        .result-box { margin-top: 30px; padding: 20px; border-radius: 6px; display: none; }
-        .status-evaluated { background-color: #e6fffa; border: 1px solid #319795; color: #234e52; }
-        .status-not-evaluated { background-color: #fffaf0; border: 1px solid #dd6b20; color: #742a2a; }
-        .score-zone { font-size: 32px; text-align: center; margin: 15px 0; font-weight: bold; color: #2b6cb0; }
-        .grade-zone { text-align: center; font-size: 18px; font-weight: bold; }
+        /* สไตล์ทั้งหมดรวมอยู่ในนี้ ไม่ต้องใช้ไฟล์แยก */
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-color: #f8fafc; /* สีพื้นหลังเทาอมฟ้าสว่างๆ */
+            color: #334155; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { 
+            width: 100%;
+            max-width: 500px; 
+            background: #ffffff; 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03); /* เงาฟุ้งบางๆ ดูแพง */
+            border: 1px solid #f1f5f9;
+        }
+        h2 { 
+            text-align: center; 
+            color: #0f172a; 
+            margin-top: 0;
+            margin-bottom: 8px; 
+            font-weight: 600;
+        }
+        .subtitle { 
+            text-align: center; 
+            color: #64748b; 
+            margin-bottom: 30px; 
+            font-size: 14px; 
+            font-weight: 300;
+        }
+        .form-group { 
+            margin-bottom: 24px; 
+        }
+        label { 
+            font-weight: 500; 
+            display: block; 
+            margin-bottom: 8px; 
+            color: #475569;
+            font-size: 14px;
+        }
+        select, input[type="text"] { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            font-family: 'Prompt', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            transition: all 0.3s ease;
+        }
+        /* เอฟเฟกต์ตอนคลิกช่องกรอกข้อมูล */
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        button { 
+            width: 100%; 
+            background: #3b82f6; /* ปุ่มสีฟ้าสไตล์ Modern */
+            color: white; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            font-weight: 500; 
+            font-family: 'Prompt', sans-serif;
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        button:hover { 
+            background: #2563eb; 
+            transform: translateY(-2px); /* ลอยขึ้นนิดๆ ตอนเอาเมาส์ชี้ */
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .result-box { 
+            margin-top: 30px; 
+            padding: 24px; 
+            border-radius: 12px; 
+            display: none; 
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* สไตล์กล่องแจ้งผลประเมิน */
+        .status-evaluated { 
+            background-color: #ecfdf5; 
+            border: 1px solid #a7f3d0; 
+            color: #065f46; 
+        }
+        .status-not-evaluated { 
+            background-color: #fff7ed; 
+            border: 1px solid #fed7aa; 
+            color: #9a3412; 
+        }
+        #statusTitle {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        .score-zone { 
+            margin-top: 15px;
+        }
+        #totalScoreText {
+            font-size: 42px; 
+            font-weight: 600; 
+            color: #059669; 
+            line-height: 1;
+        }
+        .grade-zone { 
+            margin-top: 10px; 
+            font-size: 16px; 
+            font-weight: 500; 
+            display: inline-block;
+            background: #ffffff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🩺 คลังข้อมูลผลการประเมินนิสิตแพทย์</h2>
+    <h2>🩺 คลังข้อมูลผลประเมิน</h2>
     <p class="subtitle">ระบบสำหรับนิสิตสืบค้นสถานะการส่งผลรูบริคส์รายวิชาชั้นคลินิก</p>
     
     <div class="form-group">
-        <label for="studentId">🆔 รหัสนิสิตแพทย์ (8 หลัก)</label>
-        <input type="text" id="studentId" placeholder="ตัวอย่าง: 64460084" maxlength="8">
+        <label for="studentId">รหัสนิสิตแพทย์ (8 หลัก)</label>
+        <input type="text" id="studentId" placeholder="เช่น: 64460084" maxlength="8">
     </div>
 
     <div class="form-group">
-        <label for="subjectCode">📚 เลือกรายวิชาที่ต้องการสืบค้น</label>
+        <label for="subjectCode">เลือกรายวิชาที่ต้องการสืบค้น</label>
         <select id="subjectCode">
             <option value="">-- กรุณาเลือกรายวิชา --</option>
         </select>
     </div>
 
-    <button onclick="checkEvaluationStatus()">🔍 ตรวจสอบคะแนนประเมิน</button>
+    <button onclick="checkEvaluationStatus()">ตรวจสอบคะแนนประเมิน</button>
 
     <div id="resultBox" class="result-box">
-        <h4 id="statusTitle" style="margin-top:0; margin-bottom:10px;">-</h4>
+        <h4 id="statusTitle">-</h4>
         <div id="scoreZone" class="score-zone" style="display:none;">
-            <span id="totalScoreText">0</span> <span style="font-size:16px;">คะแนนเต็ม 100</span>
-            <div id="gradeText" class="grade-zone" style="margin-top: 10px; font-size: 20px;">-</div>
+            <div id="totalScoreText">0</div> 
+            <div style="font-size:14px; color:#64748b; margin-top: 4px;">คะแนนเต็ม 100</div>
+            <div class="grade-zone">เกรดที่ได้: <span id="gradeText" style="color:#059669; font-weight: 600;">-</span></div>
         </div>
     </div>
 </div>
@@ -85,7 +208,12 @@
         }
 
         resultBox.style.display = 'block';
-        resultBox.className = 'result-box';
+        // ล้างคลาสเก่าออกก่อน
+        resultBox.classList.remove('status-evaluated', 'status-not-evaluated');
+        resultBox.style.backgroundColor = '#f8fafc';
+        resultBox.style.borderColor = '#e2e8f0';
+        resultBox.style.color = '#475569';
+        
         statusTitle.innerText = '⏳ กำลังค้นหาข้อมูลการประเมิน...';
         scoreZone.style.display = 'none';
 
@@ -93,20 +221,29 @@
             const response = await fetch(`${API_URL}?action=checkStatus&studentId=${studentId}&subjectCode=${subjectCode}`);
             const data = await response.json();
 
+            // ลบการตั้งค่าสีชั่วคราวทิ้ง เพื่อใช้ CSS Class
+            resultBox.style.backgroundColor = '';
+            resultBox.style.borderColor = '';
+            resultBox.style.color = '';
+
             if (data.status === "ได้รับการประเมินแล้ว") {
                 resultBox.classList.add('status-evaluated');
-                statusTitle.innerText = '✅ อาจารย์ได้บันทึกผลการประเมินให้คุณแล้ว';
+                statusTitle.innerText = '✅ อาจารย์บันทึกผลการประเมินแล้ว';
                 document.getElementById('totalScoreText').innerText = data.totalScore;
                 document.getElementById('gradeText').innerText = data.grade;
                 scoreZone.style.display = 'block';
             } else {
                 resultBox.classList.add('status-not-evaluated');
-                statusTitle.innerText = '⚠️ ยังไม่พบผลการประเมินในระบบคลังข้อมูล';
+                statusTitle.innerText = '⚠️ ยังไม่พบผลการประเมินในระบบ';
                 scoreZone.style.display = 'none';
             }
         } catch (error) {
-            resultBox.style.display = 'block';
-            statusTitle.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อกรุณาลองใหม่อีกครั้ง';
+            resultBox.style.backgroundColor = '';
+            resultBox.style.borderColor = '';
+            resultBox.style.color = '';
+            
+            resultBox.classList.add('status-not-evaluated');
+            statusTitle.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่';
             scoreZone.style.display = 'none';
         }
     }
