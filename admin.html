@@ -13,13 +13,11 @@
         }
     </script>
     <style>
-        /* CSS เล็กน้อยสำหรับควบคุมสถานะ Active ให้ทำงานเข้ากับโค้ด JS เดิมของคุณ */
         .topic-item.active { border-color: #6366f1; background-color: #eef2ff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .topic-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #6366f1; border-radius: 4px 0 0 4px; }
         .tab-btn { color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; }
         .tab-btn:hover { color: #4f46e5; }
         .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; font-weight: 600; }
-        /* ซ่อน Scrollbar ให้ดูคลีนๆ */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -46,7 +44,6 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- 🏠 ปุ่มกลับหน้าเมนูหลัก -->
     <div class="mb-6">
         <a href="menu.html" class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-indigo-600 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm border border-slate-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -54,7 +51,6 @@
         </a>
     </div>
 
-    
     <div class="flex gap-8 border-b border-slate-200 mb-8">
         <button class="tab-btn active pb-3 px-2 text-lg" onclick="switchTab('results')">📊 ผลการประเมินทั้งหมด</button>
         <button class="tab-btn pb-3 px-2 text-lg" onclick="switchTab('criteria')">⚙️ ตั้งค่าเกณฑ์รูบริคส์</button>
@@ -64,15 +60,23 @@
         
         <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     รายชื่อนิสิตที่ประเมินแล้ว
                 </h3>
-                <div class="relative">
-                    <input type="text" id="searchStudent" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm" placeholder="🔍 ค้นหาชื่อ หรือ รหัส..." onkeyup="filterStudentList()">
-                    <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                
+                <div class="flex flex-col gap-3">
+                    <div class="relative">
+                        <input type="text" id="searchStudent" class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm" placeholder="🔍 ค้นหาชื่อ หรือ รหัส...">
+                        <svg class="w-4 h-4 absolute left-3.5 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    
+                    <select id="filterSubject" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm text-slate-600">
+                        <option value="">📚 ทุกวิชาทั้งหมด</option>
+                        </select>
                 </div>
             </div>
+            
             <div id="studentEvalList" class="p-3 max-h-[60vh] overflow-y-auto space-y-2">
                 <div class="text-center text-slate-400 py-10 animate-pulse">กำลังโหลดรายชื่อ...</div>
             </div>
@@ -87,14 +91,14 @@
             </div>
 
             <div id="viewResultsCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8" style="display: none;">
-                
                 <div class="flex flex-col md:flex-row justify-between items-start border-b border-slate-100 pb-6 mb-6 gap-4">
                     <div>
                         <h2 id="viewStudentName" class="text-2xl font-bold text-slate-800 mb-2">-</h2>
                         <div class="flex flex-wrap items-center gap-2 text-sm">
                             <span id="viewStudentId" class="bg-slate-100 text-slate-700 px-3 py-1 rounded-md font-medium border border-slate-200">รหัส: -</span>
                             <span id="viewSubject" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md font-medium border border-indigo-100">วิชา: -</span>
-                            <span id="viewWorkTime" class="hidden"></span> </div>
+                            <span id="viewWorkTime" class="hidden"></span> 
+                        </div>
                     </div>
                     
                     <div class="bg-gradient-to-br from-emerald-400 to-teal-500 p-1 rounded-2xl shadow-lg shadow-emerald-200">
@@ -159,7 +163,6 @@
     </div>
 
     <div id="tab-criteria" class="flex flex-col md:flex-row gap-6 items-start" style="display: none;">
-        
         <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
                 <h3 class="font-bold text-slate-800 flex items-center gap-2">
@@ -173,7 +176,6 @@
         </div>
         
         <div class="w-full md:w-2/3 lg:w-3/4">
-            
             <div id="viewerCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-16 flex flex-col items-center justify-center text-slate-400 h-[60vh]">
                 <svg class="w-20 h-20 text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 <p class="text-lg font-medium text-slate-500">กรุณาเลือกหัวข้อการประเมินจากด้านซ้าย</p>
@@ -219,18 +221,32 @@
 </div>
 
 <script>
-    // 🔗 API_URL เดิมของคุณ (ไม่ต้องแก้)
+    // ==========================================
+    // 🔗 การตั้งค่าพื้นฐาน
+    // ==========================================
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
+    // ==========================================
+    // 📦 1. STATE (ที่เก็บข้อมูลและสถานะตัวกรอง)
+    // ==========================================
     let allCriteriaData = [];
     let allEvaluationResults = [];
     let currentSelectedEval = null;
 
+    // ระบบจัดเก็บสถานะตัวกรอง (รวมศูนย์ที่นี่ที่เดียว)
+    const filterState = {
+        search: "",
+        subject: ""
+    };
+
+    // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
     window.addEventListener("DOMContentLoaded", () => {
         loadEvaluationResults();
         loadCriteriaData();
+        loadSubjectsData(); // โหลดรายชื่อวิชาสำหรับใส่ใน Dropdown
     });
 
+    // เปลี่ยน Tab
     function switchTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         if (tab === 'results') {
@@ -244,107 +260,40 @@
         }
     }
 
+    // ==========================================
+    // ⚙️ 2. FETCH DATA (ฟังก์ชันดึงข้อมูลจากหลังบ้าน)
+    // ==========================================
+    
+    // โหลดรายชื่อวิชา
+    async function loadSubjectsData() {
+        try {
+            const res = await fetch(`${API_URL}?action=getSubjects`);
+            const subjects = await res.json();
+            
+            const selectElement = document.getElementById("filterSubject");
+            subjects.forEach(sub => {
+                const option = document.createElement("option");
+                option.value = sub.code;
+                option.text = `${sub.code} - ${sub.name}`;
+                selectElement.appendChild(option);
+            });
+        } catch (e) {
+            console.error("ไม่สามารถโหลดรายชื่อวิชาได้:", e);
+        }
+    }
+
+    // โหลดรายชื่อผู้ที่ประเมินแล้ว
     async function loadEvaluationResults() {
         try {
             const res = await fetch(`${API_URL}?action=getEvaluationResults`);
             allEvaluationResults = await res.json();
-            renderStudentEvalList(allEvaluationResults);
+            applyFilters(); // โหลดเสร็จให้ผ่านตัวกรองไปวาดหน้าจอ
         } catch (e) {
             document.getElementById("studentEvalList").innerHTML = `<div class="text-red-500 text-center py-4">โหลดล้มเหลว: ${e}</div>`;
         }
     }
 
-    function renderStudentEvalList(data) {
-        const listContainer = document.getElementById("studentEvalList");
-        listContainer.innerHTML = "";
-        if (data.length === 0) {
-            listContainer.innerHTML = `<div class="text-slate-400 text-center py-10">ไม่พบข้อมูลการประเมิน</div>`;
-            return;
-        }
-        data.forEach(item => {
-            const div = document.createElement("div");
-            // ปรับแต่งคลาส CSS ให้โมเดิร์น
-            div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer overflow-hidden";
-            div.id = `eval-item-${item.rowId}`; 
-            div.innerHTML = `
-                <div class="font-bold text-slate-800 text-sm truncate pr-2">${item.studentName || 'ไม่ทราบชื่อ'}</div>
-                <div class="text-xs text-slate-500 mt-1">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
-                <div class="mt-2 inline-block bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold px-2 py-0.5 rounded-md">รวม: ${item.totalScore} คะแนน</div>
-            `;
-            div.onclick = () => selectEvaluationItem(item);
-            listContainer.appendChild(div);
-        });
-    }
-
-    function filterStudentList() {
-        const query = document.getElementById("searchStudent").value.toLowerCase().trim();
-        const filtered = allEvaluationResults.filter(item => 
-            String(item.studentName).toLowerCase().includes(query) || 
-            String(item.studentId).toLowerCase().includes(query)
-        );
-        renderStudentEvalList(filtered);
-    }
-
-    function selectEvaluationItem(item) {
-        currentSelectedEval = item;
-        document.querySelectorAll('#studentEvalList .topic-item').forEach(el => el.classList.remove('active'));
-        
-        const activeEl = document.getElementById(`eval-item-${item.rowId}`);
-        if(activeEl) activeEl.classList.add('active');
-        
-        document.getElementById("placeholderCard").style.display = "none";
-        document.getElementById("viewResultsCard").style.display = "block";
-        
-        document.getElementById("viewStudentName").innerText = item.studentName || "-";
-        document.getElementById("viewStudentId").innerText = `รหัส: ${item.studentId}`;
-        document.getElementById("viewSubject").innerText = `วิชา: ${item.subjectCode}`;
-        
-        // ถ้าเวลาปฏิบัติงานไม่มีค่า ให้ซ่อน หรือถ้ามีให้แสดง
-        const wtEl = document.getElementById("viewWorkTime");
-        if(item.workTime) {
-            wtEl.innerText = `เวลาปฏิบัติงาน: ${item.workTime}`;
-            wtEl.className = "bg-amber-50 text-amber-700 px-3 py-1 rounded-md font-medium border border-amber-100";
-        } else {
-            wtEl.className = "hidden";
-        }
-        
-        document.getElementById("viewComment").innerText = item.comment || "ไม่มีความคิดเห็นเพิ่มเติม";
-        document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุชื่ออาจารย์'}`;
-        
-        document.getElementById("score_v1").innerText = `${item.score1} คะแนน`;
-        document.getElementById("score_v2").innerText = `${item.score2} คะแนน`;
-        document.getElementById("score_v3").innerText = `${item.score3} คะแนน`;
-        document.getElementById("score_v4").innerText = `${item.score4} คะแนน`;
-        document.getElementById("score_v5").innerText = `${item.score5} คะแนน`;
-        document.getElementById("score_v6").innerText = `${item.score6} คะแนน`;
-        
-        document.getElementById("viewTotalScore").innerHTML = `${item.totalScore} <span class="text-sm font-medium text-slate-400">คะแนน</span><br><span class="text-sm">(${item.grade})</span>`;
-    }
-
-    function openCriteriaViewer(topic) {
-        document.querySelectorAll('#criteriaTopics .topic-item').forEach(el => el.classList.remove('active'));
-        document.getElementById("viewerCard").style.display = "none";
-        document.getElementById("editorCard").style.display = "block";
-        document.getElementById("editTopicName").value = topic;
-
-        const subItems = allCriteriaData.filter(item => item.topic === topic);
-        const tbody = document.getElementById("rubricRows");
-        tbody.innerHTML = "";
-
-        subItems.forEach(item => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="p-4 font-semibold text-slate-800 align-top">${item.level}</td>
-                <td class="p-4 text-center font-black text-indigo-500 align-top">${item.score !== null ? item.score : '-'}</td>
-                <td class="p-4">
-                    <input type="hidden" class="row-num-input" value="${item.rowNum}">
-                    <textarea class="detail-input w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition-all text-slate-700" rows="2">${item.detail || ''}</textarea>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
+    // โหลดเกณฑ์การประเมิน
     async function loadCriteriaData() {
         try {
             const res = await fetch(`${API_URL}?action=getFormCriteria`);
@@ -370,6 +319,129 @@
         }
     }
 
+    // ==========================================
+    // 🔍 3. FILTER ENGINE (สมองกลตัวกรองข้อมูล)
+    // ==========================================
+    
+    // ดักจับเมื่อมีการพิมพ์ค้นหา
+    document.getElementById("searchStudent").addEventListener("input", (e) => {
+        filterState.search = e.target.value.toLowerCase().trim();
+        applyFilters();
+    });
+
+    // ดักจับเมื่อมีการเปลี่ยนวิชาใน Dropdown
+    document.getElementById("filterSubject").addEventListener("change", (e) => {
+        filterState.subject = e.target.value;
+        applyFilters();
+    });
+
+    // ฟังก์ชันคำนวณการกรอง
+    function applyFilters() {
+        const filteredData = allEvaluationResults.filter(item => {
+            // ด่าน 1: ตรวจสอบคำค้นหา
+            const matchesSearch = String(item.studentName).toLowerCase().includes(filterState.search) || 
+                                  String(item.studentId).toLowerCase().includes(filterState.search);
+            
+            // ด่าน 2: ตรวจสอบวิชา
+            const matchesSubject = filterState.subject === "" || String(item.subjectCode) === filterState.subject;
+
+            // ผ่านทั้ง 2 ด่านถึงจะแสดงผล
+            return matchesSearch && matchesSubject;
+        });
+        
+        renderStudentEvalList(filteredData);
+    }
+
+    // ==========================================
+    // 🖼️ 4. UI RENDERING (ฟังก์ชันจัดการหน้าจอ)
+    // ==========================================
+    
+    // วาดรายการนิสิตด้านซ้ายมือ
+    function renderStudentEvalList(data) {
+        const listContainer = document.getElementById("studentEvalList");
+        listContainer.innerHTML = "";
+        
+        if (data.length === 0) {
+            listContainer.innerHTML = `<div class="text-slate-400 text-center py-10">ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</div>`;
+            return;
+        }
+        
+        data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer overflow-hidden";
+            div.id = `eval-item-${item.rowId}`; 
+            div.innerHTML = `
+                <div class="font-bold text-slate-800 text-sm truncate pr-2">${item.studentName || 'ไม่ทราบชื่อ'}</div>
+                <div class="text-xs text-slate-500 mt-1">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
+                <div class="mt-2 inline-block bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold px-2 py-0.5 rounded-md">รวม: ${item.totalScore} คะแนน</div>
+            `;
+            div.onclick = () => selectEvaluationItem(item);
+            listContainer.appendChild(div);
+        });
+    }
+
+    // เมื่อคลิกดูรายละเอียดรายบุคคล
+    function selectEvaluationItem(item) {
+        currentSelectedEval = item;
+        document.querySelectorAll('#studentEvalList .topic-item').forEach(el => el.classList.remove('active'));
+        
+        const activeEl = document.getElementById(`eval-item-${item.rowId}`);
+        if(activeEl) activeEl.classList.add('active');
+        
+        document.getElementById("placeholderCard").style.display = "none";
+        document.getElementById("viewResultsCard").style.display = "block";
+        
+        document.getElementById("viewStudentName").innerText = item.studentName || "-";
+        document.getElementById("viewStudentId").innerText = `รหัส: ${item.studentId}`;
+        document.getElementById("viewSubject").innerText = `วิชา: ${item.subjectCode}`;
+        
+        const wtEl = document.getElementById("viewWorkTime");
+        if(item.workTime) {
+            wtEl.innerText = `เวลาปฏิบัติงาน: ${item.workTime}`;
+            wtEl.className = "bg-amber-50 text-amber-700 px-3 py-1 rounded-md font-medium border border-amber-100";
+        } else {
+            wtEl.className = "hidden";
+        }
+        
+        document.getElementById("viewComment").innerText = item.comment || "ไม่มีความคิดเห็นเพิ่มเติม";
+        document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุชื่ออาจารย์'}`;
+        
+        document.getElementById("score_v1").innerText = `${item.score1} คะแนน`;
+        document.getElementById("score_v2").innerText = `${item.score2} คะแนน`;
+        document.getElementById("score_v3").innerText = `${item.score3} คะแนน`;
+        document.getElementById("score_v4").innerText = `${item.score4} คะแนน`;
+        document.getElementById("score_v5").innerText = `${item.score5} คะแนน`;
+        document.getElementById("score_v6").innerText = `${item.score6} คะแนน`;
+        
+        document.getElementById("viewTotalScore").innerHTML = `${item.totalScore} <span class="text-sm font-medium text-slate-400">คะแนน</span><br><span class="text-sm">(${item.grade})</span>`;
+    }
+
+    // ดูและแก้ไขเกณฑ์ รูบริคส์
+    function openCriteriaViewer(topic) {
+        document.querySelectorAll('#criteriaTopics .topic-item').forEach(el => el.classList.remove('active'));
+        document.getElementById("viewerCard").style.display = "none";
+        document.getElementById("editorCard").style.display = "block";
+        document.getElementById("editTopicName").value = topic;
+
+        const subItems = allCriteriaData.filter(item => item.topic === topic);
+        const tbody = document.getElementById("rubricRows");
+        tbody.innerHTML = "";
+
+        subItems.forEach(item => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="p-4 font-semibold text-slate-800 align-top">${item.level}</td>
+                <td class="p-4 text-center font-black text-indigo-500 align-top">${item.score !== null ? item.score : '-'}</td>
+                <td class="p-4">
+                    <input type="hidden" class="row-num-input" value="${item.rowNum}">
+                    <textarea class="detail-input w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition-all text-slate-700" rows="2">${item.detail || ''}</textarea>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // บันทึกการแก้ไขเกณฑ์
     document.getElementById("criteriaForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
@@ -401,6 +473,7 @@
         }
     });
 
+    // โมดอลแก้ไขคะแนนนักเรียน
     function openEditScoresModal() {
         if (!currentSelectedEval) return;
         
