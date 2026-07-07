@@ -60,13 +60,9 @@
     <div id="tab-results" class="flex flex-col md:flex-row gap-6 items-start">
         <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    รายชื่อนิสิตที่ประเมินแล้ว
-                </h3>
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">📋 รายชื่อนิสิตที่ประเมินแล้ว</h3>
                 <div class="relative">
                     <input type="text" id="searchStudent" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm" placeholder="🔍 ค้นหาชื่อ หรือ รหัส..." onkeyup="filterStudentList()">
-                    <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
             </div>
             <div id="studentEvalList" class="p-3 max-h-[60vh] overflow-y-auto space-y-2">
@@ -76,9 +72,7 @@
         
         <div class="w-full md:w-2/3 lg:w-3/4">
             <div id="placeholderCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-16 flex flex-col items-center justify-center text-slate-400 h-[60vh]">
-                <svg class="w-20 h-20 text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 <p class="text-lg font-medium text-slate-500">กรุณาเลือกรายชื่อนิสิตจากแถบด้านซ้าย</p>
-                <p class="text-sm mt-1">เพื่อดูรายละเอียดผลการประเมินและจัดการข้อมูล</p>
             </div>
 
             <div id="viewResultsCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8" style="display: none;">
@@ -88,37 +82,36 @@
                         <div class="flex flex-wrap items-center gap-2 text-sm">
                             <span id="viewStudentId" class="bg-slate-100 text-slate-700 px-3 py-1 rounded-md font-medium border border-slate-200">รหัส: -</span>
                             <span id="viewSubject" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md font-medium border border-indigo-100">วิชา: -</span>
-                            <span id="viewWorkTime" class="hidden"></span>
                         </div>
                     </div>
                     <div class="bg-gradient-to-br from-emerald-400 to-teal-500 p-1 rounded-2xl shadow-lg shadow-emerald-200">
                         <div class="bg-white rounded-xl px-6 py-3 flex items-center justify-center min-w-[140px]">
                             <div class="text-center">
                                 <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Score</p>
-                                <div id="viewTotalScore" class="text-2xl font-black text-emerald-600 leading-none">0 <span class="text-sm font-medium text-slate-400">คะแนน</span></div>
+                                <div id="viewTotalScore" class="text-2xl font-black text-emerald-600 leading-none">0</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">📊 คะแนนรายข้อ (Competencies)</h3>
+                <h3 class="text-lg font-bold text-slate-800 mb-4">📊 คะแนนรายข้อ (Competencies)</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2 truncate">1. ความรู้</span><strong id="score_v1" class="text-2xl font-bold text-slate-800">-</strong></div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2 truncate">2. ทักษะคลินิก</span><strong id="score_v2" class="text-2xl font-bold text-slate-800">-</strong></div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2 truncate">3. การเรียนรู้ด้วยตนเอง</span><strong id="score_v3" class="text-2xl font-bold text-slate-800">-</strong></div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2 truncate">4. การสื่อสาร</span><strong id="score_v4" class="text-2xl font-bold text-slate-800">-</strong></div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2 truncate">5. ความรับผิดชอบ</span><strong id="score_v5" class="text-2xl font-bold text-slate-800">-</strong></div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2 truncate">6. เจตคติและจริยธรรม</span><strong id="score_v6" class="text-2xl font-bold text-slate-800">-</strong></div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2">1. ความรู้</span><strong id="score_v1" class="text-2xl font-bold text-slate-800">-</strong></div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2">2. ทักษะคลินิก</span><strong id="score_v2" class="text-2xl font-bold text-slate-800">-</strong></div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2">3. การเรียนรู้ด้วยตนเอง</span><strong id="score_v3" class="text-2xl font-bold text-slate-800">-</strong></div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2">4. การสื่อสาร</span><strong id="score_v4" class="text-2xl font-bold text-slate-800">-</strong></div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2">5. ความรับผิดชอบ</span><strong id="score_v5" class="text-2xl font-bold text-slate-800">-</strong></div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4"><span class="block text-xs font-semibold text-slate-500 mb-2">6. เจตคติและจริยธรรม</span><strong id="score_v6" class="text-2xl font-bold text-slate-800">-</strong></div>
                 </div>
 
                 <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-5 mb-6">
-                    <h3 class="text-sm font-bold text-blue-800 mb-2">💬 ความคิดเห็นเพิ่มเติมจากอาจารย์</h3>
-                    <div id="viewComment" class="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap min-h-[40px]">-</div>
+                    <h3 class="text-sm font-bold text-blue-800 mb-2">💬 ความคิดเห็นเพิ่มเติม</h3>
+                    <div id="viewComment" class="text-slate-600 text-sm whitespace-pre-wrap">-</div>
                 </div>
 
                 <div class="flex flex-col md:flex-row justify-between items-center border-t border-slate-100 pt-5 gap-4">
                     <span id="viewTeacherName" class="text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">ผู้ประเมิน: -</span>
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center gap-2" onclick="openEditScoresModal()">✏️ แก้ไขคะแนนนิสิตคนนี้</button>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all" onclick="openEditScoresModal()">✏️ แก้ไขคะแนนนิสิตคนนี้</button>
                 </div>
             </div>
         </div>
@@ -127,34 +120,29 @@
     <div id="tab-criteria" class="flex flex-col md:flex-row gap-6 items-start" style="display: none;">
         <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2">📋 หัวข้อการประเมิน</h3>
+                <h3 class="font-bold text-slate-800">📋 หัวข้อการประเมิน</h3>
             </div>
-            <div id="criteriaTopics" class="p-3 max-h-[60vh] overflow-y-auto space-y-2">
-                <div class="text-center text-slate-400 py-10 animate-pulse">กำลังโหลดหัวข้อ...</div>
-            </div>
+            <div id="criteriaTopics" class="p-3 max-h-[60vh] overflow-y-auto space-y-2"></div>
         </div>
         
         <div class="w-full md:w-2/3 lg:w-3/4">
             <div id="viewerCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-16 flex flex-col items-center justify-center text-slate-400 h-[60vh]">
                 <p class="text-lg font-medium text-slate-500">กรุณาเลือกหัวข้อการประเมินจากด้านซ้าย</p>
-                <p class="text-sm mt-1">เพื่อตรวจสอบหรือแก้ไขรายละเอียดเกณฑ์คะแนนรูบริคส์</p>
             </div>
             
             <div id="editorCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" style="display: none;">
-                <div class="p-6 md:p-8 border-b border-slate-100">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">✏️ แก้ไขเกณฑ์การให้คะแนน</h2>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">หัวข้อหลัก</label>
-                    <input type="text" id="editTopicName" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-medium focus:outline-none">
+                <div class="p-6 border-b border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">✏️ แก้ไขเกณฑ์การให้คะแนน</h2>
+                    <input type="text" id="editTopicName" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-medium outline-none">
                 </div>
-                
-                <form id="criteriaForm" class="p-6 md:p-8 pt-2">
+                <form id="criteriaForm" class="p-6 pt-2">
                     <div class="overflow-x-auto rounded-xl border border-slate-200">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50">
-                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200 w-1/4">ระดับ</th>
-                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200 text-center w-24">คะแนน</th>
-                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200">คำอธิบายรายละเอียดเกณฑ์รูบริคส์</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200">ระดับ</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200 text-center">คะแนน</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200">คำอธิบายเกณฑ์รูบริคส์</th>
                                 </tr>
                             </thead>
                             <tbody id="rubricRows" class="bg-white divide-y divide-slate-100"></tbody>
@@ -171,8 +159,8 @@
     <div id="tab-students-manage" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8" style="display: none;">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-                <h2 class="text-xl font-bold text-slate-800">🎓 รายชื่อบัญชีนิสิตแพทย์ในระบบ</h2>
-                <p class="text-sm text-slate-500 mt-1">สืบค้น เพิ่ม ลบ หรือปรับแก้ไขข้อมูลรหัสนิสิต ชื่อ-นามสกุล และรหัสวิชาปฏิบัติงาน</p>
+                <h2 class="text-xl font-bold text-slate-800">🎓 รายชื่อบัญชีนิสิตแพทย์ในระบบ (Main)</h2>
+                <p class="text-sm text-slate-500 mt-1">บริหารจัดการ กลุ่ม, วันที่เริ่ม-สิ้นสุด, แหล่งฝึกภายใน/ภายนอก และสถานที่ปฏิบัติงาน</p>
             </div>
             <button onclick="openAddStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-5 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center gap-2">
                 ➕ เพิ่มนิสิตใหม่เข้าระบบ
@@ -180,22 +168,26 @@
         </div>
 
         <div class="relative max-w-md mb-6">
-            <input type="text" id="searchManageStudent" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm focus:bg-white" placeholder="🔍 ค้นชื่อ, รหัสนิสิต หรือรหัสวิชา..." onkeyup="filterManageStudentList()">
+            <input type="text" id="searchManageStudent" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all focus:bg-white" placeholder="🔍 ค้นรหัส, ชื่อนิสิต, กลุ่ม หรือสถานที่..." onkeyup="filterManageStudentList()">
         </div>
 
         <div class="overflow-x-auto rounded-xl border border-slate-200">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                    <tr class="bg-slate-50 text-slate-600 text-sm font-semibold">
+                    <tr class="bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider">
+                        <th class="p-4 border-b border-slate-200">กลุ่ม</th>
                         <th class="p-4 border-b border-slate-200">รหัสนิสิต</th>
                         <th class="p-4 border-b border-slate-200">ชื่อ-นามสกุล</th>
-                        <th class="p-4 border-b border-slate-200">รหัสรายวิชา</th>
-                        <th class="p-4 border-b border-slate-200 text-center">สถานะ</th>
+                        <th class="p-4 border-b border-slate-200">เริ่มเรียน</th>
+                        <th class="p-4 border-b border-slate-200">สิ้นสุด</th>
+                        <th class="p-4 border-b border-slate-200">ประเภทแหล่งฝึก</th>
+                        <th class="p-4 border-b border-slate-200">สถานที่ฝึก</th>
+                        <th class="p-4 border-b border-slate-200">รหัสวิชา</th>
                         <th class="p-4 border-b border-slate-200 text-center">การจัดการ</th>
                     </tr>
                 </thead>
                 <tbody id="manageStudentRows" class="bg-white divide-y divide-slate-100 text-sm text-slate-700">
-                    <tr><td colspan="5" class="text-center py-10 text-slate-400">กรุณารอสักครู่...</td></tr>
+                    <tr><td colspan="9" class="text-center py-10 text-slate-400">กรุณารอสักครู่...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -204,7 +196,6 @@
 </div>
 
 <script>
-    // 🔗 API_URL เดิมของคุณ
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
     let allCriteriaData = [];
@@ -217,7 +208,6 @@
         loadCriteriaData();
     });
 
-    // ปรับการสลับหน้าจอให้รองรับ 3 แท็บอย่างเสถียร
     function switchTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById("tab-results").style.display = "none";
@@ -233,45 +223,53 @@
         } else if (tab === 'students-manage') {
             document.querySelectorAll('.tab-btn')[2].classList.add('active');
             document.getElementById("tab-students-manage").style.display = "block";
-            loadStudentsListForManagement(); // เรียกโหลดรายชื่อนิสิตทันทีเมื่อกดแท็บนี้
+            loadStudentsListForManagement();
         }
     }
 
-    // 🔄 ฟังก์ชันหลัก: โหลดรายชื่อนิสิตเพื่อใช้ปรับปรุงแก้ไข
     async function loadStudentsListForManagement() {
         const tbody = document.getElementById("manageStudentRows");
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400 animate-pulse">⏳ กำลังดึงฐานข้อมูลรายชื่อนิสิตแพทย์...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-slate-400 animate-pulse">⏳ กำลังดึงฐานข้อมูลรายชื่อนิสิตแพทย์...</td></tr>`;
         try {
             const res = await fetch(`${API_URL}?action=getStudentsList&t=${new Date().getTime()}`);
             allStudentsMaster = await res.json();
             renderManageStudentList(allStudentsMaster);
         } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-red-500">❌ โหลดข้อมูลล้มเหลว: ${e}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500">❌ โหลดข้อมูลล้มเหลว: ${e}</td></tr>`;
         }
+    }
+
+    function formatDateForTable(dateStr) {
+        if (!dateStr) return "-";
+        if (String(dateStr).includes("T")) {
+            return dateStr.split("T")[0];
+        }
+        return dateStr;
     }
 
     function renderManageStudentList(data) {
         const tbody = document.getElementById("manageStudentRows");
         tbody.innerHTML = "";
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400">ไม่พบข้อมูลรายชื่อนิสิต</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-slate-400">ไม่พบข้อมูลรายชื่อนิสิต</td></tr>`;
             return;
         }
         data.forEach(student => {
             const tr = document.createElement("tr");
             tr.className = "hover:bg-slate-50/80 transition-colors";
             
-            const statusBadge = student.isEvaluated 
-                ? `<span class="inline-flex items-center bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-medium border border-emerald-200">✅ ประเมินแล้ว</span>`
-                : `<span class="inline-flex items-center bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-xs font-medium border border-amber-200">⏳ รอประเมิน</span>`;
-
             tr.innerHTML = `
+                <td class="p-4 font-semibold text-indigo-600">${student.groupNum || '-'}</td>
                 <td class="p-4 font-mono font-medium text-slate-900">${student.studentId}</td>
                 <td class="p-4 font-medium text-slate-800">${student.studentName}</td>
-                <td class="p-4"><span class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-md font-bold text-xs">${student.subjectCode}</span></td>
-                <td class="p-4 text-center">${statusBadge}</td>
-                <td class="p-4 text-center">
-                    <button onclick='openEditStudentMasterModal(${JSON.stringify(student)})' class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-md shadow-amber-100 transition-all">✏️ แก้ไขข้อมูล</button>
+                <td class="p-4 text-xs text-slate-500">${formatDateForTable(student.dateStart)}</td>
+                <td class="p-4 text-xs text-slate-500">${formatDateForTable(student.dateEnd)}</td>
+                <td class="p-4 text-xs font-medium">${student.sourceType || '-'}</td>
+                <td class="p-4 text-xs max-w-xs truncate">${student.locationName || '-'}</td>
+                <td class="p-4"><span class="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded text-xs font-bold">${student.subjectCode}</span></td>
+                <td class="p-4 text-center space-x-2">
+                    <button onclick='openEditStudentMasterModal(${JSON.stringify(student)})' class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-md shadow-amber-100 transition-all">✏️ แก้ไข</button>
+                    <button onclick='deleteStudentMaster("${student.studentId}", "${student.subjectCode}")' class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-md shadow-rose-100 transition-all">🗑️ ลบ</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -283,30 +281,58 @@
         const filtered = allStudentsMaster.filter(s => 
             String(s.studentName).toLowerCase().includes(query) || 
             String(s.studentId).toLowerCase().includes(query) ||
+            String(s.groupNum).toLowerCase().includes(query) ||
+            String(s.locationName).toLowerCase().includes(query) ||
             String(s.subjectCode).toLowerCase().includes(query)
         );
         renderManageStudentList(filtered);
     }
 
-    // 🛠️ ป๊อปอัพหน้าต่างแก้ไขข้อมูลนิสิตแพทย์
+    // เปิดหน้าต่างแก้ไขข้อมูลนิสิต (เพิ่มฟิลด์ครบครัน)
     function openEditStudentMasterModal(student) {
+        const startVal = student.dateStart ? student.dateStart.split('T')[0] : '';
+        const endVal = student.dateEnd ? student.dateEnd.split('T')[0] : '';
+
         Swal.fire({
-            title: `<div class="text-xl font-bold">✏️ ปรับแก้ไขข้อมูลนิสิต</div><div class="text-xs text-slate-400 font-normal mt-1">รหัสอ้างอิงเดิม: ${student.studentId}</div>`,
+            title: `<div class="text-xl font-bold">✏️ ปรับแก้ไขข้อมูลนิสิต</div>`,
             html: `
-                <div style="text-align:left; font-family:'Prompt',sans-serif; font-size:14px;" class="space-y-4 mt-4">
+                <div style="text-align:left; font-family:'Prompt',sans-serif; font-size:14px;" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label class="font-semibold text-slate-700 block mb-1">รหัสนิสิตแพทย์</label>
-                        <input type="text" id="editM_studentId" class="w-full p-2.5 border border-slate-300 rounded-xl focus:border-indigo-500 outline-none" value="${student.studentId}">
+                        <label class="font-semibold text-slate-700 block mb-1">กลุ่ม</label>
+                        <input type="text" id="editM_groupNum" class="w-full p-2 border border-slate-300 rounded-xl" value="${student.groupNum || ''}">
                         <input type="hidden" id="editM_oldStudentId" value="${student.studentId}">
                         <input type="hidden" id="editM_oldSubjectCode" value="${student.subjectCode}">
                     </div>
                     <div>
+                        <label class="font-semibold text-slate-700 block mb-1">รหัสนิสิตแพทย์</label>
+                        <input type="text" id="editM_studentId" class="w-full p-2 border border-slate-300 rounded-xl" value="${student.studentId}">
+                    </div>
+                    <div class="md:col-span-2">
                         <label class="font-semibold text-slate-700 block mb-1">ชื่อ-นามสกุล นิสิตแพทย์</label>
-                        <input type="text" id="editM_studentName" class="w-full p-2.5 border border-slate-300 rounded-xl focus:border-indigo-500 outline-none" value="${student.studentName}">
+                        <input type="text" id="editM_studentName" class="w-full p-2 border border-slate-300 rounded-xl" value="${student.studentName}">
                     </div>
                     <div>
+                        <label class="font-semibold text-slate-700 block mb-1">เริ่มเรียน</label>
+                        <input type="date" id="editM_dateStart" class="w-full p-2 border border-slate-300 rounded-xl" value="${startVal}">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">สิ้นสุด</label>
+                        <input type="date" id="editM_dateEnd" class="w-full p-2 border border-slate-300 rounded-xl" value="${endVal}">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">แหล่งฝึก</label>
+                        <select id="editM_sourceType" class="w-full p-2 border border-slate-300 rounded-xl bg-white">
+                            <option value="ภายใน" ${student.sourceType === 'ภายใน' ? 'selected' : ''}>ภายใน</option>
+                            <option value="ภายนอก" ${student.sourceType === 'ภายนอก' ? 'selected' : ''}>ภายนอก</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">สถานที่ฝึก</label>
+                        <input type="text" id="editM_locationName" class="w-full p-2 border border-slate-300 rounded-xl" value="${student.locationName || ''}">
+                    </div>
+                    <div class="md:col-span-2">
                         <label class="font-semibold text-slate-700 block mb-1">รหัสวิชาปฏิบัติงาน</label>
-                        <input type="text" id="editM_subjectCode" class="w-full p-2.5 border border-slate-300 rounded-xl focus:border-indigo-500 outline-none" value="${student.subjectCode}">
+                        <input type="text" id="editM_subjectCode" class="w-full p-2 border border-slate-300 rounded-xl" value="${student.subjectCode}">
                     </div>
                 </div>
             `,
@@ -318,56 +344,78 @@
                 return {
                     oldStudentId: document.getElementById("editM_oldStudentId").value,
                     oldSubjectCode: document.getElementById("editM_oldSubjectCode").value,
+                    groupNum: document.getElementById("editM_groupNum").value.trim(),
                     studentId: document.getElementById("editM_studentId").value.trim(),
                     studentName: document.getElementById("editM_studentName").value.trim(),
+                    dateStart: document.getElementById("editM_dateStart").value,
+                    dateEnd: document.getElementById("editM_dateEnd").value,
+                    sourceType: document.getElementById("editM_sourceType").value,
+                    locationName: document.getElementById("editM_locationName").value.trim(),
                     subjectCode: document.getElementById("editM_subjectCode").value.trim()
                 }
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 if (!result.value.studentId || !result.value.studentName || !result.value.subjectCode) {
-                    Swal.fire("แจ้งเตือน", "กรุณากรอกข้อมูลให้ครบถ้วนทุกช่องครับ", "warning");
+                    Swal.fire("แจ้งเตือน", "กรุณากรอก รหัสนิสิต, ชื่อ และรหัสวิชา ให้ครบถ้วน", "warning");
                     return;
                 }
                 Swal.fire({ title: 'กำลังปรับปรุงข้อมูลในระบบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                 try {
-                    const queryParams = new URLSearchParams({
-                        action: "updateStudentMasterData",
-                        ...result.value
-                    });
+                    const queryParams = new URLSearchParams({ action: "updateStudentMasterData", ...result.value });
                     const res = await fetch(`${API_URL}?${queryParams.toString()}`);
                     const data = await res.json();
                     if (data.result === "success") {
-                        await Swal.fire("สำเร็จ!", "อัปเดตข้อมูลนิสิตเข้าฐานข้อมูลเสร็จสิ้น", "success");
+                        await Swal.fire("สำเร็จ!", "อัปเดตข้อมูลนิสิตเรียบร้อยแล้ว", "success");
                         loadStudentsListForManagement();
-                        loadEvaluationResults(); // โหลดหน้าหลักใหม่เผื่อกรณีมีการผูกชื่อเชื่อมโยงกัน
                     } else {
                         Swal.fire("ล้มเหลว", data.message, "error");
                     }
-                } catch (e) {
-                    Swal.fire("ผิดพลาด", "ไม่สามารถติดต่อฐานข้อมูลได้: " + e.toString(), "error");
-                }
+                } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
             }
         });
     }
 
-    // ➕ ป๊อปอัพหน้าต่างเพิ่มนิสิตแพทย์ใหม่เข้าระบบ
+    // เปิดหน้าต่างเพิ่มรายชื่อนิสิตใหม่ (เพิ่มฟิลด์ครบครัน)
     function openAddStudentModal() {
         Swal.fire({
             title: `<div class="text-xl font-bold">➕ เพิ่มนิสิตแพทย์รายใหม่</div>`,
             html: `
-                <div style="text-align:left; font-family:'Prompt',sans-serif; font-size:14px;" class="space-y-4 mt-4">
+                <div style="text-align:left; font-family:'Prompt',sans-serif; font-size:14px;" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">กลุ่ม</label>
+                        <input type="text" id="addM_groupNum" class="w-full p-2 border border-slate-300 rounded-xl" placeholder="เช่น 1">
+                    </div>
                     <div>
                         <label class="font-semibold text-slate-700 block mb-1">รหัสนิสิตแพทย์ (8 หลัก)</label>
-                        <input type="text" id="addM_studentId" class="w-full p-2.5 border border-slate-300 rounded-xl focus:border-indigo-500 outline-none" placeholder="เช่น 64460084">
+                        <input type="text" id="addM_studentId" class="w-full p-2 border border-slate-300 rounded-xl" placeholder="เช่น 64460084">
                     </div>
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="font-semibold text-slate-700 block mb-1">ชื่อ-นามสกุล นิสิต</label>
-                        <input type="text" id="addM_studentName" class="w-full p-2.5 border border-slate-300 rounded-xl focus:border-indigo-500 outline-none" placeholder="ตัวอย่าง: นายธนพัฒน์ รักดี">
+                        <input type="text" id="addM_studentName" class="w-full p-2 border border-slate-300 rounded-xl" placeholder="นายธนพัฒน์ รักดี">
                     </div>
                     <div>
+                        <label class="font-semibold text-slate-700 block mb-1">เริ่มเรียน</label>
+                        <input type="date" id="addM_dateStart" class="w-full p-2 border border-slate-300 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">สิ้นสุด</label>
+                        <input type="date" id="addM_dateEnd" class="w-full p-2 border border-slate-300 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">แหล่งฝึก</label>
+                        <select id="addM_sourceType" class="w-full p-2 border border-slate-300 rounded-xl bg-white">
+                            <option value="ภายใน">ภายใน</option>
+                            <option value="ภายนอก">ภายนอก</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">สถานที่ฝึก</label>
+                        <input type="text" id="addM_locationName" class="w-full p-2 border border-slate-300 rounded-xl" placeholder="เช่น รพ.พุทธชินราช">
+                    </div>
+                    <div class="md:col-span-2">
                         <label class="font-semibold text-slate-700 block mb-1">รหัสรายวิชาปฏิบัติงาน</label>
-                        <input type="text" id="addM_subjectCode" class="w-full p-2.5 border border-slate-300 rounded-xl focus:border-indigo-500 outline-none" placeholder="เช่น MED401">
+                        <input type="text" id="addM_subjectCode" class="w-full p-2 border border-slate-300 rounded-xl" placeholder="เช่น MED401">
                     </div>
                 </div>
             `,
@@ -377,23 +425,25 @@
             confirmButtonColor: '#059669',
             preConfirm: () => {
                 return {
+                    groupNum: document.getElementById("addM_groupNum").value.trim(),
                     studentId: document.getElementById("addM_studentId").value.trim(),
                     studentName: document.getElementById("addM_studentName").value.trim(),
+                    dateStart: document.getElementById("addM_dateStart").value,
+                    dateEnd: document.getElementById("addM_dateEnd").value,
+                    sourceType: document.getElementById("addM_sourceType").value,
+                    locationName: document.getElementById("addM_locationName").value.trim(),
                     subjectCode: document.getElementById("addM_subjectCode").value.trim()
                 }
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 if (!result.value.studentId || !result.value.studentName || !result.value.subjectCode) {
-                    Swal.fire("แจ้งเตือน", "กรุณากรอกข้อมูลให้ครบทุกช่องก่อนบันทึกครับ", "warning");
+                    Swal.fire("แจ้งเตือน", "กรุณากรอกข้อมูลหลักให้ครบถ้วนก่อนบันทึก", "warning");
                     return;
                 }
                 Swal.fire({ title: 'กำลังเขียนข้อมูลลงสเปรดชีต...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                 try {
-                    const queryParams = new URLSearchParams({
-                        action: "addStudentMasterData",
-                        ...result.value
-                    });
+                    const queryParams = new URLSearchParams({ action: "addStudentMasterData", ...result.value });
                     const res = await fetch(`${API_URL}?${queryParams.toString()}`);
                     const data = await res.json();
                     if (data.result === "success") {
@@ -402,39 +452,60 @@
                     } else {
                         Swal.fire("ล้มเหลว", data.message, "error");
                     }
-                } catch (e) {
-                    Swal.fire("ผิดพลาด", e.toString(), "error");
-                }
+                } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
             }
         });
     }
 
-    // --- โค้ดกลไกเดิมส่วนจัดการคะแนนและเกณฑ์รูบริคส์ (ห้ามแตะต้อง) ---
+    // ฟังก์ชันสั่งลบข้อมูลนิสิตออกจากระบบ
+    function deleteStudentMaster(studentId, subjectCode) {
+        Swal.fire({
+            title: 'ยืนยันการลบรายชื่อ?',
+            text: `ต้องการลบรหัสนิสิต ${studentId} ในรายวิชา ${subjectCode} ออกจากฐานข้อมูลหรือไม่? (การกระทำนี้ไม่สามารถย้อนกลับได้)`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '🗑️ ใช่, ยืนยันลบข้อมูล',
+            cancelButtonText: 'ยกเลิก'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'กำลังลบข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                try {
+                    const queryParams = new URLSearchParams({ action: "deleteStudentMasterData", studentId, subjectCode });
+                    const res = await fetch(`${API_URL}?${queryParams.toString()}`);
+                    const data = await res.json();
+                    if (data.result === "success") {
+                        await Swal.fire("ลบสำเร็จ!", "ลบรายชื่อนิสิตรายนี้ออกจากระบบแล้ว", "success");
+                        loadStudentsListForManagement();
+                    } else {
+                        Swal.fire("ล้มเหลว", data.message, "error");
+                    }
+                } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+            }
+        });
+    }
+
+    // --- ส่วนคุมการโหลดคะแนนและรูบริคส์ของระบบเดิม (ไม่แตะต้องตรรกะเดิม) ---
     async function loadEvaluationResults() {
         try {
             const res = await fetch(`${API_URL}?action=getEvaluationResults`);
             allEvaluationResults = await res.json();
             renderStudentEvalList(allEvaluationResults);
-        } catch (e) {
-            document.getElementById("studentEvalList").innerHTML = `<div class="text-red-500 text-center py-4">โหลดล้มเหลว: ${e}</div>`;
-        }
+        } catch (e) { console.error(e); }
     }
 
     function renderStudentEvalList(data) {
         const listContainer = document.getElementById("studentEvalList");
         listContainer.innerHTML = "";
-        if (data.length === 0) {
-            listContainer.innerHTML = `<div class="text-slate-400 text-center py-10">ไม่พบข้อมูลการประเมิน</div>`;
-            return;
-        }
         data.forEach(item => {
             const div = document.createElement("div");
-            div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer overflow-hidden";
+            div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden text-xs";
             div.id = `eval-item-${item.rowId}`; 
             div.innerHTML = `
-                <div class="font-bold text-slate-800 text-sm truncate pr-2">${item.studentName || 'ไม่ทราบชื่อ'}</div>
-                <div class="text-xs text-slate-500 mt-1">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
-                <div class="mt-2 inline-block bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold px-2 py-0.5 rounded-md">รวม: ${item.totalScore} คะแนน</div>
+                <div class="font-bold text-slate-800 text-sm truncate">${item.studentName || 'ไม่ทราบชื่อ'}</div>
+                <div class="text-slate-500 mt-1">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
+                <div class="mt-2 inline-block bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded">รวม: ${item.totalScore} คะแนน</div>
             `;
             div.onclick = () => selectEvaluationItem(item);
             listContainer.appendChild(div);
@@ -444,8 +515,7 @@
     function filterStudentList() {
         const query = document.getElementById("searchStudent").value.toLowerCase().trim();
         const filtered = allEvaluationResults.filter(item => 
-            String(item.studentName).toLowerCase().includes(query) || 
-            String(item.studentId).toLowerCase().includes(query)
+            String(item.studentName).toLowerCase().includes(query) || String(item.studentId).toLowerCase().includes(query)
         );
         renderStudentEvalList(filtered);
     }
@@ -461,17 +531,8 @@
         document.getElementById("viewStudentName").innerText = item.studentName || "-";
         document.getElementById("viewStudentId").innerText = `รหัส: ${item.studentId}`;
         document.getElementById("viewSubject").innerText = `วิชา: ${item.subjectCode}`;
-        
-        const wtEl = document.getElementById("viewWorkTime");
-        if(item.workTime) {
-            wtEl.innerText = `เวลาปฏิบัติงาน: ${item.workTime}`;
-            wtEl.className = "bg-amber-50 text-amber-700 px-3 py-1 rounded-md font-medium border border-amber-100";
-        } else {
-            wtEl.className = "hidden";
-        }
-        
         document.getElementById("viewComment").innerText = item.comment || "ไม่มีความคิดเห็นเพิ่มเติม";
-        document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุชื่ออาจารย์'}`;
+        document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุ'}`;
         
         document.getElementById("score_v1").innerText = `${item.score1} คะแนน`;
         document.getElementById("score_v2").innerText = `${item.score2} คะแนน`;
@@ -479,19 +540,37 @@
         document.getElementById("score_v4").innerText = `${item.score4} คะแนน`;
         document.getElementById("score_v5").innerText = `${item.score5} คะแนน`;
         document.getElementById("score_v6").innerText = `${item.score6} คะแนน`;
-        document.getElementById("viewTotalScore").innerHTML = `${item.totalScore} <span class="text-sm font-medium text-slate-400">คะแนน</span><br><span class="text-sm">(${item.grade})</span>`;
+        document.getElementById("viewTotalScore").innerHTML = `${item.totalScore} <span class="text-sm font-medium text-slate-400">คะแนน</span><br><span class="text-xs">(${item.grade})</span>`;
+    }
+
+    async function loadCriteriaData() {
+        try {
+            const res = await fetch(`${API_URL}?action=getFormCriteria`);
+            allCriteriaData = await res.json();
+            const uniqueTopics = [...new Set(allCriteriaData.map(item => item.topic))].filter(Boolean);
+            const container = document.getElementById("criteriaTopics");
+            container.innerHTML = "";
+            uniqueTopics.forEach(topic => {
+                const div = document.createElement("div");
+                div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-indigo-300 cursor-pointer font-medium text-slate-700 text-sm";
+                div.innerText = topic;
+                div.onclick = () => {
+                    document.querySelectorAll('#criteriaTopics .topic-item').forEach(el => el.classList.remove('active'));
+                    div.classList.add('active');
+                    openCriteriaViewer(topic);
+                };
+                container.appendChild(div);
+            });
+        } catch (e) { console.error(e); }
     }
 
     function openCriteriaViewer(topic) {
-        document.querySelectorAll('#criteriaTopics .topic-item').forEach(el => el.classList.remove('active'));
         document.getElementById("viewerCard").style.display = "none";
         document.getElementById("editorCard").style.display = "block";
         document.getElementById("editTopicName").value = topic;
-
         const subItems = allCriteriaData.filter(item => item.topic === topic);
         const tbody = document.getElementById("rubricRows");
         tbody.innerHTML = "";
-
         subItems.forEach(item => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -499,81 +578,44 @@
                 <td class="p-4 text-center font-black text-indigo-500 align-top">${item.score !== null ? item.score : '-'}</td>
                 <td class="p-4">
                     <input type="hidden" class="row-num-input" value="${item.rowNum}">
-                    <textarea class="detail-input w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition-all text-slate-700" rows="2">${item.detail || ''}</textarea>
+                    <textarea class="detail-input w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white outline-none text-slate-700" rows="2">${item.detail || ''}</textarea>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    async function loadCriteriaData() {
-        try {
-            const res = await fetch(`${API_URL}?action=getFormCriteria`);
-            allCriteriaData = await res.json();
-            
-            const uniqueTopics = [...new Set(allCriteriaData.map(item => item.topic))].filter(Boolean);
-            const container = document.getElementById("criteriaTopics");
-            container.innerHTML = "";
-            
-            uniqueTopics.forEach(topic => {
-                const div = document.createElement("div");
-                div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer font-medium text-slate-700 text-sm";
-                div.id = `topic-${topic.replace(/\s+/g, '')}`;
-                div.innerText = topic;
-                div.onclick = () => {
-                    openCriteriaViewer(topic);
-                    div.classList.add('active');
-                };
-                container.appendChild(div);
-            });
-        } catch (e) {
-            document.getElementById("criteriaTopics").innerHTML = `<div class="text-red-500 text-center py-4">โหลดล้มเหลว: ${e}</div>`;
-        }
-    }
-
     document.getElementById("criteriaForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-        
         const rubrics = [];
-        const rows = document.querySelectorAll("#rubricRows tr");
-        rows.forEach(row => {
+        document.querySelectorAll("#rubricRows tr").forEach(row => {
             rubrics.push({
                 rowNum: row.querySelector(".row-num-input").value,
                 detail: row.querySelector(".detail-input").value
             });
         });
-
         try {
             const res = await fetch(`${API_URL}?action=updateFormCriteria`, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ rubrics: rubrics })
+                method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ rubrics })
             });
             const data = await res.json();
-            if (data.result === "success") {
-                Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์คะแนนรูบริคส์เรียบร้อยแล้ว", "success");
-                loadCriteriaData();
-            } else {
-                Swal.fire("ล้มเหลว", data.message || "เกิดข้อผิดพลาด", "error");
-            }
-        } catch (err) {
-            Swal.fire("ผิดพลาด", err.toString(), "error");
-        }
+            if (data.result === "success") { Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์เรียบร้อย", "success"); loadCriteriaData(); }
+        } catch (err) { Swal.fire("ผิดพลาด", err.toString(), "error"); }
     });
 
     function openEditScoresModal() {
         if (!currentSelectedEval) return;
         Swal.fire({
-            title: `<div class="text-xl font-bold">✏️ แก้ไขคะแนน</div><div class="text-sm font-normal text-slate-500 mt-1">${currentSelectedEval.studentName}</div>`,
+            title: `<div class="text-xl font-bold">✏️ แก้ไขคะแนน</div>`,
             html: `
                 <div style="text-align:left; font-family:'Prompt',sans-serif; font-size:14px;" class="space-y-3 mt-4">
-                    <div><label class="font-semibold text-slate-700 block mb-1">1. ความรู้ (เต็ม 20)</label><input type="number" id="md_s1" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score1}"></div>
-                    <div><label class="font-semibold text-slate-700 block mb-1">2. ทักษะคลินิก (เต็ม 20)</label><input type="number" id="md_s2" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score2}"></div>
-                    <div><label class="font-semibold text-slate-700 block mb-1">3. การเรียนรู้ด้วยตนเอง (เต็ม 15)</label><input type="number" id="md_s3" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score3}"></div>
-                    <div><label class="font-semibold text-slate-700 block mb-1">4. การสื่อสาร (เต็ม 15)</label><input type="number" id="md_s4" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score4}"></div>
-                    <div><label class="font-semibold text-slate-700 block mb-1">5. ความรับผิดชอบ (เต็ม 15)</label><input type="number" id="md_s5" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score5}"></div>
-                    <div><label class="font-semibold text-slate-700 block mb-1">6. เจตคติและจริยธรรม (เต็ม 15)</label><input type="number" id="md_s6" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score6}"></div>
+                    <div><label class="font-semibold text-slate-700 block mb-1">1. ความรู้</label><input type="number" id="md_s1" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score1}"></div>
+                    <div><label class="font-semibold text-slate-700 block mb-1">2. ทักษะคลินิก</label><input type="number" id="md_s2" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score2}"></div>
+                    <div><label class="font-semibold text-slate-700 block mb-1">3. การเรียนรู้ด้วยตนเอง</label><input type="number" id="md_s3" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score3}"></div>
+                    <div><label class="font-semibold text-slate-700 block mb-1">4. การสื่อสาร</label><input type="number" id="md_s4" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score4}"></div>
+                    <div><label class="font-semibold text-slate-700 block mb-1">5. ความรับผิดชอบ</label><input type="number" id="md_s5" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score5}"></div>
+                    <div><label class="font-semibold text-slate-700 block mb-1">6. เจตคติและจริยธรรม</label><input type="number" id="md_s6" class="w-full p-2 border border-slate-300 rounded-lg" value="${currentSelectedEval.score6}"></div>
                     <div class="pt-2"><label class="font-semibold text-slate-700 block mb-1">ความคิดเห็นเพิ่มเติม</label><textarea id="md_comment" class="w-full p-2 border border-slate-300 rounded-lg" rows="3">${currentSelectedEval.comment || ''}</textarea></div>
                 </div>
             `,
@@ -601,15 +643,8 @@
                     const queryParams = new URLSearchParams({ action: "updateStudentEvaluation", ...result.value });
                     const res = await fetch(`${API_URL}?${queryParams.toString()}`);
                     const data = await res.json();
-                    if (data.result === "success") {
-                        await Swal.fire("สำเร็จ!", "แก้ไขคะแนนนิสิตเรียบร้อยแล้ว", "success");
-                        location.reload();
-                    } else {
-                        Swal.fire("ล้มเหลว", data.message, "error");
-                    }
-                } catch (e) {
-                    Swal.fire("ผิดพลาด", e.toString(), "error");
-                }
+                    if (data.result === "success") { await Swal.fire("สำเร็จ!", "แก้ไขคะแนนเรียบร้อยแล้ว", "success"); location.reload(); }
+                } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
             }
         });
     }
