@@ -313,6 +313,7 @@
     </div>
 
     <script>
+        // 💡 ลิงก์ API สคริปต์เว็บแอปหลังบ้านของพี่
         const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
         let allEvaluations = [];
@@ -324,7 +325,7 @@
             loadInitialAdminData();
         });
 
-        // 💡 ฟังก์ชันสลับเมนูฟิลเตอร์ทั้ง 4 แท็บให้ทำงานอิสระแยกจากกัน
+        // 💡 ฟังก์ชันควบคุมการเปิด-ปิดหน้าฟิลเตอร์แท็บทั้ง 4 ตัว
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'text-indigo-600', 'bg-slate-50'));
             document.getElementById('sec-eval').classList.add('hidden');
@@ -372,7 +373,7 @@
 
             } catch (err) {
                 console.error(err);
-                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้", "error");
+                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถดึงข้อมูลจากหลังบ้านได้", "error");
             }
         }
 
@@ -519,7 +520,7 @@
 
         async function submitEditSubject(e) {
             e.preventDefault();
-            Swal.fire({ title: 'กำลังอัปเดตข้อมูลวิชา...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            Swal.fire({ title: 'กำลังบันทึกข้อมูลวิชา...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
             const payload = {
                 action: "updateSubjectData",
@@ -538,14 +539,14 @@
                 });
                 const data = await res.json();
                 if (data.result === "success") {
-                    await Swal.fire("สำเร็จ!", "แก้ไขข้อมูลรายวิชาเรียบร้อยแล้ว", "success");
+                    await Swal.fire("สำเร็จ!", "แก้ไขข้อมูลวิชาลงชีตเรียบร้อยแล้ว", "success");
                     closeEditSubjectModal();
                     loadInitialAdminData();
                 } else {
                     Swal.fire("ข้อผิดพลาด", data.message, "error");
                 }
             } catch (err) {
-                Swal.fire("ล้มเหลว", "ไม่สามารถเชื่อมต่อเพื่อแก้ไขข้อมูลวิชาได้", "error");
+                Swal.fire("ล้มเหลว", "ไม่สามารถติดต่อสคริปต์เพื่อแก้ไขข้อมูลวิชาได้", "error");
             }
         }
 
@@ -579,7 +580,7 @@
                 });
                 const data = await res.json();
                 if (data.result === "success") {
-                    await Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์อธิบายรูบริคส์เรียบร้อยแล้ว", "success");
+                    await Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์คำชี้แจงเรียบร้อยแล้ว", "success");
                     loadInitialAdminData();
                 } else {
                     Swal.fire("ข้อผิดพลาด", data.message, "error");
@@ -635,14 +636,14 @@
                 });
                 const data = await res.json();
                 if(data.result === "success") {
-                    await Swal.fire("สำเร็จ!", "เพิ่มรายชื่อนิสิตลงตารางหลักเรียบร้อยแล้ว", "success");
+                    await Swal.fire("สำเร็จ!", "เพิ่มรายชื่อนิสิตใหม่เรียบร้อยแล้ว", "success");
                     closeAddStudentMasterModal();
                     loadInitialAdminData();
                 } else {
                     Swal.fire("ข้อผิดพลาด", data.message, "error");
                 }
             } catch(err) {
-                Swal.fire("ล้มเหลว", "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้", "error");
+                Swal.fire("ล้มเหลว", "ไม่สามารถติดต่อเซิร์ฟเวอร์ฐานข้อมูลได้", "error");
             }
         }
 
@@ -707,14 +708,14 @@
                     Swal.fire("เกิดปัญหา", data.message, "error");
                 }
             } catch(err) {
-                Swal.fire("ข้อผิดพลาด", "ไม่สามารถแก้ไขข้อมูลได้", "error");
+                Swal.fire("ข้อผิดพลาด", "ไม่สามารถส่งคำขอแก้ไขข้อมูลนิสิตได้", "error");
             }
         }
 
         function deleteStudentMaster(studentId, subjectCode) {
             Swal.fire({
                 title: 'ยืนยันการลบรายชื่อ?',
-                text: `คุณกำลังจะลบ นิสิตรหัส ${studentId} ในรายวิชา ${subjectCode} ออกจากตารางหลัก`,
+                text: `คุณกำลังจะลบ นิสิตรหัส ${studentId} ในรายวิชา ${subjectCode} ออกจากฐานข้อมูลหลัก`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -727,13 +728,13 @@
                         const res = await fetch(`${API_URL}?action=deleteStudentMasterData&studentId=${studentId}&subjectCode=${subjectCode}`);
                         const data = await res.json();
                         if(data.result === "success") {
-                            await Swal.fire("ลบสำเร็จ!", "ข้อมูลนิสิตถูกตัดออกจากระบบแล้ว", "success");
+                            await Swal.fire("ลบสำเร็จ!", "ข้อมูลนิสิตถูกตัดออกจากตารางเรียบร้อย", "success");
                             loadInitialAdminData();
                         } else {
                             Swal.fire("ข้อผิดพลาด", data.message, "error");
                         }
                     } catch(e) {
-                        Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถติดต่อขอลบข้อมูลได้", "error");
+                        Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถติดต่อขอลบรายชื่อได้", "error");
                     }
                 }
             });
@@ -787,13 +788,13 @@
                         const res = await fetch(`${API_URL}?${queryParams.toString()}`);
                         const resData = await res.json();
                         if (resData.result === "success") {
-                            await Swal.fire("สำเร็จ!", "แก้ไขประวัติคะแนนเรียบร้อยแล้ว", "success");
+                            await Swal.fire("สำเร็จ!", "แก้ไขคะแนนและคำนวณเกรดใหม่เรียบร้อยแล้ว", "success");
                             loadInitialAdminData();
                         } else {
                             Swal.fire("ล้มเหลว", resData.message, "error");
                         }
                     } catch (e) {
-                        Swal.fire("ผิดพลาด", "ไม่สามารถส่งค่าคะแนนชุดใหม่ได้", "error");
+                        Swal.fire("ผิดพลาด", "ไม่สามารถส่งคำขอชุดคะแนนใหม่ได้", "error");
                     }
                 }
             });
