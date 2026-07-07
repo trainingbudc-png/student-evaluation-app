@@ -4,177 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบตรวจสอบผลการประเมิน - สำหรับนิสิตแพทย์</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
+        }
+    </script>
     <style>
-        /* สไตล์ทั้งหมดรวมอยู่ในนี้ ไม่ต้องใช้ไฟล์แยก */
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            background-color: #f8fafc; /* สีพื้นหลังเทาอมฟ้าสว่างๆ */
-            color: #334155; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container { 
-            width: 100%;
-            max-width: 500px; 
-            background: #ffffff; 
-            padding: 40px 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03); /* เงาฟุ้งบางๆ ดูแพง */
-            border: 1px solid #f1f5f9;
-        }
-        h2 { 
-            text-align: center; 
-            color: #0f172a; 
-            margin-top: 0;
-            margin-bottom: 8px; 
-            font-weight: 600;
-        }
-        .subtitle { 
-            text-align: center; 
-            color: #64748b; 
-            margin-bottom: 30px; 
-            font-size: 14px; 
-            font-weight: 300;
-        }
-        .form-group { 
-            margin-bottom: 24px; 
-        }
-        label { 
-            font-weight: 500; 
-            display: block; 
-            margin-bottom: 8px; 
-            color: #475569;
-            font-size: 14px;
-        }
-        select, input[type="text"] { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 10px; 
-            box-sizing: border-box; 
-            font-size: 15px; 
-            font-family: 'Prompt', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            transition: all 0.3s ease;
-        }
-        /* เอฟเฟกต์ตอนคลิกช่องกรอกข้อมูล */
-        select:focus, input[type="text"]:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-        }
-        button { 
-            width: 100%; 
-            background: #3b82f6; /* ปุ่มสีฟ้าสไตล์ Modern */
-            color: white; 
-            padding: 14px; 
-            border: none; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            font-weight: 500; 
-            font-family: 'Prompt', sans-serif;
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-        }
-        button:hover { 
-            background: #2563eb; 
-            transform: translateY(-2px); /* ลอยขึ้นนิดๆ ตอนเอาเมาส์ชี้ */
-            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        .result-box { 
-            margin-top: 30px; 
-            padding: 24px; 
-            border-radius: 12px; 
-            display: none; 
-            text-align: center;
-            animation: fadeIn 0.4s ease;
-        }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* สไตล์กล่องแจ้งผลประเมิน */
+        .animate-fade-in { animation: fadeIn 0.4s ease forwards; }
+
+        /* สีกล่องสถานะตามโค้ดเดิม */
         .status-evaluated { 
-            background-color: #ecfdf5; 
-            border: 1px solid #a7f3d0; 
-            color: #065f46; 
+            background-color: #ecfdf5 !important; 
+            border-color: #a7f3d0 !important; 
+            color: #065f46 !important; 
         }
         .status-not-evaluated { 
-            background-color: #fff7ed; 
-            border: 1px solid #fed7aa; 
-            color: #9a3412; 
-        }
-        #statusTitle {
-            margin-top: 0;
-            margin-bottom: 5px;
-            font-weight: 500;
-            font-size: 15px;
-        }
-        .score-zone { 
-            margin-top: 15px;
-        }
-        #totalScoreText {
-            font-size: 42px; 
-            font-weight: 600; 
-            color: #059669; 
-            line-height: 1;
-        }
-        .grade-zone { 
-            margin-top: 10px; 
-            font-size: 16px; 
-            font-weight: 500; 
-            display: inline-block;
-            background: #ffffff;
-            padding: 6px 16px;
-            border-radius: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background-color: #fff7ed !important; 
+            border-color: #fed7aa !important; 
+            color: #9a3412 !important; 
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex items-center justify-center p-4 sm:p-6">
 
-<div class="container">
-    <h2>🩺 คลังข้อมูลผลประเมิน</h2>
-    <p class="subtitle">ระบบสำหรับนิสิตสืบค้นสถานะการส่งผลรูบริคส์รายวิชาชั้นคลินิก</p>
+<div class="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 sm:p-10 transition-all">
     
-    <div class="form-group">
-        <label for="studentId">รหัสนิสิตแพทย์ (8 หลัก)</label>
-        <input type="text" id="studentId" placeholder="เช่น: 64460084" maxlength="8">
+    <div class="text-center mb-8">
+        <div class="inline-flex bg-indigo-50 text-indigo-600 p-4 rounded-2xl shadow-inner mb-4 text-3xl">
+            🩺
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">คลังข้อมูลผลประเมิน</h2>
+        <p class="text-sm text-slate-500 font-light leading-relaxed">ระบบสำหรับนิสิตสืบค้นสถานะการส่งผลรูบริคส์รายวิชาชั้นคลินิก</p>
+    </div>
+    
+    <div class="space-y-5">
+        <div>
+            <label for="studentId" class="block text-sm font-semibold text-slate-700 mb-2">รหัสนิสิตแพทย์ (8 หลัก)</label>
+            <input type="text" id="studentId" placeholder="เช่น: 64460084" maxlength="8" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-800 placeholder-slate-400 font-medium shadow-sm">
+        </div>
+
+        <div>
+            <label for="subjectCode" class="block text-sm font-semibold text-slate-700 mb-2">เลือกรายวิชาที่ต้องการสืบค้น</label>
+            <div class="relative">
+                <select id="subjectCode" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-800 font-medium shadow-sm appearance-none cursor-pointer pr-10">
+                    <option value="">-- กรุณาเลือกรายวิชา --</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="checkEvaluationStatus()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center text-base tracking-wide">
+            ตรวจสอบสถานะการประเมิน
+        </button>
     </div>
 
-    <div class="form-group">
-        <label for="subjectCode">เลือกรายวิชาที่ต้องการสืบค้น</label>
-        <select id="subjectCode">
-            <option value="">-- กรุณาเลือกรายวิชา --</option>
-        </select>
-    </div>
-
-    <button onclick="checkEvaluationStatus()">ตรวจสอบคะแนนประเมิน</button>
-
-    <div id="resultBox" class="result-box">
-        <h4 id="statusTitle">-</h4>
-        <div id="scoreZone" class="score-zone" style="display:none;">
-            <div id="totalScoreText">0</div> 
-            <div style="font-size:14px; color:#64748b; margin-top: 4px;">คะแนนเต็ม 100</div>
-            <div class="grade-zone">เกรดที่ได้: <span id="gradeText" style="color:#059669; font-weight: 600;">-</span></div>
+    <div id="resultBox" class="mt-8 p-5 rounded-2xl text-center border transition-all animate-fade-in" style="display: none;">
+        <h4 id="statusTitle" class="font-semibold text-base leading-snug py-2">-</h4>
+        
+        <div id="scoreZone" style="display: none !important;">
+            <div id="totalScoreText"></div>
+            <div id="gradeText"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // 🔗 ใส่ URL ของแอดมินตรงนี้ให้เรียบร้อยแล้วครับ
+    // 🔗 ลิงก์ Web App ประจำระบบของคุณ
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
     window.addEventListener("DOMContentLoaded", async () => {
@@ -208,8 +111,8 @@
         }
 
         resultBox.style.display = 'block';
-        // ล้างคลาสเก่าออกก่อน
         resultBox.classList.remove('status-evaluated', 'status-not-evaluated');
+        
         resultBox.style.backgroundColor = '#f8fafc';
         resultBox.style.borderColor = '#e2e8f0';
         resultBox.style.color = '#475569';
@@ -221,17 +124,20 @@
             const response = await fetch(`${API_URL}?action=checkStatus&studentId=${studentId}&subjectCode=${subjectCode}`);
             const data = await response.json();
 
-            // ลบการตั้งค่าสีชั่วคราวทิ้ง เพื่อใช้ CSS Class
             resultBox.style.backgroundColor = '';
             resultBox.style.borderColor = '';
             resultBox.style.color = '';
 
             if (data.status === "ได้รับการประเมินแล้ว") {
                 resultBox.classList.add('status-evaluated');
-                statusTitle.innerText = '✅ อาจารย์บันทึกผลการประเมินแล้ว';
+                statusTitle.innerText = '✅ อาจารย์บันทึกผลการประเมินเรียบร้อยแล้ว';
+                
+                // ใส่ข้อมูลลงในตัวแปรซ่อนตามปกติเพื่อไม่ให้สคริปต์ Error
                 document.getElementById('totalScoreText').innerText = data.totalScore;
                 document.getElementById('gradeText').innerText = data.grade;
-                scoreZone.style.display = 'block';
+                
+                // ล็อคให้ซ่อนกล่องคะแนนไว้เสมอตามคำขอ
+                scoreZone.style.display = 'none'; 
             } else {
                 resultBox.classList.add('status-not-evaluated');
                 statusTitle.innerText = '⚠️ ยังไม่พบผลการประเมินในระบบ';

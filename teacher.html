@@ -5,67 +5,180 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>แบบประเมินการปฏิบัติงานนิสิตแพทย์ - สำหรับอาจารย์</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
+        }
+    </script>
+    
     <style>
-        :root { --primary-color: #1e3a8a; --secondary-color: #3b82f6; --background-color: #f3f4f6; --card-background: #ffffff; --text-color: #1f2937; }
-        body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: var(--card-background); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        h2, h3 { color: var(--primary-color); text-align: center; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; }
-        select, input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+        /* 🎨 ส่วนที่ครอบคลุมสไตล์ดั้งเดิม เพื่อรองรับโค้ด JavaScript ที่สร้าง Element อัตโนมัติ */
         
+        /* กล่องรายชื่อนิสิต */
         .student-list-container {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;
-            max-height: 280px; overflow-y: auto; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+            gap: 12px;
+            max-height: 320px; 
+            overflow-y: auto; 
+            padding: 6px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            background: #f8fafc;
         }
         .student-item {
-            background: #ffffff; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px;
-            cursor: pointer; transition: all 0.2s; font-size: 15px; text-align: center; color: #475569;
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            padding: 14px; 
+            border-radius: 12px;
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            font-size: 15px; 
+            text-align: center; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
-        .student-item:hover:not(.disabled) { border-color: #bae6fd; background: #f0f9ff; }
-        .student-item.active { background: var(--secondary-color); color: white; border-color: var(--primary-color); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .student-item.disabled { background: #f1f5f9; border-color: #e2e8f0; cursor: not-allowed; opacity: 0.7; }
+        .student-item:hover:not(.disabled) { 
+            border-color: #3b82f6; 
+            background: #eff6ff; 
+            transform: translateY(-1px);
+        }
+        /* เมื่ออาจารย์คลิกเลือกนิสิต */
+        .student-item.active { 
+            background: #1d4ed8 !important; /* Royal Blue */
+            color: white !important; 
+            border-color: #1e40af !important; 
+            font-weight: bold; 
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25); 
+        }
+        .student-item.active div {
+            color: white !important;
+            opacity: 1 !important;
+        }
+        /* นิสิตที่ประเมินไปแล้ว */
+        .student-item.disabled { 
+            background: #f1f5f9; 
+            border-color: #e2e8f0; 
+            cursor: not-allowed; 
+            opacity: 0.65; 
+        }
         
-        .student-list-container::-webkit-scrollbar { width: 8px; }
-        .student-list-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        /* Custom Scrollbar ให้ดูเรียบเนียนขึ้น */
+        .student-list-container::-webkit-scrollbar { width: 6px; }
+        .student-list-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .student-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .student-list-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .rubric-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 25px; }
-        .rubric-table th, .rubric-table td { padding: 12px; border: 1px solid #cbd5e1; text-align: left; }
-        .rubric-table th { background-color: #f8fafc; }
-        .radio-cell { text-align: center; width: 60px; }
-        .btn-submit { background-color: var(--primary-color); color: white; padding: 14px 28px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; transition: background-color 0.2s; font-family: 'Sarabun', sans-serif; }
-        .btn-submit:hover { background-color: #1e40af; }
-        .competency-title { background: #e0f2fe; color: #0369a1; padding: 10px 15px; border-radius: 6px; font-weight: bold; margin-top: 30px; margin-bottom: 10px; font-size: 16px; border-left: 5px solid #0284c7; }
-        .error-box { background: #fee2e2; color: #ef4444; border: 1px solid #f87171; padding: 15px; border-radius: 6px; text-align: center; font-weight: bold; margin: 20px 0; }
+        /* หัวข้อเกณฑ์ประเมินขนาดใหญ่ (Competency Domain) */
+        .competency-title { 
+            background: #f0fdf4; 
+            color: #166534; 
+            padding: 14px 18px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            margin-top: 36px; 
+            margin-bottom: 14px; 
+            font-size: 16px; 
+            border-left: 5px solid #22c55e;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        
+        /* ตารางรูบริคส์ประเมินผลคะแนน */
+        .rubric-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin-top: 10px; 
+            margin-bottom: 28px; 
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .rubric-table th { 
+            background-color: #f8fafc; 
+            padding: 14px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+        }
+        .rubric-table td { 
+            padding: 14px; 
+            border-bottom: 1px solid #f1f5f9; 
+            border-right: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+        .rubric-table tr:last-child td { border-bottom: none; }
+        .rubric-table th:last-child, .rubric-table td:last-child { border-right: none; }
+        .rubric-table tr:hover td { background-color: #f8fafc; }
+        
+        .radio-cell { text-align: center; width: 65px; }
+        
+        /* กล่องแจ้งเตือนความผิดพลาด */
+        .error-box { 
+            background: #fef2f2; 
+            color: #dc2626; 
+            border: 1px solid #fca5a5; 
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-weight: bold; 
+            margin: 24px 0; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-<div class="container">
-    <h2>📋 แบบประเมินผลการปฏิบัติงานนิสิตแพทย์ ชั้นคลินิก</h2>
-    <p style="text-align: center; color: #555;">กรุณาเลือกวิชาและรายชื่อนิสิตเพื่อดำเนินการให้คะแนนตามเกณฑ์รูบริคส์</p>
-    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+<!-- 🏠 ปุ่มกลับหน้าเมนูหลัก (ลอยอยู่มุมซ้ายบน) -->
+<div class="fixed top-4 left-4 sm:top-6 sm:left-6 z-50">
+    <a href="menu.html" class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-blue-600 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        กลับหน้าเมนูหลัก
+    </a>
+</div>
 
-    <form id="evalForm">
-        <div class="form-group">
-            <label for="teacherName">👤 ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
-            <input type="text" id="teacherName" required placeholder="ตัวอย่าง: นพ.สมชาย ตั้งใจดี">
+
+<div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 transition-all">
+    
+    <div class="text-center mb-8">
+        <div class="inline-flex bg-blue-50 text-blue-600 p-4 rounded-2xl shadow-inner mb-4 text-3xl">
+            📋
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">แบบประเมินผลการปฏิบัติงานนิสิตแพทย์ ชั้นคลินิก</h2>
+        <p class="text-sm text-slate-500 font-light leading-relaxed max-w-xl mx-auto">สำหรับอาจารย์ผู้ประเมิน: กรุณาเลือกรายวิชาปฏิบัติงานและคลิกเลือกรายชื่อนิสิตแพทย์ เพื่อดำเนินการให้คะแนนตามเกณฑ์รูบริคส์</p>
+    </div>
+    
+    <hr class="border-slate-100 my-6">
+
+    <form id="evalForm" class="space-y-6">
+        
+        <div>
+            <label for="teacherName" class="block text-sm font-semibold text-slate-700 mb-2">👤 ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
+            <input type="text" id="teacherName" required placeholder="ตัวอย่าง: นพ.สมชาย ตั้งใจดี" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 placeholder-slate-400 font-medium shadow-sm">
         </div>
 
-        <div class="form-group">
-            <label for="subjectCode">📚 เลือกรายวิชาปฏิบัติงาน</label>
-            <select id="subjectCode" required onchange="loadStudents()">
-                <option value="">-- กรุณาเลือกวิชา --</option>
-            </select>
+        <div>
+            <label for="subjectCode" class="block text-sm font-semibold text-slate-700 mb-2">📚 เลือกรายวิชาปฏิบัติงาน</label>
+            <div class="relative">
+                <select id="subjectCode" required onchange="loadStudents()" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 font-medium shadow-sm appearance-none cursor-pointer pr-10">
+                    <option value="">-- กรุณาเลือกวิชา --</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>🎓 เลือกรายชื่อนิสิตแพทย์ (คลิกที่ชื่อ)</label>
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">🎓 เลือกรายชื่อนิสิตแพทย์ (คลิกเลือกหนึ่งรายชื่อ)</label>
             <div id="studentListContainer" class="student-list-container">
-                <div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">
+                <div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-light">
                     -- กรุณาเลือกวิชาก่อนเพื่อแสดงรายชื่อนิสิต --
                 </div>
             </div>
@@ -73,21 +186,23 @@
             <input type="hidden" id="selectedStudentName">
         </div>
 
-        <div id="criteriaContainer">
-            <p style="text-align: center; color: #666; padding: 20px;">🔄 กำลังโหลดเกณฑ์ประเมินจากฐานข้อมูล...</p>
+        <div id="criteriaContainer" class="pt-2">
+            <p style="text-align: center; color: #64748b; padding: 24px;" class="text-sm font-light animate-pulse">🔄 กำลังโหลดเกณฑ์ประเมินจากฐานข้อมูล...</p>
         </div>
 
-        <div class="form-group" style="margin-top: 30px;">
-            <label for="comment">💬 ความคิดเห็นเพิ่มเติมและข้อเสนอแนะเพื่อพัฒนา</label>
-            <textarea id="comment" rows="4" placeholder="ระบุจุดเด่นหรือจุดที่ควรปรับปรุงเพิ่มเติมให้กับนิสิตแพทย์..."></textarea>
+        <div class="pt-4 border-t border-slate-100">
+            <label for="comment" class="block text-sm font-semibold text-slate-700 mb-2">💬 ความคิดเห็นเพิ่มเติมและข้อเสนอแนะเพื่อพัฒนา</label>
+            <textarea id="comment" rows="4" placeholder="ระบุจุดเด่นหรือจุดที่ควรปรับปรุงเพิ่มเติมให้กับนิสิตแพทย์ เพื่อนำไปใช้เป็นฟีดแบ็ก..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 placeholder-slate-400 font-medium shadow-sm resize-y"></textarea>
         </div>
 
-        <button type="submit" class="btn-submit">💾 บันทึกและส่งผลการประเมินเข้าระบบ</button>
+        <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center text-base tracking-wide mt-6 cursor-pointer">
+            💾 บันทึกและส่งผลการประเมินเข้าระบบ
+        </button>
     </form>
 </div>
 
 <script>
-    // ✅ อัปเดต URL ล่าสุดที่คุณแจ้งมาให้เรียบร้อยครับ!
+    // ✅ URL ลิงก์ Web App ของคุณ
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
     let allStudents = [];
@@ -120,11 +235,11 @@
         document.getElementById("selectedStudentName").value = "";
         
         if (!subCode) {
-            container.innerHTML = `<div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">-- กรุณาเลือกวิชาก่อนเพื่อแสดงรายชื่อนิสิต --</div>`;
+            container.innerHTML = `<div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-light">-- กรุณาเลือกวิชาก่อนเพื่อแสดงรายชื่อนิสิต --</div>`;
             return;
         }
 
-        container.innerHTML = `<div style="color: #0284c7; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">⏳ กำลังโหลดรายชื่อนิสิต...</div>`;
+        container.innerHTML = `<div style="color: #1d4ed8; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-medium animate-pulse">⏳ กำลังโหลดรายชื่อนิสิต...</div>`;
 
         try {
             const response = await fetch(`${API_URL}?action=getStudentsList&t=${new Date().getTime()}`);
@@ -133,7 +248,7 @@
             
             container.innerHTML = "";
             if (filtered.length === 0) {
-                container.innerHTML = `<div style="color: #ef4444; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0; font-weight: bold;">❌ ไม่พบนิสิตลงทะเบียนในวิชานี้</div>`;
+                container.innerHTML = `<div style="color: #ef4444; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0; font-weight: bold;" class="text-sm">❌ ไม่พบนิสิตลงทะเบียนในวิชานี้</div>`;
             } else {
                 filtered.forEach(s => {
                     const div = document.createElement("div");
@@ -151,8 +266,8 @@
                     } else {
                         div.className = "student-item";
                         div.innerHTML = `
-                            <div style="font-size:12px; opacity:0.8;">${s.studentId}</div>
-                            <div style="font-weight:bold; margin-top:2px;">${s.studentName}</div>
+                            <div style="font-size:12px; color:#64748b; opacity:0.8;">${s.studentId}</div>
+                            <div style="font-weight:bold; margin-top:2px; color:#334155;">${s.studentName}</div>
                         `;
                         div.onclick = () => {
                             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
@@ -165,7 +280,7 @@
                 });
             }
         } catch (e) { 
-            container.innerHTML = `<div style="color: #ef4444; text-align: center; width: 100%; grid-column: 1 / -1; padding: 20px 0;">⚠️ เกิดข้อผิดพลาดในการโหลดรายชื่อ</div>`; 
+            container.innerHTML = `<div style="color: #ef4444; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-medium">⚠️ เกิดข้อผิดพลาดในการโหลดรายชื่อ</div>`;
         }
     }
 
@@ -206,9 +321,9 @@
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th style="width: 50px; text-align:center;">เลือก</th>
-                            <th style="width: 100px;">ระดับ</th>
-                            <th style="width: 60px; text-align:center;">คะแนน</th>
+                            <th style="width: 65px; text-align:center;">เลือก</th>
+                            <th style="width: 110px;">ระดับ</th>
+                            <th style="width: 70px; text-align:center;">คะแนน</th>
                             <th>คำอธิบายเกณฑ์และขอบเขตพฤติกรรม</th>
                         </tr>
                     </thead>
@@ -219,17 +334,17 @@
                 rows.forEach(r => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td class="radio-cell"><input type="radio" name="q_${qNum}" value="${r.score}" required style="transform: scale(1.3); cursor:pointer;"></td>
+                        <td class="radio-cell"><input type="radio" name="q_${qNum}" value="${r.score}" required style="transform: scale(1.4); cursor:pointer;" class="accent-blue-600"></td>
                         <td style="font-weight:bold; color:#1e3a8a;">${r.level}</td>
-                        <td style="text-align:center; font-weight:bold; color:#3b82f6;">${r.score}</td>
-                        <td style="font-size:14px; color:#4b5563;">${r.detail || '-'}</td>
+                        <td style="text-align:center; font-weight:bold; color:#2563eb;">${r.score}</td>
+                        <td style="font-size:14px; color:#475569; font-weight:300; line-height:1.6;">${r.detail || '-'}</td>
                     `;
                     tbody.appendChild(tr);
                 });
                 container.appendChild(table);
             });
         } catch (err) { 
-            container.innerHTML = `<div class="error-box">⚠️ โหลดเกณฑ์การประเมินล้มเหลว<br><small style="color:#7f1d1d; font-weight:normal;">สาเหตุ: ${err.message}</small></div>`; 
+            container.innerHTML = `<div class="error-box">⚠️ โหลดเกณฑ์การประเมินล้มเหลว<br><small style="color:#7f1d1d; font-weight:normal;">สาเหตุ: ${err.message}</small></div>`;
         }
     }
 
@@ -263,7 +378,7 @@
 
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
-                    const selectedRadio = document.querySelector(`input[name="q_${qNum}"]:checked`);
+                    const selectedRadio = document.querySelector(`input[name=\"q_${qNum}\"]:checked`);
                     payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "0";
                 });
 

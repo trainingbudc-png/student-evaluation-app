@@ -5,148 +5,221 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบแอดมิน - ตรวจสอบผลการประเมินนิสิต</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #0f172a;
-            --secondary-color: #0284c7;
-            --background-color: #f8fafc;
-            --card-background: #ffffff;
-            --text-color: #334155;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
         }
-        body { font-family: 'Sarabun', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .header { background: var(--primary-color); color: white; padding: 20px 30px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
-        .sidebar { background: var(--card-background); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; height: fit-content; }
-        .main-content { display: flex; flex-direction: column; gap: 24px; }
-        .card { background: var(--card-background); border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        h2, h3 { margin-top: 0; color: var(--primary-color); }
-        .topic-list { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-        .topic-item { padding: 12px 16px; background: #f1f5f9; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 500; border: 1px solid transparent; }
-        .topic-item:hover { background: #e2e8f0; color: var(--secondary-color); }
-        .topic-item.active { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background: #f8fafc; color: #64748b; font-weight: 600; }
-        .btn { background: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'Sarabun', sans-serif; }
-        .btn:hover { opacity: 0.9; }
-        .btn-success { background: #10b981; }
-        .input-text, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; font-size: 15px; }
-        .grid-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 15px; }
-        .score-box { background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .score-box span { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
-        .score-box strong { font-size: 16px; color: var(--primary-color); }
-        .search-box { margin-bottom: 15px; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #f1f5f9; color: #475569; }
-        .tab-menu { display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .tab-btn { background: none; border: none; padding: 8px 16px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 16px; font-weight: bold; color: #64748b; }
-        .tab-btn.active { color: var(--secondary-color); border-bottom: 3px solid var(--secondary-color); margin-bottom: -13px; }
+    </script>
+    <style>
+        /* CSS เล็กน้อยสำหรับควบคุมสถานะ Active ให้ทำงานเข้ากับโค้ด JS เดิมของคุณ */
+        .topic-item.active { border-color: #6366f1; background-color: #eef2ff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .topic-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #6366f1; border-radius: 4px 0 0 4px; }
+        .tab-btn { color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-btn:hover { color: #4f46e5; }
+        .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; font-weight: 600; }
+        /* ซ่อน Scrollbar ให้ดูคลีนๆ */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
-<div class="header">
-    <div style="font-size: 22px; font-weight: bold;">🏥 ระบบบริหารจัดการและตรวจสอบผลการประเมินนิสิตแพทย์</div>
-    <div id="adminName" style="font-weight: bold; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px;">👤 Administrator</div>
-</div>
-
-<div class="tab-menu">
-    <button class="tab-btn active" onclick="switchTab('results')">📊 ผลการประเมินทั้งหมด</button>
-    <button class="tab-btn" onclick="switchTab('criteria')">⚙️ ตั้งค่าเกณฑ์รูบริคส์</button>
-</div>
-
-<div id="tab-results" class="container">
-    <div class="sidebar">
-        <h3>รายชื่อนิสิตที่ประเมินแล้ว</h3>
-        <div class="search-box">
-            <input type="text" id="searchStudent" class="input-text" placeholder="🔍 ค้นหาชื่อ หรือ รหัสนิสิต..." onkeyup="filterStudentList()">
+<header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="bg-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-indigo-200">🏥</div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-800">ระบบบริหารจัดการและตรวจสอบผลการประเมิน<span class="text-indigo-600">นิสิตแพทย์</span></h1>
+            </div>
         </div>
-        <div id="studentEvalList" class="topic-list" style="max-height: 500px; overflow-y: auto;">
-            <div style="color:#64748b; text-align:center; padding:20px;">กำลังโหลดรายชื่อ...</div>
+        <div class="flex items-center gap-4">
+            <div id="adminName" class="bg-slate-100 px-4 py-2.5 rounded-full text-sm font-medium text-slate-600 flex items-center gap-2 border border-slate-200 shadow-sm">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Administrator
+            </div>
         </div>
     </div>
-    
-    <div class="main-content">
-        <div id="placeholderCard" class="card" style="text-align: center; padding: 60px; color: #64748b;">
-            <span style="font-size: 48px;">📊</span>
-            <p style="margin-top: 15px; font-size: 16px;">กรุณาเลือกรายชื่อนิสิตจากแถบด้านซ้ายเพื่อดูรายละเอียดผลการประเมินและจัดการข้อมูล</p>
-        </div>
+</header>
 
-        <div id="viewResultsCard" class="card" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px;">
-                <div>
-                    <h2 id="viewStudentName" style="margin-bottom: 5px;">-</h2>
-                    <span id="viewStudentId" style="color:#64748b; font-weight:bold;">รหัส: -</span> | 
-                    <span id="viewSubject" style="color:#0284c7; font-weight:bold;">วิชา: -</span>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- 🏠 ปุ่มกลับหน้าเมนูหลัก -->
+    <div class="mb-6">
+        <a href="menu.html" class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-indigo-600 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm border border-slate-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            กลับหน้าเมนูหลัก
+        </a>
+    </div>
+
+    
+    <div class="flex gap-8 border-b border-slate-200 mb-8">
+        <button class="tab-btn active pb-3 px-2 text-lg" onclick="switchTab('results')">📊 ผลการประเมินทั้งหมด</button>
+        <button class="tab-btn pb-3 px-2 text-lg" onclick="switchTab('criteria')">⚙️ ตั้งค่าเกณฑ์รูบริคส์</button>
+    </div>
+
+    <div id="tab-results" class="flex flex-col md:flex-row gap-6 items-start">
+        
+        <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
+            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    รายชื่อนิสิตที่ประเมินแล้ว
+                </h3>
+                <div class="relative">
+                    <input type="text" id="searchStudent" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm" placeholder="🔍 ค้นหาชื่อ หรือ รหัส..." onkeyup="filterStudentList()">
+                    <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
-                <div style="text-align: right;">
-                    <div id="viewTotalScore" style="font-size: 24px; font-weight: bold; color: #10b981;">0 คะแนน</div>
-                    <span id="viewWorkTime" class="badge">เวลาปฏิบัติงาน: -</span>
+            </div>
+            <div id="studentEvalList" class="p-3 max-h-[60vh] overflow-y-auto space-y-2">
+                <div class="text-center text-slate-400 py-10 animate-pulse">กำลังโหลดรายชื่อ...</div>
+            </div>
+        </div>
+        
+        <div class="w-full md:w-2/3 lg:w-3/4">
+            
+            <div id="placeholderCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-16 flex flex-col items-center justify-center text-slate-400 h-[60vh]">
+                <svg class="w-20 h-20 text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <p class="text-lg font-medium text-slate-500">กรุณาเลือกรายชื่อนิสิตจากแถบด้านซ้าย</p>
+                <p class="text-sm mt-1">เพื่อดูรายละเอียดผลการประเมินและจัดการข้อมูล</p>
+            </div>
+
+            <div id="viewResultsCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8" style="display: none;">
+                
+                <div class="flex flex-col md:flex-row justify-between items-start border-b border-slate-100 pb-6 mb-6 gap-4">
+                    <div>
+                        <h2 id="viewStudentName" class="text-2xl font-bold text-slate-800 mb-2">-</h2>
+                        <div class="flex flex-wrap items-center gap-2 text-sm">
+                            <span id="viewStudentId" class="bg-slate-100 text-slate-700 px-3 py-1 rounded-md font-medium border border-slate-200">รหัส: -</span>
+                            <span id="viewSubject" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md font-medium border border-indigo-100">วิชา: -</span>
+                            <span id="viewWorkTime" class="hidden"></span> </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 p-1 rounded-2xl shadow-lg shadow-emerald-200">
+                        <div class="bg-white rounded-xl px-6 py-3 flex items-center justify-center min-w-[140px]">
+                            <div class="text-center">
+                                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Score</p>
+                                <div id="viewTotalScore" class="text-2xl font-black text-emerald-600 leading-none">0 <span class="text-sm font-medium text-slate-400">คะแนน</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    คะแนนรายข้อ (Competencies)
+                </h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">1. ความรู้</span>
+                        <strong id="score_v1" class="text-2xl font-bold text-slate-800">-</strong>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">2. ทักษะคลินิก</span>
+                        <strong id="score_v2" class="text-2xl font-bold text-slate-800">-</strong>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">3. การเรียนรู้ด้วยตนเอง</span>
+                        <strong id="score_v3" class="text-2xl font-bold text-slate-800">-</strong>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">4. การสื่อสาร</span>
+                        <strong id="score_v4" class="text-2xl font-bold text-slate-800">-</strong>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">5. ความรับผิดชอบ</span>
+                        <strong id="score_v5" class="text-2xl font-bold text-slate-800">-</strong>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">6. เจตคติและจริยธรรม</span>
+                        <strong id="score_v6" class="text-2xl font-bold text-slate-800">-</strong>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-5 mb-6">
+                    <h3 class="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                        ความคิดเห็นเพิ่มเติมจากอาจารย์
+                    </h3>
+                    <div id="viewComment" class="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap min-h-[40px]">-</div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center border-t border-slate-100 pt-5 gap-4">
+                    <span id="viewTeacherName" class="text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">ผู้ประเมิน: -</span>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5 flex items-center gap-2" onclick="openEditScoresModal()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        แก้ไขคะแนนนิสิตคนนี้
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-criteria" class="flex flex-col md:flex-row gap-6 items-start" style="display: none;">
+        
+        <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
+            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    หัวข้อการประเมิน
+                </h3>
+            </div>
+            <div id="criteriaTopics" class="p-3 max-h-[60vh] overflow-y-auto space-y-2">
+                <div class="text-center text-slate-400 py-10 animate-pulse">กำลังโหลดหัวข้อ...</div>
+            </div>
+        </div>
+        
+        <div class="w-full md:w-2/3 lg:w-3/4">
+            
+            <div id="viewerCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-16 flex flex-col items-center justify-center text-slate-400 h-[60vh]">
+                <svg class="w-20 h-20 text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <p class="text-lg font-medium text-slate-500">กรุณาเลือกหัวข้อการประเมินจากด้านซ้าย</p>
+                <p class="text-sm mt-1">เพื่อตรวจสอบหรือแก้ไขรายละเอียดเกณฑ์คะแนนรูบริคส์</p>
             </div>
             
-            <h3>คะแนนรายข้อ (Competencies)</h3>
-            <div class="grid-scores">
-                <div class="score-box"><span>1. ความรู้</span><strong id="score_v1">-</strong></div>
-                <div class="score-box"><span>2. ทักษะคลินิก</span><strong id="score_v2">-</strong></div>
-                <div class="score-box"><span>3. การเรียนรู้ด้วยตนเอง</span><strong id="score_v3">-</strong></div>
-                <div class="score-box"><span>4. การสื่อสาร</span><strong id="score_v4">-</strong></div>
-                <div class="score-box"><span>5. ความรับผิดชอบ</span><strong id="score_v5">-</strong></div>
-                <div class="score-box"><span>6. เจตคติและจริยธรรม</span><strong id="score_v6">-</strong></div>
-            </div>
-
-            <div style="margin-top: 20px;">
-                <h3>ความคิดเห็นเพิ่มเติมจากอาจารย์</h3>
-                <div id="viewComment" style="background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; min-height:60px; white-space: pre-wrap;">-</div>
-            </div>
-
-            <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: right;">
-                <span id="viewTeacherName" style="color:#64748b; font-size:14px; display:block; margin-bottom:10px;">ผู้ประเมิน: -</span>
-                <button class="btn btn-success" onclick="openEditScoresModal()">✏️ แก้ไขคะแนนนิสิตคนนี้</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="tab-criteria" class="container" style="display: none;">
-    <div class="sidebar">
-        <h3>หัวข้อการประเมิน</h3>
-        <div id="criteriaTopics" class="topic-list">
-            <div style="color:#64748b; text-align:center; padding:20px;">กำลังโหลดหัวข้อ...</div>
-        </div>
-    </div>
-    <div class="main-content">
-        <div id="viewerCard" class="card" style="text-align: center; padding: 60px; color: #64748b;">
-            <span style="font-size: 48px;">⚙️</span>
-            <p style="margin-top: 15px; font-size: 16px;">กรุณาเลือกหัวข้อการประเมินจากด้านซ้าย เพื่อตรวจสอบหรือแก้ไขรายละเอียดเกณฑ์คะแนนรูบริคส์</p>
-        </div>
-        <div id="editorCard" class="card" style="display: none;">
-            <h2 style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">🛠️ แก้ไขเกณฑ์การให้คะแนน</h2>
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 6px;">หัวข้อหลัก</label>
-                <input type="text" id="editTopicName" class="input-text" readonly style="background: #f1f5f9; font-weight: bold;">
-            </div>
-            <form id="criteriaForm">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 150px;">ระดับคำจำกัดความ</th>
-                            <th style="width: 100px; text-align: center;">คะแนน</th>
-                            <th>คำอธิบายรายละเอียดเกณฑ์รูบริคส์</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rubricRows"></tbody>
-                </table>
-                <div style="margin-top: 20px; text-align: right;">
-                    <button type="submit" class="btn">💾 บันทึกการอัปเดตเกณฑ์</button>
+            <div id="editorCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" style="display: none;">
+                <div class="p-6 md:p-8 border-b border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">
+                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        แก้ไขเกณฑ์การให้คะแนน
+                    </h2>
+                    
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">หัวข้อหลัก</label>
+                    <input type="text" id="editTopicName" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-medium focus:outline-none">
                 </div>
-            </form>
+                
+                <form id="criteriaForm" class="p-6 md:p-8 pt-2">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50">
+                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200 w-1/4">ระดับคำจำกัดความ</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200 text-center w-24">คะแนน</th>
+                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200">คำอธิบายรายละเอียดเกณฑ์รูบริคส์</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rubricRows" class="bg-white divide-y divide-slate-100">
+                                </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-8 flex justify-end">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            บันทึกการอัปเดตเกณฑ์
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // 🔗 ใส่ URL Web App ของคุณที่นี่
+    // 🔗 API_URL เดิมของคุณ (ไม่ต้องแก้)
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
     let allCriteriaData = [];
@@ -162,12 +235,12 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         if (tab === 'results') {
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            document.getElementById("tab-results").style.display = "grid";
+            document.getElementById("tab-results").style.display = "flex";
             document.getElementById("tab-criteria").style.display = "none";
         } else {
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
             document.getElementById("tab-results").style.display = "none";
-            document.getElementById("tab-criteria").style.display = "grid";
+            document.getElementById("tab-criteria").style.display = "flex";
         }
     }
 
@@ -177,7 +250,7 @@
             allEvaluationResults = await res.json();
             renderStudentEvalList(allEvaluationResults);
         } catch (e) {
-            document.getElementById("studentEvalList").innerHTML = `<div style="color:red; text-align:center;">โหลดล้มเหลว: ${e}</div>`;
+            document.getElementById("studentEvalList").innerHTML = `<div class="text-red-500 text-center py-4">โหลดล้มเหลว: ${e}</div>`;
         }
     }
 
@@ -185,17 +258,18 @@
         const listContainer = document.getElementById("studentEvalList");
         listContainer.innerHTML = "";
         if (data.length === 0) {
-            listContainer.innerHTML = `<div style="color:#64748b; text-align:center; padding:20px;">ไม่พบข้อมูลการประเมิน</div>`;
+            listContainer.innerHTML = `<div class="text-slate-400 text-center py-10">ไม่พบข้อมูลการประเมิน</div>`;
             return;
         }
         data.forEach(item => {
             const div = document.createElement("div");
-            div.className = "topic-item";
-            div.id = `eval-item-${item.rowId}`; // แก้ไขดึงค่าจาก rowId จริง
+            // ปรับแต่งคลาส CSS ให้โมเดิร์น
+            div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer overflow-hidden";
+            div.id = `eval-item-${item.rowId}`; 
             div.innerHTML = `
-                <div style="font-weight:bold;">${item.studentName || 'ไม่ทราบชื่อ'}</div>
-                <div style="font-size:12px; color:#64748b; margin-top:2px;">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
-                <div style="font-size:12px; color:#10b981; font-weight:bold; margin-top:2px;">รวม: ${item.totalScore} คะแนน</div>
+                <div class="font-bold text-slate-800 text-sm truncate pr-2">${item.studentName || 'ไม่ทราบชื่อ'}</div>
+                <div class="text-xs text-slate-500 mt-1">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
+                <div class="mt-2 inline-block bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold px-2 py-0.5 rounded-md">รวม: ${item.totalScore} คะแนน</div>
             `;
             div.onclick = () => selectEvaluationItem(item);
             listContainer.appendChild(div);
@@ -224,7 +298,16 @@
         document.getElementById("viewStudentName").innerText = item.studentName || "-";
         document.getElementById("viewStudentId").innerText = `รหัส: ${item.studentId}`;
         document.getElementById("viewSubject").innerText = `วิชา: ${item.subjectCode}`;
-        document.getElementById("viewWorkTime").innerText = `เวลาปฏิบัติงาน: ${item.workTime || '-'}`;
+        
+        // ถ้าเวลาปฏิบัติงานไม่มีค่า ให้ซ่อน หรือถ้ามีให้แสดง
+        const wtEl = document.getElementById("viewWorkTime");
+        if(item.workTime) {
+            wtEl.innerText = `เวลาปฏิบัติงาน: ${item.workTime}`;
+            wtEl.className = "bg-amber-50 text-amber-700 px-3 py-1 rounded-md font-medium border border-amber-100";
+        } else {
+            wtEl.className = "hidden";
+        }
+        
         document.getElementById("viewComment").innerText = item.comment || "ไม่มีความคิดเห็นเพิ่มเติม";
         document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุชื่ออาจารย์'}`;
         
@@ -235,11 +318,11 @@
         document.getElementById("score_v5").innerText = `${item.score5} คะแนน`;
         document.getElementById("score_v6").innerText = `${item.score6} คะแนน`;
         
-        document.getElementById("viewTotalScore").innerText = `${item.totalScore} คะแนน (${item.grade})`;
+        document.getElementById("viewTotalScore").innerHTML = `${item.totalScore} <span class="text-sm font-medium text-slate-400">คะแนน</span><br><span class="text-sm">(${item.grade})</span>`;
     }
 
     function openCriteriaViewer(topic) {
-        document.querySelectorAll('.topic-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('#criteriaTopics .topic-item').forEach(el => el.classList.remove('active'));
         document.getElementById("viewerCard").style.display = "none";
         document.getElementById("editorCard").style.display = "block";
         document.getElementById("editTopicName").value = topic;
@@ -251,11 +334,11 @@
         subItems.forEach(item => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td style="font-weight:bold; color:#0f172a;">${item.level}</td>
-                <td style="text-align:center; font-weight:bold; color:#0284c7;">${item.score !== null ? item.score : '-'}</td>
-                <td>
+                <td class="p-4 font-semibold text-slate-800 align-top">${item.level}</td>
+                <td class="p-4 text-center font-black text-indigo-500 align-top">${item.score !== null ? item.score : '-'}</td>
+                <td class="p-4">
                     <input type="hidden" class="row-num-input" value="${item.rowNum}">
-                    <textarea class="detail-input" rows="2" style="width:100%; box-sizing:border-box;">${item.detail || ''}</textarea>
+                    <textarea class="detail-input w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition-all text-slate-700" rows="2">${item.detail || ''}</textarea>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -273,18 +356,17 @@
             
             uniqueTopics.forEach(topic => {
                 const div = document.createElement("div");
-                div.className = "topic-item";
-                div.id = `topic-${topic.replace(/\s+/g, '')}`;
+                div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer font-medium text-slate-700 text-sm";
+                div.id = `topic-${topic.replace(/\\s+/g, '')}`;
                 div.innerText = topic;
                 div.onclick = () => {
                     openCriteriaViewer(topic);
-                    document.querySelectorAll('#criteriaTopics .topic-item').forEach(el => el.classList.remove('active'));
                     div.classList.add('active');
                 };
                 container.appendChild(div);
             });
         } catch (e) {
-            document.getElementById("criteriaTopics").innerHTML = `<div style="color:red; text-align:center;">โหลดล้มเหลว: ${e}</div>`;
+            document.getElementById("criteriaTopics").innerHTML = `<div class="text-red-500 text-center py-4">โหลดล้มเหลว: ${e}</div>`;
         }
     }
 
@@ -302,7 +384,6 @@
         });
 
         try {
-            // 🔥 ปรับแก้การ POST แบบปลอดภัยไม่ติด CORS ด้วย text/plain และส่ง Action ครบถ้วน
             const res = await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -324,34 +405,43 @@
         if (!currentSelectedEval) return;
         
         Swal.fire({
-            title: `✏️ แก้ไขคะแนน\n${currentSelectedEval.studentName}`,
+            title: `<div class="text-xl font-bold">✏️ แก้ไขคะแนน</div><div class="text-sm font-normal text-slate-500 mt-1">${currentSelectedEval.studentName}</div>`,
             html: `
-                <div style="text-align:left; font-family:'Sarabun',sans-serif; font-size:14px;">
-                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">1. ความรู้ (เต็ม 20)</label>
-                    <input type="number" id="md_s1" class="swal2-input" value="${currentSelectedEval.score1}" style="margin:0; width:100%;">
-                    
-                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">2. ทักษะคลินิก (เต็ม 20)</label>
-                    <input type="number" id="md_s2" class="swal2-input" value="${currentSelectedEval.score2}" style="margin:0; width:100%;">
-                    
-                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">3. การเรียนรู้ด้วยตนเอง (เต็ม 15)</label>
-                    <input type="number" id="md_s3" class="swal2-input" value="${currentSelectedEval.score3}" style="margin:0; width:100%;">
-                    
-                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">4. การสื่อสาร (เต็ม 15)</label>
-                    <input type="number" id="md_s4" class="swal2-input" value="${currentSelectedEval.score4}" style="margin:0; width:100%;">
-                    
-                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">5. ความรับผิดชอบ (เต็ม 15)</label>
-                    <input type="number" id="md_s5" class="swal2-input" value="${currentSelectedEval.score5}" style="margin:0; width:100%;">
-                    
-                    <label style="font-weight:bold; display:block; margin:8px 0 4px;">6. เจตคติและจริยธรรม (เต็ม 15)</label>
-                    <input type="number" id="md_s6" class="swal2-input" value="${currentSelectedEval.score6}" style="margin:0; width:100%;">
-                    
-                    <label style="font-weight:bold; display:block; margin:12px 0 4px;">ความคิดเห็นเพิ่มเติม</label>
-                    <textarea id="md_comment" class="swal2-textarea" style="margin:0; width:100%; height:80px;">${currentSelectedEval.comment || ''}</textarea>
+                <div style="text-align:left; font-family:'Prompt',sans-serif; font-size:14px;" class="space-y-3 mt-4">
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">1. ความรู้ (เต็ม 20)</label>
+                        <input type="number" id="md_s1" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score1}">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">2. ทักษะคลินิก (เต็ม 20)</label>
+                        <input type="number" id="md_s2" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score2}">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">3. การเรียนรู้ด้วยตนเอง (เต็ม 15)</label>
+                        <input type="number" id="md_s3" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score3}">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">4. การสื่อสาร (เต็ม 15)</label>
+                        <input type="number" id="md_s4" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score4}">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">5. ความรับผิดชอบ (เต็ม 15)</label>
+                        <input type="number" id="md_s5" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score5}">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">6. เจตคติและจริยธรรม (เต็ม 15)</label>
+                        <input type="number" id="md_s6" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score6}">
+                    </div>
+                    <div class="pt-2">
+                        <label class="font-semibold text-slate-700 block mb-1">ความคิดเห็นเพิ่มเติม</label>
+                        <textarea id="md_comment" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" rows="3">${currentSelectedEval.comment || ''}</textarea>
+                    </div>
                 </div>
             `,
             showCancelButton: true,
             confirmButtonText: '💾 บันทึกการแก้ไข',
             cancelButtonText: 'ยกเลิก',
+            confirmButtonColor: '#4f46e5',
             preConfirm: () => {
                 return {
                     studentId: currentSelectedEval.studentId,
