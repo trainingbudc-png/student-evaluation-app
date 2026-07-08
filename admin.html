@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแอดมิน - ตรวจสอบผลการประเมินนิสิต</title>
+    <title>ระบบควบคุมแอดมินหลัก - 10 เมนูจัดการฐานข้อมูล</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,546 +12,249 @@
             theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
         }
     </script>
-    <style>
-        .topic-item.active { border-color: #6366f1; background-color: #eef2ff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .topic-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #6366f1; border-radius: 4px 0 0 4px; }
-        .tab-btn { color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .tab-btn:hover { color: #4f46e5; }
-        .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; font-weight: 600; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex">
 
-<header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="bg-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-indigo-200">🏥</div>
+    <aside class="w-80 bg-slate-900 text-slate-300 flex flex-col min-h-screen shadow-xl border-r border-slate-800">
+        <div class="p-6 border-b border-slate-800 bg-slate-950 flex items-center gap-3">
+            <span class="text-3xl">⚙️</span>
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-800">ระบบบริหารจัดการและตรวจสอบผลการประเมิน<span class="text-indigo-600">นิสิตแพทย์</span></h1>
-            </div>
-        </div>
-        <div class="flex items-center gap-4">
-            <div id="adminName" class="bg-slate-100 px-4 py-2.5 rounded-full text-sm font-medium text-slate-600 flex items-center gap-2 border border-slate-200 shadow-sm">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Administrator
-            </div>
-        </div>
-    </div>
-</header>
-
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-    <div class="mb-6">
-        <a href="menu.html" class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-indigo-600 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm border border-slate-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            กลับหน้าเมนูหลัก
-        </a>
-    </div>
-
-    <div class="flex gap-8 border-b border-slate-200 mb-8">
-        <button class="tab-btn active pb-3 px-2 text-lg" onclick="switchTab('results')">📊 ผลการประเมินทั้งหมด</button>
-        <button class="tab-btn pb-3 px-2 text-lg" onclick="switchTab('criteria')">⚙️ ตั้งค่าเกณฑ์รูบริคส์</button>
-    </div>
-
-    <div id="tab-results" class="flex flex-col md:flex-row gap-6 items-start">
-        
-        <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
-            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    รายชื่อนิสิตที่ประเมินแล้ว
-                </h3>
-                
-                <div class="flex flex-col gap-3">
-                    <div class="relative">
-                        <input type="text" id="searchStudent" class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm" placeholder="🔍 ค้นหาชื่อ หรือ รหัส...">
-                        <svg class="w-4 h-4 absolute left-3.5 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                    
-                    <select id="filterSubject" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm text-slate-600">
-                        <option value="">📚 ทุกวิชาทั้งหมด</option>
-                        </select>
-                </div>
-            </div>
-            
-            <div id="studentEvalList" class="p-3 max-h-[60vh] overflow-y-auto space-y-2">
-                <div class="text-center text-slate-400 py-10 animate-pulse">กำลังโหลดรายชื่อ...</div>
+                <h1 class="text-lg font-bold text-white leading-none mb-1">Admin Panel</h1>
+                <p class="text-xs text-slate-500 font-light">ระบบจัดการข้อมูลแพทย์ศาสตรศึกษา</p>
             </div>
         </div>
         
-        <div class="w-full md:w-2/3 lg:w-3/4">
-            
-            <div id="placeholderCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-16 flex flex-col items-center justify-center text-slate-400 h-[60vh]">
-                <svg class="w-20 h-20 text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <p class="text-lg font-medium text-slate-500">กรุณาเลือกรายชื่อนิสิตจากแถบด้านซ้าย</p>
-                <p class="text-sm mt-1">เพื่อดูรายละเอียดผลการประเมินและจัดการข้อมูล</p>
-            </div>
-
-            <div id="viewResultsCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8" style="display: none;">
-                <div class="flex flex-col md:flex-row justify-between items-start border-b border-slate-100 pb-6 mb-6 gap-4">
-                    <div>
-                        <h2 id="viewStudentName" class="text-2xl font-bold text-slate-800 mb-2">-</h2>
-                        <div class="flex flex-wrap items-center gap-2 text-sm">
-                            <span id="viewStudentId" class="bg-slate-100 text-slate-700 px-3 py-1 rounded-md font-medium border border-slate-200">รหัส: -</span>
-                            <span id="viewSubject" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md font-medium border border-indigo-100">วิชา: -</span>
-                            <span id="viewWorkTime" class="hidden"></span> 
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 p-1 rounded-2xl shadow-lg shadow-emerald-200">
-                        <div class="bg-white rounded-xl px-6 py-3 flex items-center justify-center min-w-[140px]">
-                            <div class="text-center">
-                                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Score</p>
-                                <div id="viewTotalScore" class="text-2xl font-black text-emerald-600 leading-none">0 <span class="text-sm font-medium text-slate-400">คะแนน</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    คะแนนรายข้อ (Competencies)
-                </h3>
-                
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
-                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">1. ความรู้</span>
-                        <strong id="score_v1" class="text-2xl font-bold text-slate-800">-</strong>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
-                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">2. ทักษะคลินิก</span>
-                        <strong id="score_v2" class="text-2xl font-bold text-slate-800">-</strong>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
-                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">3. การเรียนรู้ด้วยตนเอง</span>
-                        <strong id="score_v3" class="text-2xl font-bold text-slate-800">-</strong>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
-                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">4. การสื่อสาร</span>
-                        <strong id="score_v4" class="text-2xl font-bold text-slate-800">-</strong>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
-                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">5. ความรับผิดชอบ</span>
-                        <strong id="score_v5" class="text-2xl font-bold text-slate-800">-</strong>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-indigo-200 transition-all">
-                        <span class="block text-xs font-semibold text-slate-500 mb-2 truncate">6. เจตคติและจริยธรรม</span>
-                        <strong id="score_v6" class="text-2xl font-bold text-slate-800">-</strong>
-                    </div>
-                </div>
-
-                <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-5 mb-6">
-                    <h3 class="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                        ความคิดเห็นเพิ่มเติมจากอาจารย์
-                    </h3>
-                    <div id="viewComment" class="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap min-h-[40px]">-</div>
-                </div>
-
-                <div class="flex flex-col md:flex-row justify-between items-center border-t border-slate-100 pt-5 gap-4">
-                    <span id="viewTeacherName" class="text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">ผู้ประเมิน: -</span>
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5 flex items-center gap-2" onclick="openEditScoresModal()">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        แก้ไขคะแนนนิสิตคนนี้
-                    </button>
+        <nav class="flex-grow p-4 space-y-6 overflow-y-auto" style="max-height: calc(100vh - 90px);">
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📊 ผลการประเมิน & ตารางงาน</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('evaluationResults')" id="btn-evaluationResults" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📝 ผลการประเมินทั้งหมด</button>
+                    <button onclick="switchTab('mainElectives')" id="btn-mainElectives" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📅 ตารางเรียนนิสิต (Elective)</button>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div id="tab-criteria" class="flex flex-col md:flex-row gap-6 items-start" style="display: none;">
-        <div class="w-full md:w-1/3 lg:w-1/4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-28">
-            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                    หัวข้อการประเมิน
-                </h3>
-            </div>
-            <div id="criteriaTopics" class="p-3 max-h-[60vh] overflow-y-auto space-y-2">
-                <div class="text-center text-slate-400 py-10 animate-pulse">กำลังโหลดหัวข้อ...</div>
-            </div>
-        </div>
-        
-        <div class="w-full md:w-2/3 lg:w-3/4">
-            <div id="viewerCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 border-dashed p-16 flex flex-col items-center justify-center text-slate-400 h-[60vh]">
-                <svg class="w-20 h-20 text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <p class="text-lg font-medium text-slate-500">กรุณาเลือกหัวข้อการประเมินจากด้านซ้าย</p>
-                <p class="text-sm mt-1">เพื่อตรวจสอบหรือแก้ไขรายละเอียดเกณฑ์คะแนนรูบริคส์</p>
-            </div>
-            
-            <div id="editorCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" style="display: none;">
-                <div class="p-6 md:p-8 border-b border-slate-100">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">
-                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        แก้ไขเกณฑ์การให้คะแนน
-                    </h2>
-                    
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">หัวข้อหลัก</label>
-                    <input type="text" id="editTopicName" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-medium focus:outline-none">
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🎓 เกณฑ์ & รายชื่อวิชา</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('formCriteria')" id="btn-formCriteria" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📋 เกณฑ์การประเมิน (Rubrics)</button>
+                    <button onclick="switchTab('assessors')" id="btn-assessors" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">👨‍🏫 รายชื่ออาจารย์ผู้ประเมิน</button>
+                    <button onclick="switchTab('subjects')" id="btn-subjects" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📚 รายชื่อวิชาเรียน</button>
                 </div>
-                
-                <form id="criteriaForm" class="p-6 md:p-8 pt-2">
-                    <div class="overflow-x-auto rounded-xl border border-slate-200">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50">
-                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200 w-1/4">ระดับคำจำกัดความ</th>
-                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200 text-center w-24">คะแนน</th>
-                                    <th class="p-4 text-sm font-semibold text-slate-600 border-b border-slate-200">คำอธิบายรายละเอียดเกณฑ์รูบริคส์</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rubricRows" class="bg-white divide-y divide-slate-100">
-                                </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-8 flex justify-end">
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                            บันทึกการอัปเดตเกณฑ์
-                        </button>
-                    </div>
-                </form>
             </div>
-        </div>
-    </div>
-</div>
 
-<script>
-    // ==========================================
-    // 🔗 การตั้งค่าพื้นฐาน
-    // ==========================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
-
-    // ==========================================
-    // 📦 1. STATE (ที่เก็บข้อมูลและสถานะตัวกรอง)
-    // ==========================================
-    let allCriteriaData = [];
-    let allEvaluationResults = [];
-    let currentSelectedEval = null;
-
-    // ระบบจัดเก็บสถานะตัวกรอง (รวมศูนย์ที่นี่ที่เดียว)
-    const filterState = {
-        search: "",
-        subject: ""
-    };
-
-    // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
-    window.addEventListener("DOMContentLoaded", () => {
-        loadEvaluationResults();
-        loadCriteriaData();
-        loadSubjectsData(); // โหลดรายชื่อวิชาสำหรับใส่ใน Dropdown
-    });
-
-    // เปลี่ยน Tab
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if (tab === 'results') {
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            document.getElementById("tab-results").style.display = "flex";
-            document.getElementById("tab-criteria").style.display = "none";
-        } else {
-            document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            document.getElementById("tab-results").style.display = "none";
-            document.getElementById("tab-criteria").style.display = "flex";
-        }
-    }
-
-    // ==========================================
-    // ⚙️ 2. FETCH DATA (ฟังก์ชันดึงข้อมูลจากหลังบ้าน)
-    // ==========================================
-    
-    // โหลดรายชื่อวิชา
-    async function loadSubjectsData() {
-        try {
-            const res = await fetch(`${API_URL}?action=getSubjects`);
-            const subjects = await res.json();
-            
-            const selectElement = document.getElementById("filterSubject");
-            subjects.forEach(sub => {
-                const option = document.createElement("option");
-                option.value = sub.code;
-                option.text = `${sub.code} - ${sub.name}`;
-                selectElement.appendChild(option);
-            });
-        } catch (e) {
-            console.error("ไม่สามารถโหลดรายชื่อวิชาได้:", e);
-        }
-    }
-
-    // โหลดรายชื่อผู้ที่ประเมินแล้ว
-    async function loadEvaluationResults() {
-        try {
-            const res = await fetch(`${API_URL}?action=getEvaluationResults`);
-            allEvaluationResults = await res.json();
-            applyFilters(); // โหลดเสร็จให้ผ่านตัวกรองไปวาดหน้าจอ
-        } catch (e) {
-            document.getElementById("studentEvalList").innerHTML = `<div class="text-red-500 text-center py-4">โหลดล้มเหลว: ${e}</div>`;
-        }
-    }
-
-    // โหลดเกณฑ์การประเมิน
-    async function loadCriteriaData() {
-        try {
-            const res = await fetch(`${API_URL}?action=getFormCriteria`);
-            allCriteriaData = await res.json();
-            
-            const uniqueTopics = [...new Set(allCriteriaData.map(item => item.topic))].filter(Boolean);
-            const container = document.getElementById("criteriaTopics");
-            container.innerHTML = "";
-            
-            uniqueTopics.forEach(topic => {
-                const div = document.createElement("div");
-                div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer font-medium text-slate-700 text-sm";
-                div.id = `topic-${topic.replace(/\\s+/g, '')}`;
-                div.innerText = topic;
-                div.onclick = () => {
-                    openCriteriaViewer(topic);
-                    div.classList.add('active');
-                };
-                container.appendChild(div);
-            });
-        } catch (e) {
-            document.getElementById("criteriaTopics").innerHTML = `<div class="text-red-500 text-center py-4">โหลดล้มเหลว: ${e}</div>`;
-        }
-    }
-
-    // ==========================================
-    // 🔍 3. FILTER ENGINE (สมองกลตัวกรองข้อมูล)
-    // ==========================================
-    
-    // ดักจับเมื่อมีการพิมพ์ค้นหา
-    document.getElementById("searchStudent").addEventListener("input", (e) => {
-        filterState.search = e.target.value.toLowerCase().trim();
-        applyFilters();
-    });
-
-    // ดักจับเมื่อมีการเปลี่ยนวิชาใน Dropdown
-    document.getElementById("filterSubject").addEventListener("change", (e) => {
-        filterState.subject = e.target.value;
-        applyFilters();
-    });
-
-    // ฟังก์ชันคำนวณการกรอง
-    function applyFilters() {
-        const filteredData = allEvaluationResults.filter(item => {
-            // ด่าน 1: ตรวจสอบคำค้นหา
-            const matchesSearch = String(item.studentName).toLowerCase().includes(filterState.search) || 
-                                  String(item.studentId).toLowerCase().includes(filterState.search);
-            
-            // ด่าน 2: ตรวจสอบวิชา
-            const matchesSubject = filterState.subject === "" || String(item.subjectCode) === filterState.subject;
-
-            // ผ่านทั้ง 2 ด่านถึงจะแสดงผล
-            return matchesSearch && matchesSubject;
-        });
-        
-        renderStudentEvalList(filteredData);
-    }
-
-    // ==========================================
-    // 🖼️ 4. UI RENDERING (ฟังก์ชันจัดการหน้าจอ)
-    // ==========================================
-    
-    // วาดรายการนิสิตด้านซ้ายมือ
-    function renderStudentEvalList(data) {
-        const listContainer = document.getElementById("studentEvalList");
-        listContainer.innerHTML = "";
-        
-        if (data.length === 0) {
-            listContainer.innerHTML = `<div class="text-slate-400 text-center py-10">ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</div>`;
-            return;
-        }
-        
-        data.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "topic-item relative bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer overflow-hidden";
-            div.id = `eval-item-${item.rowId}`; 
-            div.innerHTML = `
-                <div class="font-bold text-slate-800 text-sm truncate pr-2">${item.studentName || 'ไม่ทราบชื่อ'}</div>
-                <div class="text-xs text-slate-500 mt-1">รหัส: ${item.studentId} | วิชา: ${item.subjectCode}</div>
-                <div class="mt-2 inline-block bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold px-2 py-0.5 rounded-md">รวม: ${item.totalScore} คะแนน</div>
-            `;
-            div.onclick = () => selectEvaluationItem(item);
-            listContainer.appendChild(div);
-        });
-    }
-
-    // เมื่อคลิกดูรายละเอียดรายบุคคล
-    function selectEvaluationItem(item) {
-        currentSelectedEval = item;
-        document.querySelectorAll('#studentEvalList .topic-item').forEach(el => el.classList.remove('active'));
-        
-        const activeEl = document.getElementById(`eval-item-${item.rowId}`);
-        if(activeEl) activeEl.classList.add('active');
-        
-        document.getElementById("placeholderCard").style.display = "none";
-        document.getElementById("viewResultsCard").style.display = "block";
-        
-        document.getElementById("viewStudentName").innerText = item.studentName || "-";
-        document.getElementById("viewStudentId").innerText = `รหัส: ${item.studentId}`;
-        document.getElementById("viewSubject").innerText = `วิชา: ${item.subjectCode}`;
-        
-        const wtEl = document.getElementById("viewWorkTime");
-        if(item.workTime) {
-            wtEl.innerText = `เวลาปฏิบัติงาน: ${item.workTime}`;
-            wtEl.className = "bg-amber-50 text-amber-700 px-3 py-1 rounded-md font-medium border border-amber-100";
-        } else {
-            wtEl.className = "hidden";
-        }
-        
-        document.getElementById("viewComment").innerText = item.comment || "ไม่มีความคิดเห็นเพิ่มเติม";
-        document.getElementById("viewTeacherName").innerText = `ผู้ประเมิน: ${item.teacherName || 'ไม่ระบุชื่ออาจารย์'}`;
-        
-        document.getElementById("score_v1").innerText = `${item.score1} คะแนน`;
-        document.getElementById("score_v2").innerText = `${item.score2} คะแนน`;
-        document.getElementById("score_v3").innerText = `${item.score3} คะแนน`;
-        document.getElementById("score_v4").innerText = `${item.score4} คะแนน`;
-        document.getElementById("score_v5").innerText = `${item.score5} คะแนน`;
-        document.getElementById("score_v6").innerText = `${item.score6} คะแนน`;
-        
-        document.getElementById("viewTotalScore").innerHTML = `${item.totalScore} <span class="text-sm font-medium text-slate-400">คะแนน</span><br><span class="text-sm">(${item.grade})</span>`;
-    }
-
-    // ดูและแก้ไขเกณฑ์ รูบริคส์
-    function openCriteriaViewer(topic) {
-        document.querySelectorAll('#criteriaTopics .topic-item').forEach(el => el.classList.remove('active'));
-        document.getElementById("viewerCard").style.display = "none";
-        document.getElementById("editorCard").style.display = "block";
-        document.getElementById("editTopicName").value = topic;
-
-        const subItems = allCriteriaData.filter(item => item.topic === topic);
-        const tbody = document.getElementById("rubricRows");
-        tbody.innerHTML = "";
-
-        subItems.forEach(item => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="p-4 font-semibold text-slate-800 align-top">${item.level}</td>
-                <td class="p-4 text-center font-black text-indigo-500 align-top">${item.score !== null ? item.score : '-'}</td>
-                <td class="p-4">
-                    <input type="hidden" class="row-num-input" value="${item.rowNum}">
-                    <textarea class="detail-input w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition-all text-slate-700" rows="2">${item.detail || ''}</textarea>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    // บันทึกการแก้ไขเกณฑ์
-    document.getElementById("criteriaForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-        
-        const rubrics = [];
-        const rows = document.querySelectorAll("#rubricRows tr");
-        rows.forEach(row => {
-            rubrics.push({
-                rowNum: row.querySelector(".row-num-input").value,
-                detail: row.querySelector(".detail-input").value
-            });
-        });
-
-        try {
-            const res = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "updateFormCriteria", rubrics: rubrics })
-            });
-            const data = await res.json();
-            if (data.result === "success") {
-                Swal.fire("สำเร็จ!", "อัปเดตเกณฑ์คะแนนรูบริคส์เรียบร้อยแล้ว", "success");
-                loadCriteriaData();
-            } else {
-                Swal.fire("ล้มเหลว", data.message || "เกิดข้อผิดพลาด", "error");
-            }
-        } catch (err) {
-            Swal.fire("ผิดพลาด", err.toString(), "error");
-        }
-    });
-
-    // โมดอลแก้ไขคะแนนนักเรียน
-    function openEditScoresModal() {
-        if (!currentSelectedEval) return;
-        
-        Swal.fire({
-            title: `<div class="text-xl font-bold">✏️ แก้ไขคะแนน</div><div class="text-sm font-normal text-slate-500 mt-1">${currentSelectedEval.studentName}</div>`,
-            html: `
-                <div style="text-align:left; font-family:'Prompt',sans-serif; font-size:14px;" class="space-y-3 mt-4">
-                    <div>
-                        <label class="font-semibold text-slate-700 block mb-1">1. ความรู้ (เต็ม 20)</label>
-                        <input type="number" id="md_s1" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score1}">
-                    </div>
-                    <div>
-                        <label class="font-semibold text-slate-700 block mb-1">2. ทักษะคลินิก (เต็ม 20)</label>
-                        <input type="number" id="md_s2" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score2}">
-                    </div>
-                    <div>
-                        <label class="font-semibold text-slate-700 block mb-1">3. การเรียนรู้ด้วยตนเอง (เต็ม 15)</label>
-                        <input type="number" id="md_s3" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score3}">
-                    </div>
-                    <div>
-                        <label class="font-semibold text-slate-700 block mb-1">4. การสื่อสาร (เต็ม 15)</label>
-                        <input type="number" id="md_s4" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score4}">
-                    </div>
-                    <div>
-                        <label class="font-semibold text-slate-700 block mb-1">5. ความรับผิดชอบ (เต็ม 15)</label>
-                        <input type="number" id="md_s5" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score5}">
-                    </div>
-                    <div>
-                        <label class="font-semibold text-slate-700 block mb-1">6. เจตคติและจริยธรรม (เต็ม 15)</label>
-                        <input type="number" id="md_s6" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" value="${currentSelectedEval.score6}">
-                    </div>
-                    <div class="pt-2">
-                        <label class="font-semibold text-slate-700 block mb-1">ความคิดเห็นเพิ่มเติม</label>
-                        <textarea id="md_comment" class="w-full p-2 border border-slate-300 rounded-lg focus:border-indigo-500 outline-none" rows="3">${currentSelectedEval.comment || ''}</textarea>
-                    </div>
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🗂️ ข้อมูลระบบ (Master Data)</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('departments')" id="btn-departments" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏢 ข้อมูลภาควิชา</button>
+                    <button onclick="switchTab('specialties')" id="btn-specialties" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🧬 ข้อมูลสาขาวิชา</button>
+                    <button onclick="switchTab('positions')" id="btn-positions" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🎖️ ข้อมูลตำแหน่งอาจารย์</button>
+                    <button onclick="switchTab('institutes')" id="btn-institutes" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏥 ข้อมูลสถาบัน / รพ.</button>
+                    <button onclick="switchTab('provinces')" id="btn-provinces" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🗺️ ข้อมูลจังหวัด</button>
                 </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: '💾 บันทึกการแก้ไข',
-            cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#4f46e5',
-            preConfirm: () => {
-                return {
-                    studentId: currentSelectedEval.studentId,
-                    subjectCode: currentSelectedEval.subjectCode,
-                    score1: document.getElementById("md_s1").value,
-                    score2: document.getElementById("md_s2").value,
-                    score3: document.getElementById("md_s3").value,
-                    score4: document.getElementById("md_s4").value,
-                    score5: document.getElementById("md_s5").value,
-                    score6: document.getElementById("md_s6").value,
-                    comment: document.getElementById("md_comment").value
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
+        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
+            <h2 id="current-title" class="text-xl font-bold text-slate-800">กำลังโหลดระบบข้อมูล...</h2>
+            <div class="flex items-center gap-4">
+                <input type="text" id="searchBox" oninput="searchTable()" placeholder="🔍 ค้นหาข้อมูลในหน้านี้..." class="px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 transition-all">
+                <button id="addBtn" onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-lg shadow-blue-100 flex items-center gap-1.5 transition-all">
+                    ➕ เพิ่มข้อมูลใหม่
+                </button>
+            </div>
+        </header>
+
+        <section class="flex-grow p-8 overflow-auto">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead id="table-head" class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        </thead>
+                    <tbody id="table-body" class="text-sm divide-y divide-slate-100 text-slate-600">
+                        <tr>
+                            <td colspan="10" class="text-center py-12 text-slate-400">กรุณารอสักครู่ ระบบกำลังดึงฐานข้อมูลสดจาก Excel...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ⚠️ สำคัญมาก: เปลี่ยนเป็น URL Web App ของคุณที่ได้มาจาก Google Apps Script
+        const API_URL = "https://script.google.com/macros/s/XXXXX/exec"; 
+        
+        let ALL_DATA = {};
+        let currentActiveTab = "evaluationResults";
+
+        // โครงสร้างคอลัมน์ของแต่ละหน้าจอสำหรับ Render ใน HTML
+        const schemas = {
+            evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
+            mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "สถาบันต้นสังกัด", "จังหวัด"] },
+            formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
+            assessors: { title: "รายชื่ออาจารย์ผู้ประเมิน", sheet: "Assessor", fields: ["คำนำหน้า", "ชื่อ", "นามสกุล", "ตำแหน่ง", "email", "เบอร์โทร", "สถาบัน", "ภาควิชา"] },
+            subjects: { title: "รายชื่อวิชาเรียน", sheet: "Subject", fields: ["รหัสวิชา", "ชื่อวิชา", "กลุ่มงาน", "สาขาวิชา"] },
+            departments: { title: "ข้อมูลภาควิชา", sheet: "Department_Master", fields: ["ชื่อกลุ่ม_ภาควิชา"] },
+            specialties: { title: "ข้อมูลสาขาวิชา", sheet: "Specialty_Master", fields: ["ชื่อสาขาวิชา"] },
+            positions: { title: "ข้อมูลตำแหน่งอาจารย์", sheet: "Position_Master", fields: ["ชื่อตำแหน่ง"] },
+            institutes: { title: "ข้อมูลสถาบัน / รพ.", sheet: "Institute_Master", fields: ["ชื่อสถาบัน"] },
+            provinces: { title: "ข้อมูลจังหวัด", sheet: "Province_Master", fields: ["ชื่อจังหวัด"] }
+        };
+
+        window.addEventListener("DOMContentLoaded", loadAllDataFromServer);
+
+        async function loadAllDataFromServer() {
+            try {
+                const response = await fetch(`${API_URL}?action=getAdminAllData`);
+                const res = await response.json();
+                if(res.result === "success") {
+                    ALL_DATA = res;
+                    switchTab(currentActiveTab);
+                } else {
+                    Swal.fire("ข้อผิดพลาด", "ไม่สามารถดึงข้อมูลจากหลังบ้านได้", "error");
                 }
+            } catch(e) {
+                Swal.fire("เกิดข้อผิดพลาดในการเชื่อมต่อ", e.toString(), "error");
             }
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังส่งข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-                try {
-                    const queryParams = new URLSearchParams({
-                        action: "updateStudentEvaluation",
-                        ...result.value
+        }
+
+        function switchTab(tabKey) {
+            currentActiveTab = tabKey;
+            const schema = schemas[tabKey];
+            
+            // ปรับปุ่ม Active Sidebar
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("bg-blue-600", "text-white", "shadow-md"));
+            document.getElementById(`btn-${tabKey}`).classList.add("bg-blue-600", "text-white", "shadow-md");
+            
+            // อัปเดต Title
+            document.getElementById("current-title").innerText = schema.title;
+            document.getElementById("searchBox").value = "";
+
+            // ซ่อน/แสดง ปุ่มเพิ่มข้อมูลเฉพาะบางเมนู (เช่น เกณฑ์ ไม่ควรให้กดเพิ่มส่งเดช)
+            document.getElementById("addBtn").style.display = (tabKey === 'formCriteria') ? 'none' : 'flex';
+
+            renderTable(ALL_DATA[tabKey] || [], schema.fields);
+        }
+
+        function renderTable(dataRows, fields) {
+            const thead = document.getElementById("table-head");
+            const tbody = document.getElementById("table-body");
+            
+            // 1. วาดหัวตาราง
+            let headHTML = "<tr>";
+            fields.forEach(f => headHTML += `<th class="px-6 py-4">${f}</th>`);
+            headHTML += `<th class="px-6 py-4 text-center">จัดการ</th></tr>`;
+            thead.innerHTML = headHTML;
+
+            // 2. วาดเนื้อหาตาราง
+            if (dataRows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${fields.length + 1}" class="text-center py-12 text-slate-400">📭 ไม่พบรายการข้อมูลในชีตนี้</td></tr>`;
+                return;
+            }
+
+            let bodyHTML = "";
+            dataRows.forEach(row => {
+                bodyHTML += `<tr class="hover:bg-slate-50 transition-colors">`;
+                fields.forEach(f => {
+                    let val = row[f] || "-";
+                    if(f.includes("Timestamp") && val !== "-") val = new Date(val).toLocaleString('th-TH');
+                    bodyHTML += `<td class="px-6 py-4 whitespace-nowrap font-medium text-slate-700">${val}</td>`;
+                });
+                bodyHTML += `
+                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                        <button onclick="deleteRecord('${row._rowNum}')" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition-colors">🗑️ ลบ</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = bodyHTML;
+        }
+
+        // ค้นหาข้อมูลฝั่ง Client-side แบบ Realtime
+        function searchTable() {
+            const query = document.getElementById("searchBox").value.toLowerCase();
+            const schema = schemas[currentActiveTab];
+            const filtered = ALL_DATA[currentActiveTab].filter(row => {
+                return schema.fields.some(f => String(row[f] || "").toLowerCase().includes(query));
+            });
+            renderTable(filtered, schema.fields);
+        }
+
+        // ฟังชันก์ลบแถวข้อมูล
+        function deleteRecord(rowNum) {
+            const schema = schemas[currentActiveTab];
+            Swal.fire({
+                title: 'ยืนยันการลบข้อมูล?',
+                text: `คุณกำลังจะลบข้อมูลแถวที่ ${rowNum} ในชีต ${schema.sheet} ซึ่งไม่สามารถกู้คืนได้`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                confirmButtonText: 'ใช่, ฉันต้องการลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'กำลังลบแถวข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        const res = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${schema.sheet}&rowNum=${rowNum}`);
+                        const data = await res.json();
+                        if (data.result === "success") {
+                            await Swal.fire("สำเร็จ!", "ลบข้อมูลออกจาก Excel เรียบร้อยแล้ว", "success");
+                            location.reload();
+                        } else {
+                            Swal.fire("ล้มเหลว", data.message, "error");
+                        }
+                    } catch(e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                }
+            });
+        }
+
+        // ฟังก์ชันสร้าง Form กรอกป๊อปอัปอัตโนมัติตามหัวข้อชีต
+        function openAddModal() {
+            const schema = schemas[currentActiveTab];
+            let inputFormHTML = `<div class="text-left space-y-4">`;
+            
+            schema.fields.forEach(f => {
+                if(f === "Timestamp" || f === "ลำดับ") return; // ข้ามฟิลด์ที่ระบบสร้างอัตโนมัติ
+                inputFormHTML += `
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>
+                        <input id="md_${f}" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>`;
+            });
+            inputFormHTML += `</div>`;
+
+            Swal.fire({
+                title: `➕ เพิ่มข้อมูลใน ${schema.title}`,
+                html: inputFormHTML,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกลงชีต',
+                cancelButtonText: 'ปิดหน้าต่าง',
+                focusConfirm: false,
+                preConfirm: () => {
+                    let payload = { sheetName: schema.sheet };
+                    schema.fields.forEach(f => {
+                        if(f === "Timestamp" || f === "ลำดับ") return;
+                        payload[f] = document.getElementById(`md_${f}`).value;
                     });
-
-                    const res = await fetch(`${API_URL}?${queryParams.toString()}`);
-                    const data = await res.json();
-                    
-                    if (data.result === "success") {
-                        await Swal.fire("สำเร็จ!", "แก้ไขคะแนนนิสิตเรียบร้อยแล้ว", "success");
-                        location.reload();
-                    } else {
-                        Swal.fire("ล้มเหลว", data.message, "error");
-                    }
-                } catch (e) {
-                    Swal.fire("ผิดพลาด", e.toString(), "error");
+                    return payload;
                 }
-            }
-        });
-    }
-</script>
+            }).then(async (result) => {
+                if (result.isConfirmed && result.value) {
+                    Swal.fire({ title: 'กำลังส่งข้อมูลไปที่ Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        const queryParams = new URLSearchParams({ action: "addAdminRecord", ...result.value });
+                        const res = await fetch(`${API_URL}?${queryParams.toString()}`);
+                        const data = await res.json();
+                        if (data.result === "success") {
+                            await Swal.fire("สำเร็จ!", "เพิ่มแถวข้อมูลใหม่เข้า Excel แล้ว", "success");
+                            location.reload();
+                        } else {
+                            Swal.fire("ล้มเหลว", data.message, "error");
+                        }
+                    } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
