@@ -84,13 +84,12 @@
     </main>
 
     <script>
-        // ⚠️ สำคัญ: วาง URL Web App ที่ได้จากการ Deploy เวอร์ชันล่าสุดในสเต็ปที่ 1 ตรงนี้ครับ
+        // ⚠️ สำคัญ: วาง URL Web App ที่ได้จากการ Deploy ของคุณที่นี่ครับ
         const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec"; 
         
         let ALL_DATA = {};
         let currentActiveTab = "evaluationResults";
 
-        // โครงสร้างหัวคอลัมน์ของแต่ละหน้าจอให้ตรงกับโครงสร้างจริงในชีต Excel Master
         const schemas = {
             evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
             mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "สถาบันต้นสังกัด", "จังหวัด"] },
@@ -131,7 +130,6 @@
             document.getElementById("current-title").innerText = schema.title;
             document.getElementById("searchBox").value = "";
 
-            // ชีตเกณฑ์การประเมินไม่ควรกดเพิ่มแถวเองได้ง่ายๆ เพื่อป้องกันระบบคำนวณรวน
             document.getElementById("addBtn").style.display = (tabKey === 'formCriteria') ? 'none' : 'flex';
 
             renderTable(ALL_DATA[tabKey] || [], schema.fields);
@@ -204,17 +202,48 @@
             });
         }
 
+        // 🌟 อัปเกรดฟังก์ชัน เพิ่มข้อมูลให้ใช้ Dropdown อัตโนมัติจาก Master Data
         function openAddModal() {
             const schema = schemas[currentActiveTab];
             let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
             
             schema.fields.forEach(f => {
                 if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
-                inputFormHTML += `
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>
-                        <input id="md_${f}" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>`;
+                
+                // ตรวจสอบว่าฟิลด์นี้มีข้อมูล Master Data หรือไม่
+                let dropdownOptions = [];
+                
+                if (f === "จังหวัด") {
+                    dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
+                } else if (f === "สถาบัน" || f === "สถาบันต้นสังกัด") {
+                    dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
+                } else if (f === "ตำแหน่ง") {
+                    dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
+                } else if (f === "สาขาวิชา") {
+                    dropdownOptions = ALL_DATA.specialties.map(item => item.ชื่อสาขาวิชา).filter(Boolean);
+                } else if (f === "กลุ่มงาน" || f === "ภาควิชา") {
+                    dropdownOptions = ALL_DATA.departments.map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
+                } else if (f === "ภายใน/ภายนอก") {
+                    dropdownOptions = ["ภายใน", "ภายนอก"]; // ตัวเลือกแบบกำหนดเองตายตัว
+                }
+
+                inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
+                
+                if (dropdownOptions.length > 0) {
+                    // ถ้ามีตัวเลือก ให้วาด Dropdown (Select)
+                    inputFormHTML += `<select id="md_${f}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">`;
+                    inputFormHTML += `<option value="">-- กรุณาเลือก --</option>`;
+                    
+                    let uniqueOptions = [...new Set(dropdownOptions)].sort(); // กรองซ้ำและเรียงลำดับ
+                    uniqueOptions.forEach(opt => {
+                        inputFormHTML += `<option value="${opt}">${opt}</option>`;
+                    });
+                    
+                    inputFormHTML += `</select></div>`;
+                } else {
+                    // ถ้าไม่มีตัวเลือก ให้วาดช่องพิมพ์ข้อความปกติ
+                    inputFormHTML += `<input id="md_${f}" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>`;
+                }
             });
             inputFormHTML += `</div>`;
 
