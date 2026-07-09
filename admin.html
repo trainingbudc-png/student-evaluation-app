@@ -130,7 +130,7 @@
             document.getElementById("current-title").innerText = schema.title;
             document.getElementById("searchBox").value = "";
 
-            document.getElementById("addBtn").style.display = (tabKey === 'formCriteria') ? 'none' : 'flex';
+            document.getElementById("addBtn").style.display = 'flex';
 
             renderTable(ALL_DATA[tabKey] || [], schema.fields);
         }
