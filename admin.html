@@ -84,7 +84,6 @@
     </main>
 
     <script>
-        // ⚠️ สำคัญ: วาง URL Web App ที่ได้จากการ Deploy ของคุณที่นี่ครับ
         const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec"; 
         
         let ALL_DATA = {};
@@ -129,7 +128,6 @@
             
             document.getElementById("current-title").innerText = schema.title;
             document.getElementById("searchBox").value = "";
-
             document.getElementById("addBtn").style.display = 'flex';
 
             renderTable(ALL_DATA[tabKey] || [], schema.fields);
@@ -157,7 +155,6 @@
                     if(f.includes("Timestamp") && val !== "-") val = new Date(val).toLocaleString('th-TH');
                     bodyHTML += `<td class="px-6 py-4 whitespace-nowrap font-medium text-slate-700 max-w-xs truncate">${val}</td>`;
                 });
-                // 🌟 เพิ่มปุ่มแก้ไขสีส้ม (amber-600) เคียงข้างปุ่มลบสีแดงในทุกๆ แถวแล้วครับ
                 bodyHTML += `
                     <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)] flex items-center justify-center gap-2">
                         <button onclick="openEditModal('${row._rowNum}')" class="text-xs font-bold text-amber-600 hover:bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 transition-colors">✏️ แก้ไข</button>
@@ -215,7 +212,9 @@
                 
                 if (f === "จังหวัด") {
                     dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
-                } else if (f === "สถาบัน" || f === "สถาบันต้นสังกัด") {
+                } 
+                // 🛠️ แก้ไขตรงนี้: เปลี่ยนจาก 'สถาบันต้นสังกัด' เป็น 'สถานที่' และ 'สถาบัน' ให้ดึงจากข้อมูล รพ. ถูกต้องตามหน้างานจริง
+                else if (f === "สถาบัน" || f === "สถานที่") {
                     dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
                 } else if (f === "ตำแหน่ง") {
                     dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
@@ -278,10 +277,8 @@
             });
         }
 
-        // 🌟 ฟังก์ชันใหม่: ใช้สแกนหาแถวข้อมูลปัจจุบัน นำมาเปิดหน้าต่างแก้ไขพร้อมดึงค่าเดิมขึ้นมาพรีฟิลอัตโนมัติ
         function openEditModal(rowNum) {
             const schema = schemas[currentActiveTab];
-            // ค้นหาข้อมูลของแถวนี้จากตัวแปร ALL_DATA
             const rowData = ALL_DATA[currentActiveTab].find(r => String(r._rowNum) === String(rowNum));
             if(!rowData) {
                 Swal.fire("ผิดพลาด", "ไม่พบข้อมูลของแถวนี้ในระบบ", "error");
@@ -291,7 +288,6 @@
             let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
             
             schema.fields.forEach(f => {
-                // คอลัมน์ระบบเหล่านี้จะไม่เปิดให้แก้ไขโดยตรงเพื่อป้องกันสูตรหรือระบบรันนิ่งพังครับ
                 if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
                 
                 let currentVal = rowData[f] || "";
@@ -299,7 +295,9 @@
                 
                 if (f === "จังหวัด") {
                     dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
-                } else if (f === "สถาบัน" || f === "สถาบันต้นสังกัด") {
+                } 
+                // 🛠️ แก้ไขตรงนี้: เปลี่ยนให้ 'สถานที่' เป็น Dropdown และปล่อยให้ 'สถาบันต้นสังกัด' เป็นกล่องข้อความพิมพ์ธรรมดา
+                else if (f === "สถาบัน" || f === "สถานที่") {
                     dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
                 } else if (f === "ตำแหน่ง") {
                     dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
@@ -314,7 +312,6 @@
                 inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
                 
                 if (dropdownOptions.length > 0) {
-                    // สร้าง Dropdown และเลือกค่าปัจจุบันไว้ให้ทันที (Selected)
                     inputFormHTML += `<select id="edit_md_${f}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">`;
                     inputFormHTML += `<option value="">-- กรุณาเลือก --</option>`;
                     
@@ -326,7 +323,6 @@
                     
                     inputFormHTML += `</select></div>`;
                 } else {
-                    // สร้างช่องพิมข้อความธรรมดา พร้อมป้อนค่าเดิมเข้าไปให้เลย
                     let escapedVal = String(currentVal).replace(/"/g, '&quot;');
                     inputFormHTML += `<input id="edit_md_${f}" type="text" value="${escapedVal}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>`;
                 }
@@ -357,7 +353,7 @@
                         const data = await res.json();
                         if (data.result === "success") {
                             await Swal.fire("สำเร็จ!", "แก้ไขข้อมูลเรียบร้อยแล้วครับ", "success");
-                            location.reload(); // รีโหลดหน้ารายการใหม่เพื่อให้แสดงค่าล่าสุด
+                            location.reload();
                         } else {
                             Swal.fire("ล้มเหลว", data.message, "error");
                         }
