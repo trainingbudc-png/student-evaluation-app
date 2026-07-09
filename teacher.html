@@ -200,7 +200,7 @@
 </div>
 
 <script>
-    // ✅ URL ลิงก์ Web App ของคุณ (แก้ให้ตรงกับปัจจุบันถ้ามีการอัปเดต)
+    // ⚠️ ลิงก์ Web App ของคุณ 
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
     let allStudents = [];
@@ -225,7 +225,6 @@
         } catch (error) { console.error("โหลดรายวิชาล้มเหลว:", error); }
     }
 
-    // 🌟 โค้ดดึงเกณฑ์การประเมิน (Rubrics)
     async function loadCriteria() {
         try {
             const response = await fetch(`${API_URL}?action=getFormCriteria&t=${new Date().getTime()}`);
@@ -278,7 +277,6 @@
                     activeTopics.push(currentTopic);
                 }
                 
-                // ตรวจสอบว่าบรรทัดถัดไปเป็นหัวข้อใหม่หรือไม่ เพื่อเพิ่ม Question Counter
                 const nextItem = data[data.indexOf(item) + 1];
                 if (!nextItem || nextItem.topic !== currentTopic) {
                     questionCounter++;
@@ -295,10 +293,9 @@
         }
     }
 
-    // 🌟 โค้ดดึงรายชื่อนิสิต (อัปเดตแบบเช็คชื่ออาจารย์เรียลไทม์ และไม่มีฟังก์ชันซ้ำซ้อน)
     async function loadStudents() {
         const subCode = document.getElementById("subjectCode").value;
-        const teacherName = document.getElementById("teacherName").value.trim(); // ดึงชื่ออาจารย์ที่กำลังพิมพ์มาเช็ค
+        const teacherName = document.getElementById("teacherName").value.trim(); 
         const container = document.getElementById("studentListContainer");
         
         document.getElementById("selectedStudentId").value = "";
@@ -323,7 +320,6 @@
                 filtered.forEach(s => {
                     const div = document.createElement("div");
                     
-                    // 🔍 เช็คว่าอาจารย์คนนี้ (ที่พิมพ์ชื่ออยู่) เคยประเมินนิสิตคนนี้หรือยัง
                     const isEvaluatedByMe = s.evaluatedBy && s.evaluatedBy.includes(teacherName) && teacherName !== "";
                     
                     if (isEvaluatedByMe) {
@@ -333,8 +329,17 @@
                             <div style="font-weight:bold; margin-top:2px; color:#94a3b8; text-decoration: line-through;">${s.studentName}</div>
                             <div style="font-size:12px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
                         `;
+                        // 🌟 แก้ไขตรงนี้: เด้งแจ้งเตือนเฉยๆ ไม่ล้างค่าฟอร์มด้านล่าง
                         div.onclick = () => {
-                            Swal.fire({ icon: 'info', title: 'ประเมินไปแล้ว', text: 'คุณได้ประเมินนิสิตคนนี้ในวิชานี้ไปเรียบร้อยแล้วครับ' });
+                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+                            document.getElementById("selectedStudentId").value = "";
+                            document.getElementById("selectedStudentName").value = "";
+                            
+                            Swal.fire({ 
+                                icon: 'warning', 
+                                title: 'แจ้งเตือน', 
+                                text: 'นิสิตคนนี้ได้ประเมินไปแล้ว' 
+                            });
                         };
                     } else {
                         div.className = "student-item";
@@ -357,7 +362,6 @@
         }
     }
 
-    // 🌟 โค้ดส่งข้อมูลเมื่อกดปุ่มบันทึก
     document.getElementById("evalForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
