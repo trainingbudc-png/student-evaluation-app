@@ -135,14 +135,12 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-<!-- 🏠 ปุ่มกลับหน้าเมนูหลัก (ลอยอยู่มุมซ้ายบน) -->
 <div class="fixed top-4 left-4 sm:top-6 sm:left-6 z-50">
     <a href="menu.html" class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-blue-600 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
         กลับหน้าเมนูหลัก
     </a>
 </div>
-
 
 <div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 transition-all">
     
@@ -160,7 +158,7 @@
         
         <div>
             <label for="teacherName" class="block text-sm font-semibold text-slate-700 mb-2">👤 ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
-            <input type="text" id="teacherName" required placeholder="ตัวอย่าง: นพ.สมชาย ตั้งใจดี" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 placeholder-slate-400 font-medium shadow-sm">
+            <input type="text" id="teacherName" oninput="loadStudents()" required placeholder="ตัวอย่าง: นพ.สมชาย ตั้งใจดี" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 placeholder-slate-400 font-medium shadow-sm">
         </div>
 
         <div>
@@ -202,7 +200,7 @@
 </div>
 
 <script>
-    // ✅ URL ลิงก์ Web App ของคุณ
+    // ✅ URL ลิงก์ Web App ของคุณ (แก้ให้ตรงกับปัจจุบันถ้ามีการอัปเดต)
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
     let allStudents = [];
@@ -227,8 +225,80 @@
         } catch (error) { console.error("โหลดรายวิชาล้มเหลว:", error); }
     }
 
+    // 🌟 โค้ดดึงเกณฑ์การประเมิน (Rubrics)
+    async function loadCriteria() {
+        try {
+            const response = await fetch(`${API_URL}?action=getFormCriteria&t=${new Date().getTime()}`);
+            const data = await response.json();
+            const container = document.getElementById("criteriaContainer");
+            container.innerHTML = "";
+            activeTopics = [];
+
+            if (data.result === "error") {
+                container.innerHTML = `<div class="error-box">ไม่สามารถดึงเกณฑ์การประเมินได้</div>`;
+                return;
+            }
+
+            let currentTopic = "";
+            let tableHTML = "";
+            let questionCounter = 1;
+
+            data.forEach(item => {
+                if (item.topic !== currentTopic) {
+                    if (currentTopic !== "") {
+                        tableHTML += `</tbody></table>`;
+                        container.innerHTML += tableHTML;
+                    }
+                    currentTopic = item.topic;
+                    
+                    container.innerHTML += `<div class="competency-title">${currentTopic}</div>`;
+                    
+                    tableHTML = `
+                        <table class="rubric-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%; text-align: left;">ระดับความสามารถ</th>
+                                    <th style="width: 50%; text-align: left;">รายละเอียด (Rubrics)</th>
+                                    <th colspan="5" style="text-align: center;">เลือกระดับคะแนน</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                }
+
+                tableHTML += `
+                    <tr>
+                        <td style="font-weight: 600;">${item.level}</td>
+                        <td style="font-size: 13px; line-height: 1.5;">${item.detail}</td>
+                        <td class="radio-cell"><input type="radio" name="q_${questionCounter}" value="${item.score}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required></td>
+                    </tr>
+                `;
+                
+                if (!activeTopics.includes(currentTopic)) {
+                    activeTopics.push(currentTopic);
+                }
+                
+                // ตรวจสอบว่าบรรทัดถัดไปเป็นหัวข้อใหม่หรือไม่ เพื่อเพิ่ม Question Counter
+                const nextItem = data[data.indexOf(item) + 1];
+                if (!nextItem || nextItem.topic !== currentTopic) {
+                    questionCounter++;
+                }
+            });
+
+            if (tableHTML !== "") {
+                tableHTML += `</tbody></table>`;
+                container.innerHTML += tableHTML;
+            }
+            
+        } catch (error) {
+            document.getElementById("criteriaContainer").innerHTML = `<div class="error-box">⚠️ เกิดข้อผิดพลาดในการโหลดเกณฑ์ประเมิน</div>`;
+        }
+    }
+
+    // 🌟 โค้ดดึงรายชื่อนิสิต (อัปเดตแบบเช็คชื่ออาจารย์เรียลไทม์ และไม่มีฟังก์ชันซ้ำซ้อน)
     async function loadStudents() {
         const subCode = document.getElementById("subjectCode").value;
+        const teacherName = document.getElementById("teacherName").value.trim(); // ดึงชื่ออาจารย์ที่กำลังพิมพ์มาเช็ค
         const container = document.getElementById("studentListContainer");
         
         document.getElementById("selectedStudentId").value = "";
@@ -253,7 +323,10 @@
                 filtered.forEach(s => {
                     const div = document.createElement("div");
                     
-                    if (s.isEvaluated) {
+                    // 🔍 เช็คว่าอาจารย์คนนี้ (ที่พิมพ์ชื่ออยู่) เคยประเมินนิสิตคนนี้หรือยัง
+                    const isEvaluatedByMe = s.evaluatedBy && s.evaluatedBy.includes(teacherName) && teacherName !== "";
+                    
+                    if (isEvaluatedByMe) {
                         div.className = "student-item disabled";
                         div.innerHTML = `
                             <div style="font-size:12px; color:#64748b;">${s.studentId}</div>
@@ -261,7 +334,7 @@
                             <div style="font-size:12px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
                         `;
                         div.onclick = () => {
-                            Swal.fire({ icon: 'info', title: 'ประเมินไปแล้ว', text: 'นิสิตคนนี้ได้รับการประเมินในวิชานี้เรียบร้อยแล้วครับ' });
+                            Swal.fire({ icon: 'info', title: 'ประเมินไปแล้ว', text: 'คุณได้ประเมินนิสิตคนนี้ในวิชานี้ไปเรียบร้อยแล้วครับ' });
                         };
                     } else {
                         div.className = "student-item";
@@ -284,70 +357,7 @@
         }
     }
 
-    async function loadCriteria() {
-        const container = document.getElementById("criteriaContainer");
-        try {
-            const response = await fetch(`${API_URL}?action=getFormCriteria&t=${new Date().getTime()}`);
-            const text = await response.text();
-            let data;
-            
-            try {
-                data = JSON.parse(text);
-            } catch(err) {
-                throw new Error("ลิงก์ API ผิด หรือไม่ได้เชื่อมต่อ (เซิร์ฟเวอร์ไม่ได้ส่งค่ากลับมาเป็นข้อมูลประเมิน)");
-            }
-
-            if (data.result === "error") throw new Error(data.message);
-            
-            if (!Array.isArray(data) || data.length === 0) {
-                container.innerHTML = `<div class="error-box">❌ ไม่พบข้อมูลเกณฑ์ประเมิน<br><small style="color:#7f1d1d; font-weight:normal;">กรุณาตรวจสอบใน Google Sheets ว่าแท็บ "Form" มีข้อมูลหัวข้อและคะแนนครบถ้วนหรือไม่</small></div>`;
-                return;
-            }
-
-            activeTopics = [...new Set(data.map(item => item.topic))].filter(Boolean);
-            container.innerHTML = "";
-
-            activeTopics.forEach((topic, index) => {
-                const qNum = index + 1;
-                const rows = data.filter(item => item.topic === topic);
-                
-                const titleDiv = document.createElement("div");
-                titleDiv.className = "competency-title";
-                titleDiv.innerText = topic;
-                container.appendChild(titleDiv);
-
-                const table = document.createElement("table");
-                table.className = "rubric-table";
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th style="width: 65px; text-align:center;">เลือก</th>
-                            <th style="width: 110px;">ระดับ</th>
-                            <th style="width: 70px; text-align:center;">คะแนน</th>
-                            <th>คำอธิบายเกณฑ์และขอบเขตพฤติกรรม</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                `;
-                
-                const tbody = table.querySelector("tbody");
-                rows.forEach(r => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="radio-cell"><input type="radio" name="q_${qNum}" value="${r.score}" required style="transform: scale(1.4); cursor:pointer;" class="accent-blue-600"></td>
-                        <td style="font-weight:bold; color:#1e3a8a;">${r.level}</td>
-                        <td style="text-align:center; font-weight:bold; color:#2563eb;">${r.score}</td>
-                        <td style="font-size:14px; color:#475569; font-weight:300; line-height:1.6;">${r.detail || '-'}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                container.appendChild(table);
-            });
-        } catch (err) { 
-            container.innerHTML = `<div class="error-box">⚠️ โหลดเกณฑ์การประเมินล้มเหลว<br><small style="color:#7f1d1d; font-weight:normal;">สาเหตุ: ${err.message}</small></div>`;
-        }
-    }
-
+    // 🌟 โค้ดส่งข้อมูลเมื่อกดปุ่มบันทึก
     document.getElementById("evalForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -378,7 +388,7 @@
 
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
-                    const selectedRadio = document.querySelector(`input[name=\"q_${qNum}\"]:checked`);
+                    const selectedRadio = document.querySelector(`input[name="q_${qNum}"]:checked`);
                     payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "0";
                 });
 
