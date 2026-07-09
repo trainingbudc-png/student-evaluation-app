@@ -213,13 +213,13 @@
 
     async function loadSubjects() {
         try {
-            const response = await fetch(`${API_URL}?action=getSubjects&t=${new Date().getTime()}`);
+            const response = await fetch(API_URL + "?action=getSubjects&t=" + new Date().getTime());
             const data = await response.json();
             const select = document.getElementById("subjectCode");
             data.forEach(sub => {
                 const opt = document.createElement("option");
                 opt.value = sub.code;
-                opt.innerText = `${sub.code} - ${sub.name}`;
+                opt.innerText = sub.code + " - " + sub.name;
                 select.appendChild(opt);
             });
         } catch (error) { console.error("โหลดรายวิชาล้มเหลว:", error); }
@@ -227,7 +227,7 @@
 
     async function loadCriteria() {
         try {
-            const response = await fetch(`${API_URL}?action=getFormCriteria&t=${new Date().getTime()}`);
+            const response = await fetch(API_URL + "?action=getFormCriteria&t=" + new Date().getTime());
             const data = await response.json();
             const container = document.getElementById("criteriaContainer");
             container.innerHTML = "";
@@ -256,18 +256,22 @@
                         <table class="rubric-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 20%; text-align: left;">ระดับความสามารถ</th>
-                                    <th style="width: 50%; text-align: left;">รายละเอียด (Rubrics)</th>
-                                    <th colspan="5" style="text-align: center;">เลือกระดับคะแนน</th>
+                                    <th style="width: 25%; text-align: left;">ระดับความสามารถ</th>
+                                    <th style="width: 60%; text-align: left;">รายละเอียด (Rubrics)</th>
+                                    <th style="width: 15%; text-align: center;">เลือก</th>
                                 </tr>
                             </thead>
                             <tbody>
                     `;
                 }
 
+                // 🌟 [จุดแก้ไขเพิ่มเติม] เพิ่มส่วนแสดงผลตัวเลขคะแนนต่อท้ายชื่อระดับความสามารถในแต่ละแถว เพื่อให้อาจารย์ไม่งง
                 tableHTML += `
                     <tr>
-                        <td style="font-weight: 600;">${item.level}</td>
+                        <td style="font-weight: 600;">
+                            ${item.level} 
+                            <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
+                        </td>
                         <td style="font-size: 13px; line-height: 1.5;">${item.detail}</td>
                         <td class="radio-cell"><input type="radio" name="q_${questionCounter}" value="${item.score}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required></td>
                     </tr>
@@ -309,7 +313,7 @@
         container.innerHTML = `<div style="color: #1d4ed8; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-medium animate-pulse">⏳ กำลังโหลดรายชื่อนิสิต...</div>`;
 
         try {
-            const response = await fetch(`${API_URL}?action=getStudentsList&t=${new Date().getTime()}`);
+            const response = await fetch(API_URL + "?action=getStudentsList&t=" + new Date().getTime());
             allStudents = await response.json();
             const filtered = allStudents.filter(s => String(s.subjectCode).trim() === String(subCode).trim());
             
@@ -329,7 +333,6 @@
                             <div style="font-weight:bold; margin-top:2px; color:#94a3b8; text-decoration: line-through;">${s.studentName}</div>
                             <div style="font-size:12px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
                         `;
-                        // 🌟 แก้ไขตรงนี้: เด้งแจ้งเตือนเฉยๆ ไม่ล้างค่าฟอร์มด้านล่าง
                         div.onclick = () => {
                             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
                             document.getElementById("selectedStudentId").value = "";
@@ -392,8 +395,8 @@
 
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
-                    const selectedRadio = document.querySelector(`input[name="q_${qNum}"]:checked`);
-                    payload[`score${qNum}`] = selectedRadio ? selectedRadio.value : "0";
+                    const selectedRadio = document.querySelector('input[name="q_' + qNum + '\"]:checked');
+                    payload["score" + qNum] = selectedRadio ? selectedRadio.value : "0";
                 });
 
                 try {
