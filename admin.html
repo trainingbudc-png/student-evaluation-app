@@ -71,7 +71,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead id="table-head" class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider sticky top-0 z-10">
-                            </thead>
+                        </thead>
                         <tbody id="table-body" class="text-sm divide-y divide-slate-100 text-slate-600">
                             <tr>
                                 <td colspan="15" class="text-center py-12 text-slate-400">กรุณารอสักครู่ ระบบกำลังดึงฐานข้อมูลสดจาก Excel...</td>
@@ -157,8 +157,10 @@
                     if(f.includes("Timestamp") && val !== "-") val = new Date(val).toLocaleString('th-TH');
                     bodyHTML += `<td class="px-6 py-4 whitespace-nowrap font-medium text-slate-700 max-w-xs truncate">${val}</td>`;
                 });
+                // 🌟 เพิ่มปุ่มแก้ไขสีส้ม (amber-600) เคียงข้างปุ่มลบสีแดงในทุกๆ แถวแล้วครับ
                 bodyHTML += `
-                    <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)]">
+                    <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)] flex items-center justify-center gap-2">
+                        <button onclick="openEditModal('${row._rowNum}')" class="text-xs font-bold text-amber-600 hover:bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 transition-colors">✏️ แก้ไข</button>
                         <button onclick="deleteRecord('${row._rowNum}')" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition-colors">🗑️ ลบ</button>
                     </td>
                 </tr>`;
@@ -202,7 +204,6 @@
             });
         }
 
-        // 🌟 อัปเกรดฟังก์ชัน เพิ่มข้อมูลให้ใช้ Dropdown อัตโนมัติจาก Master Data
         function openAddModal() {
             const schema = schemas[currentActiveTab];
             let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
@@ -210,7 +211,6 @@
             schema.fields.forEach(f => {
                 if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
                 
-                // ตรวจสอบว่าฟิลด์นี้มีข้อมูล Master Data หรือไม่
                 let dropdownOptions = [];
                 
                 if (f === "จังหวัด") {
@@ -224,24 +224,22 @@
                 } else if (f === "กลุ่มงาน" || f === "ภาควิชา") {
                     dropdownOptions = ALL_DATA.departments.map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
                 } else if (f === "ภายใน/ภายนอก") {
-                    dropdownOptions = ["ภายใน", "ภายนอก"]; // ตัวเลือกแบบกำหนดเองตายตัว
+                    dropdownOptions = ["ภายใน", "ภายนอก"];
                 }
 
                 inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
                 
                 if (dropdownOptions.length > 0) {
-                    // ถ้ามีตัวเลือก ให้วาด Dropdown (Select)
                     inputFormHTML += `<select id="md_${f}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">`;
                     inputFormHTML += `<option value="">-- กรุณาเลือก --</option>`;
                     
-                    let uniqueOptions = [...new Set(dropdownOptions)].sort(); // กรองซ้ำและเรียงลำดับ
+                    let uniqueOptions = [...new Set(dropdownOptions)].sort();
                     uniqueOptions.forEach(opt => {
                         inputFormHTML += `<option value="${opt}">${opt}</option>`;
                     });
                     
                     inputFormHTML += `</select></div>`;
                 } else {
-                    // ถ้าไม่มีตัวเลือก ให้วาดช่องพิมพ์ข้อความปกติ
                     inputFormHTML += `<input id="md_${f}" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>`;
                 }
             });
@@ -272,6 +270,94 @@
                         if (data.result === "success") {
                             await Swal.fire("สำเร็จ!", "เพิ่มข้อมูลใหม่เข้าสู่ Excel เรียบร้อยแล้ว", "success");
                             location.reload();
+                        } else {
+                            Swal.fire("ล้มเหลว", data.message, "error");
+                        }
+                    } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                }
+            });
+        }
+
+        // 🌟 ฟังก์ชันใหม่: ใช้สแกนหาแถวข้อมูลปัจจุบัน นำมาเปิดหน้าต่างแก้ไขพร้อมดึงค่าเดิมขึ้นมาพรีฟิลอัตโนมัติ
+        function openEditModal(rowNum) {
+            const schema = schemas[currentActiveTab];
+            // ค้นหาข้อมูลของแถวนี้จากตัวแปร ALL_DATA
+            const rowData = ALL_DATA[currentActiveTab].find(r => String(r._rowNum) === String(rowNum));
+            if(!rowData) {
+                Swal.fire("ผิดพลาด", "ไม่พบข้อมูลของแถวนี้ในระบบ", "error");
+                return;
+            }
+
+            let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
+            
+            schema.fields.forEach(f => {
+                // คอลัมน์ระบบเหล่านี้จะไม่เปิดให้แก้ไขโดยตรงเพื่อป้องกันสูตรหรือระบบรันนิ่งพังครับ
+                if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
+                
+                let currentVal = rowData[f] || "";
+                let dropdownOptions = [];
+                
+                if (f === "จังหวัด") {
+                    dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
+                } else if (f === "สถาบัน" || f === "สถาบันต้นสังกัด") {
+                    dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
+                } else if (f === "ตำแหน่ง") {
+                    dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
+                } else if (f === "สาขาวิชา") {
+                    dropdownOptions = ALL_DATA.specialties.map(item => item.ชื่อสาขาวิชา).filter(Boolean);
+                } else if (f === "กลุ่มงาน" || f === "ภาควิชา") {
+                    dropdownOptions = ALL_DATA.departments.map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
+                } else if (f === "ภายใน/ภายนอก") {
+                    dropdownOptions = ["ภายใน", "ภายนอก"];
+                }
+
+                inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
+                
+                if (dropdownOptions.length > 0) {
+                    // สร้าง Dropdown และเลือกค่าปัจจุบันไว้ให้ทันที (Selected)
+                    inputFormHTML += `<select id="edit_md_${f}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">`;
+                    inputFormHTML += `<option value="">-- กรุณาเลือก --</option>`;
+                    
+                    let uniqueOptions = [...new Set(dropdownOptions)].sort();
+                    uniqueOptions.forEach(opt => {
+                        let selected = (String(opt).trim() === String(currentVal).trim()) ? "selected" : "";
+                        inputFormHTML += `<option value="${opt}" ${selected}>${opt}</option>`;
+                    });
+                    
+                    inputFormHTML += `</select></div>`;
+                } else {
+                    // สร้างช่องพิมข้อความธรรมดา พร้อมป้อนค่าเดิมเข้าไปให้เลย
+                    let escapedVal = String(currentVal).replace(/"/g, '&quot;');
+                    inputFormHTML += `<input id="edit_md_${f}" type="text" value="${escapedVal}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>`;
+                }
+            });
+            inputFormHTML += `</div>`;
+
+            Swal.fire({
+                title: `✏️ แก้ไขข้อมูลแถวที่ ${rowNum} (${schema.title})`,
+                html: inputFormHTML,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกการแก้ไข',
+                cancelButtonText: 'ยกเลิก',
+                focusConfirm: false,
+                preConfirm: () => {
+                    let payload = { sheetName: schema.sheet, rowNum: rowNum };
+                    schema.fields.forEach(f => {
+                        if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return;
+                        payload[f] = document.getElementById(`edit_md_${f}`).value;
+                    });
+                    return payload;
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed && result.value) {
+                    Swal.fire({ title: 'กำลังบันทึกการแก้ไขข้อมูลลง Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        const queryParams = new URLSearchParams({ action: "updateAdminRecord", ...result.value });
+                        const res = await fetch(`${API_URL}?${queryParams.toString()}`);
+                        const data = await res.json();
+                        if (data.result === "success") {
+                            await Swal.fire("สำเร็จ!", "แก้ไขข้อมูลเรียบร้อยแล้วครับ", "success");
+                            location.reload(); // รีโหลดหน้ารายการใหม่เพื่อให้แสดงค่าล่าสุด
                         } else {
                             Swal.fire("ล้มเหลว", data.message, "error");
                         }
