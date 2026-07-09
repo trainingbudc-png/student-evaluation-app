@@ -89,9 +89,10 @@
         let ALL_DATA = {};
         let currentActiveTab = "evaluationResults";
 
+        // 🌟 แก้ไข: ลบฟิลด์ "สถาบันต้นสังกัด" ออกจากเมนู mainElectives แล้วครับ
         const schemas = {
             evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
-            mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "สถาบันต้นสังกัด", "จังหวัด"] },
+            mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
             formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
             assessors: { title: "รายชื่ออาจารย์ผู้ประเมิน", sheet: "Assessor", fields: ["คำนำหน้า", "ชื่อ", "นามสกุล", "ตำแหน่ง", "email", "เบอร์โทร", "สถาบัน", "ภาควิชา"] },
             subjects: { title: "รายชื่อวิชาเรียน", sheet: "Subject", fields: ["รหัสวิชา", "ชื่อวิชา", "กลุ่มงาน", "สาขาวิชา"] },
@@ -212,9 +213,7 @@
                 
                 if (f === "จังหวัด") {
                     dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
-                } 
-                // 🛠️ แก้ไขตรงนี้: เปลี่ยนจาก 'สถาบันต้นสังกัด' เป็น 'สถานที่' และ 'สถาบัน' ให้ดึงจากข้อมูล รพ. ถูกต้องตามหน้างานจริง
-                else if (f === "สถาบัน" || f === "สถานที่") {
+                } else if (f === "สถาบัน" || f === "สถานที่") {
                     dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
                 } else if (f === "ตำแหน่ง") {
                     dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
@@ -295,9 +294,7 @@
                 
                 if (f === "จังหวัด") {
                     dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
-                } 
-                // 🛠️ แก้ไขตรงนี้: เปลี่ยนให้ 'สถานที่' เป็น Dropdown และปล่อยให้ 'สถาบันต้นสังกัด' เป็นกล่องข้อความพิมพ์ธรรมดา
-                else if (f === "สถาบัน" || f === "สถานที่") {
+                } else if (f === "สถาบัน" || f === "สถานที่") {
                     dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
                 } else if (f === "ตำแหน่ง") {
                     dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
