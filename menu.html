@@ -15,65 +15,49 @@
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
 
     <main class="flex-grow flex items-center justify-center p-4 sm:p-8 md:p-12">
-        <div class="w-full max-w-5xl">
+        <div class="w-full max-w-4xl">
             
             <div class="text-center mb-12">
                 <div class="inline-flex bg-blue-600 text-white p-4 rounded-3xl shadow-lg shadow-blue-200 mb-5 text-4xl transform hover:rotate-6 transition-transform cursor-default">
                     🏥
                 </div>
-                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight mb-3">
-                    ระบบบริหารจัดการผลการประเมินนิสิตแพทย์
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-3">
+                    ระบบประเมินผลการปฏิบัติงานนิสิตแพทย์
                 </h1>
-                <p class="text-sm sm:text-base text-slate-500 font-light max-w-xl mx-auto leading-relaxed">
-                    ศูนย์กลางคลังข้อมูลและสืบค้นสถานะการประเมินผลการปฏิบัติงานชั้นคลินิก <br class="hidden sm:block">
-                    กรุณาเลือกสถานะผู้ใช้งานเพื่อเข้าสู่ระบบงานส่วนที่เกี่ยวข้อง
+                <p class="text-sm sm:text-base text-slate-500 font-light max-w-md mx-auto leading-relaxed">
+                    กรุณาเลือกประเภทผู้ใช้งานเพื่อเข้าสู่ระบบงานในส่วนที่เกี่ยวข้อง
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                 
-                <a href="student.html" class="group bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col justify-between transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-300 relative overflow-hidden">
-                    <div class="absolute top-0 inset-x-0 h-1.5 bg-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                    <div>
-                        <div class="inline-flex bg-indigo-50 text-indigo-600 p-4 rounded-2xl text-2xl mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
-                            🩺
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-indigo-600 transition-colors">สำหรับนิสิตแพทย์</h3>
-                        <p class="text-sm text-slate-400 font-light leading-relaxed">ตรวจสอบและติดตามสถานะการส่งผลประเมินรายวิชาปฏิบัติงานในกองวิชาต่างๆ</p>
-                    </div>
-                    <div class="mt-8 flex items-center text-sm font-semibold text-indigo-600 group-hover:translate-x-1 transition-transform">
-                        เข้าสู่หน้าตรวจสอบสถานะ 
-                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    </div>
-                </a>
-
-                <a href="teacher.html" class="group bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col justify-between transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-300 relative overflow-hidden">
+                <a href="student.html" class="group relative bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[260px] overflow-hidden">
                     <div class="absolute top-0 inset-x-0 h-1.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                     <div>
                         <div class="inline-flex bg-blue-50 text-blue-600 p-4 rounded-2xl text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                            📋
+                            👨‍⚕️
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">สำหรับอาจารย์แพทย์</h3>
-                        <p class="text-sm text-slate-400 font-light leading-relaxed">กรอกผลคะแนน บันทึกข้อมูลรูบริคส์ และประเมินพฤติกรรมการปฏิบัติงานนิสิต</p>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">นิสิตแพทย์</h3>
+                        <p class="text-sm text-slate-400 font-light leading-relaxed">ตรวจสอบสถานะการประเมินของตนเอง และดูผลการประเมินวิชาที่ผ่านการอนุมัติแล้ว</p>
                     </div>
                     <div class="mt-8 flex items-center text-sm font-semibold text-blue-600 group-hover:translate-x-1 transition-transform">
-                        เข้าสู่ฟอร์มประเมินผล
-                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        เข้าสู่ระบบตรวจสอบผล
+                        <svg class="w-4 h-4 ml-1.5" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg>
                     </div>
                 </a>
 
-                <a href="admin.html" class="group bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col justify-between transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-300/30 transition-all duration-300 relative overflow-hidden">
-                    <div class="absolute top-0 inset-x-0 h-1.5 bg-slate-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                <a href="teacher.html" class="group relative bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:border-emerald-500/30 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[260px] overflow-hidden">
+                    <div class="absolute top-0 inset-x-0 h-1.5 bg-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                     <div>
-                        <div class="inline-flex bg-slate-100 text-slate-700 p-4 rounded-2xl text-2xl mb-6 group-hover:bg-slate-700 group-hover:text-white transition-colors duration-300">
-                            ⚙️
+                        <div class="inline-flex bg-emerald-50 text-emerald-600 p-4 rounded-2xl text-2xl mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                            📝
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-slate-700 transition-colors">เจ้าหน้าที่ / แอดมิน</h3>
-                        <p class="text-sm text-slate-400 font-light leading-relaxed">ตรวจสอบตารางสรุปผล ติดตามรายชื่อนิสิตที่ยังค้างประเมิน และแก้ไขคะแนน</p>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">อาจารย์ผู้ประเมิน</h3>
+                        <p class="text-sm text-slate-400 font-light leading-relaxed">บันทึกผลการประเมินและให้คะแนนการปฏิบัติงานนิสิตแพทย์ในความดูแลประจำวิชา</p>
                     </div>
-                    <div class="mt-8 flex items-center text-sm font-semibold text-slate-700 group-hover:translate-x-1 transition-transform">
-                        เข้าสู่แดชบอร์ดแอดมิน
-                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    <div class="mt-8 flex items-center text-sm font-semibold text-emerald-600 group-hover:translate-x-1 transition-transform">
+                        เข้าสู่แบบบันทึกการประเมิน
+                        <svg class="w-4 h-4 ml-1.5" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg>
                     </div>
                 </a>
 
@@ -82,8 +66,8 @@
         </div>
     </main>
 
-    <footer class="w-full text-center py-6 border-t border-slate-200/60 bg-white text-xs text-slate-400 font-light">
-        &copy; 2026 คณะแพทยศาสตร์ คลังข้อมูลระบบประเมินผลชั้นคลินิกอัจฉริยะ (Smart Clinical Evaluation System)
+    <footer class="py-6 text-center text-xs text-slate-400 font-light border-t border-slate-100 bg-white">
+        &copy; 2026 ระบบประเมินผลคณะแพทยศาสตร์. All rights reserved.
     </footer>
 
 </body>
