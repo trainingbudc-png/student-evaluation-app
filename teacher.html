@@ -15,9 +15,6 @@
     </script>
     
     <style>
-        /* 🎨 ส่วนที่ครอบคลุมสไตล์ดั้งเดิม เพื่อรองรับโค้ด JavaScript ที่สร้าง Element อัตโนมัติ */
-        
-        /* กล่องรายชื่อนิสิต */
         .student-list-container {
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
@@ -45,9 +42,8 @@
             background: #eff6ff; 
             transform: translateY(-1px);
         }
-        /* เมื่ออาจารย์คลิกเลือกนิสิต */
         .student-item.active { 
-            background: #1d4ed8 !important; /* Royal Blue */
+            background: #1d4ed8 !important; 
             color: white !important; 
             border-color: #1e40af !important; 
             font-weight: bold; 
@@ -57,7 +53,6 @@
             color: white !important;
             opacity: 1 !important;
         }
-        /* นิสิตที่ประเมินไปแล้ว */
         .student-item.disabled { 
             background: #f1f5f9; 
             border-color: #e2e8f0; 
@@ -65,13 +60,11 @@
             opacity: 0.65; 
         }
         
-        /* Custom Scrollbar ให้ดูเรียบเนียนขึ้น */
         .student-list-container::-webkit-scrollbar { width: 6px; }
         .student-list-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .student-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .student-list-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* หัวข้อเกณฑ์ประเมินขนาดใหญ่ (Competency Domain) */
         .competency-title { 
             background: #f0fdf4; 
             color: #166534; 
@@ -85,7 +78,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
         
-        /* ตารางรูบริคส์ประเมินผลคะแนน */
         .rubric-table { 
             width: 100%; 
             border-collapse: separate; 
@@ -119,7 +111,6 @@
         
         .radio-cell { text-align: center; width: 65px; }
         
-        /* กล่องแจ้งเตือนความผิดพลาด */
         .error-box { 
             background: #fef2f2; 
             color: #dc2626; 
@@ -133,16 +124,18 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8 flex flex-col items-center justify-start">
 
-<div class="fixed top-4 left-4 sm:top-6 sm:left-6 z-50">
-    <a href="menu.html" class="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-blue-600 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        กลับหน้าเมนูหลัก
-    </a>
+<div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-40 flex items-center gap-3">
+    <div id="deptBadge" class="hidden bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm border border-emerald-200">
+        ภาควิชา: <span id="displayDept">กำลังโหลด...</span>
+    </div>
+    <button onclick="location.reload()" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all">
+        🚪 ออกจากระบบ
+    </button>
 </div>
 
-<div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 transition-all">
+<div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 transition-all mt-12 md:mt-4">
     
     <div class="text-center mb-8">
         <div class="inline-flex bg-blue-50 text-blue-600 p-4 rounded-2xl shadow-inner mb-4 text-3xl">
@@ -158,11 +151,11 @@
         
         <div>
             <label for="teacherName" class="block text-sm font-semibold text-slate-700 mb-2">👤 ชื่อ-นามสกุล อาจารย์ผู้ประเมิน</label>
-            <input type="text" id="teacherName" oninput="loadStudents()" required placeholder="ตัวอย่าง: นพ.สมชาย ตั้งใจดี" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 placeholder-slate-400 font-medium shadow-sm">
+            <input type="text" id="teacherName" readonly class="w-full px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-xl text-base outline-none text-slate-600 font-bold shadow-sm cursor-not-allowed">
         </div>
 
         <div>
-            <label for="subjectCode" class="block text-sm font-semibold text-slate-700 mb-2">📚 เลือกรายวิชาปฏิบัติงาน</label>
+            <label for="subjectCode" class="block text-sm font-semibold text-slate-700 mb-2">📚 เลือกรายวิชาปฏิบัติงาน (กรองตามภาควิชาของคุณ)</label>
             <div class="relative">
                 <select id="subjectCode" required onchange="loadStudents()" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 font-medium shadow-sm appearance-none cursor-pointer pr-10">
                     <option value="">-- กรุณาเลือกวิชา --</option>
@@ -185,8 +178,7 @@
         </div>
 
         <div id="criteriaContainer" class="pt-2">
-            <p style="text-align: center; color: #64748b; padding: 24px;" class="text-sm font-light animate-pulse">🔄 กำลังโหลดเกณฑ์ประเมินจากฐานข้อมูล...</p>
-        </div>
+            </div>
 
         <div class="pt-4 border-t border-slate-100">
             <label for="comment" class="block text-sm font-semibold text-slate-700 mb-2">💬 ความคิดเห็นเพิ่มเติมและข้อเสนอแนะเพื่อพัฒนา</label>
@@ -200,23 +192,103 @@
 </div>
 
 <script>
-    // ⚠️ ลิงก์ Web App ของคุณ 
+    // ⚠️ ลิงก์ Web App ของคุณ (อย่าลืมเช็กให้ตรงกับที่ Deploy ล่าสุด)
     const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec";
 
+    let loggedInTeacher = null;
     let allStudents = [];
     let activeTopics = [];
 
-    window.addEventListener("DOMContentLoaded", () => {
-        loadSubjects();
-        loadCriteria();
-    });
+    window.addEventListener("DOMContentLoaded", showTeacherLogin);
+
+    // 🌟 ระบบ Teacher Login
+    async function showTeacherLogin() {
+        const { value: loginData } = await Swal.fire({
+            title: '👨‍🏫 เข้าสู่ระบบอาจารย์',
+            html: `
+                <div class="space-y-4 text-left mt-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">📧 อีเมล (Username)</label>
+                        <input id="swal-email" type="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="อีเมลของคุณ">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">📱 เบอร์โทรศัพท์ (Password)</label>
+                        <input id="swal-phone" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="เบอร์โทรศัพท์ของคุณ">
+                    </div>
+                </div>
+            `,
+            focusConfirm: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showCancelButton: false,
+            confirmButtonText: 'เข้าสู่ระบบ',
+            confirmButtonColor: '#1d4ed8',
+            showLoaderOnConfirm: true,
+            preConfirm: async () => {
+                const email = document.getElementById('swal-email').value.trim();
+                const phone = document.getElementById('swal-phone').value.trim();
+                
+                if (!email || !phone) {
+                    Swal.showValidationMessage('กรุณากรอกอีเมลและเบอร์โทรศัพท์ให้ครบถ้วน');
+                    return false;
+                }
+                
+                try {
+                    const response = await fetch(`${API_URL}?action=loginTeacher&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
+                    const data = await response.json();
+                    
+                    if (data.result !== 'success') {
+                        throw new Error(data.message);
+                    }
+                    return data.teacherData;
+                } catch (error) {
+                    Swal.showValidationMessage(`เข้าสู่ระบบล้มเหลว: ${error.message}`);
+                    return false;
+                }
+            }
+        });
+
+        if (loginData) {
+            loggedInTeacher = loginData;
+            
+            // นำข้อมูลอาจารย์ไปใส่ในฟอร์ม
+            const fullName = `${loginData.title}${loginData.firstname} ${loginData.lastname}`;
+            document.getElementById('teacherName').value = fullName;
+            
+            // แสดงป้ายบอกภาควิชา
+            document.getElementById('displayDept').innerText = loginData.department;
+            document.getElementById('deptBadge').classList.remove('hidden');
+            
+            Swal.fire({
+                title: 'ยินดีต้อนรับครับอาจารย์!',
+                text: fullName,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            // โหลดข้อมูลวิชาและเกณฑ์ หลังจากล็อกอินสำเร็จ
+            loadSubjects();
+            loadCriteria();
+        }
+    }
 
     async function loadSubjects() {
         try {
             const response = await fetch(API_URL + "?action=getSubjects&t=" + new Date().getTime());
             const data = await response.json();
             const select = document.getElementById("subjectCode");
-            data.forEach(sub => {
+            select.innerHTML = '<option value="">-- กรุณาเลือกวิชา --</option>';
+            
+            // 🌟 กรองเอาเฉพาะวิชาที่ตรงกับ "ภาควิชา" ของอาจารย์ที่ล็อกอิน
+            const filteredSubjects = data.filter(sub => String(sub.department).trim() === String(loggedInTeacher.department).trim());
+            
+            if (filteredSubjects.length === 0) {
+                 select.innerHTML = '<option value="">-- ไม่พบวิชาที่เปิดสอนในภาควิชาของคุณ --</option>';
+                 return;
+            }
+
+            filteredSubjects.forEach(sub => {
                 const opt = document.createElement("option");
                 opt.value = sub.code;
                 opt.innerText = sub.code + " - " + sub.name;
@@ -227,6 +299,7 @@
 
     async function loadCriteria() {
         try {
+            document.getElementById("criteriaContainer").innerHTML = `<p style="text-align: center; color: #64748b; padding: 24px;" class="text-sm font-light animate-pulse">🔄 กำลังโหลดเกณฑ์ประเมินจากฐานข้อมูล...</p>`;
             const response = await fetch(API_URL + "?action=getFormCriteria&t=" + new Date().getTime());
             const data = await response.json();
             const container = document.getElementById("criteriaContainer");
@@ -249,9 +322,7 @@
                         container.innerHTML += tableHTML;
                     }
                     currentTopic = item.topic;
-                    
                     container.innerHTML += `<div class="competency-title">${currentTopic}</div>`;
-                    
                     tableHTML = `
                         <table class="rubric-table">
                             <thead>
@@ -265,7 +336,6 @@
                     `;
                 }
 
-                // 🌟 [จุดแก้ไขเพิ่มเติม] เพิ่มส่วนแสดงผลตัวเลขคะแนนต่อท้ายชื่อระดับความสามารถในแต่ละแถว เพื่อให้อาจารย์ไม่งง
                 tableHTML += `
                     <tr>
                         <td style="font-weight: 600;">
@@ -323,7 +393,6 @@
             } else {
                 filtered.forEach(s => {
                     const div = document.createElement("div");
-                    
                     const isEvaluatedByMe = s.evaluatedBy && s.evaluatedBy.includes(teacherName) && teacherName !== "";
                     
                     if (isEvaluatedByMe) {
@@ -338,11 +407,7 @@
                             document.getElementById("selectedStudentId").value = "";
                             document.getElementById("selectedStudentName").value = "";
                             
-                            Swal.fire({ 
-                                icon: 'warning', 
-                                title: 'แจ้งเตือน', 
-                                text: 'นิสิตคนนี้ได้ประเมินไปแล้ว' 
-                            });
+                            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'นิสิตคนนี้ได้ประเมินไปแล้ว' });
                         };
                     } else {
                         div.className = "student-item";
