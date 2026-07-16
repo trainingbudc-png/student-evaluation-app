@@ -1,380 +1,474 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจัดการข้อมูลแอดมิน (Admin Dashboard)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Sarabun', sans-serif; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบควบคุมแอดมินหลัก - 10 เมนูจัดการฐานข้อมูล</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
+        }
+    </script>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex">
 
-  <nav class="bg-gradient-to-r bg-indigo-600 text-white shadow-md">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <i class="fa-solid fa-user-shield text-2xl"></i>
-        <span class="text-xl font-bold tracking-wide">Admin Control Panel</span>
-      </div>
-      <button onclick="fetchAllData()" class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2">
-        <i class="fa-solid fa-rotate"></i> <span>รีเฟรชข้อมูล</span>
-      </button>
-    </div>
-  </nav>
-
-  <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6">
-    
-    <div class="border-b border-gray-200 mb-6">
-      <nav class="flex space-x-4" aria-label="Tabs">
-        <button onclick="switchTab('Student_Profile')" id="tab-Student_Profile" class="tab-btn border-b-2 border-indigo-500 text-indigo-600 px-3 py-2 font-medium text-sm flex items-center space-x-2">
-          <i class="fa-solid fa-image-user text-lg"></i> <span>ข้อมูลนิสิต & รูปภาพ (Student_Profile)</span>
-        </button>
-        <button onclick="switchTab('Main')" id="tab-Main" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-3 py-2 font-medium text-sm flex items-center space-x-2">
-          <i class="fa-solid fa-table-list"></i> <span>ข้อมูลการเรียน (Main)</span>
-        </button>
-        <button onclick="switchTab('Evaluation_Results')" id="tab-Evaluation_Results" class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-3 py-2 font-medium text-sm flex items-center space-x-2">
-          <i class="fa-solid fa-square-poll-vertical"></i> <span>ผลการประเมิน</span>
-        </button>
-      </nav>
-    </div>
-
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-      <h2 id="current-tab-title" class="text-xl font-bold text-gray-800">ตารางข้อมูลนิสิต (Student_Profile)</h2>
-      <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center space-x-2 w-full sm:w-auto justify-center">
-        <i class="fa-solid fa-plus-circle"></i> <span>+ เพิ่มข้อมูลใหม่</span>
-      </button>
-    </div>
-
-    <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-100">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
-          <thead class="bg-gray-50 text-gray-700 uppercase font-semibold text-xs" id="table-head">
-            </thead>
-          <tbody class="divide-y divide-gray-200 text-gray-600" id="table-body">
-            <tr>
-              <td colspan="4" class="text-center py-8 text-gray-400">
-                <i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i> <br> กำลังโหลดข้อมูลจาก Google Sheets...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
-
-  <div id="dataModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden transform transition-all">
-      <div class="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
-        <h3 id="modalTitle" class="text-lg font-bold">เพิ่มข้อมูลใหม่</h3>
-        <button onclick="closeModal()" class="text-white/80 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="modalForm" onsubmit="handleFormSubmit(event)" class="p-6 overflow-y-auto space-y-4 flex-grow">
-        <input type="hidden" id="formRowNum">
-        
-        <div id="formFieldsContainer" class="space-y-4"></div>
-        
-        <div id="imageUploadSection" class="hidden border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50 transition cursor-pointer relative">
-          <input type="file" id="imageFileInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewImage(event)">
-          <div id="uploadPlaceholder" class="space-y-2 text-gray-500">
-            <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-500"></i>
-            <p class="text-xs font-semibold">คลิกเพื่อเลือกรูปภาพนิสิต หรือลากไฟล์มาวางที่นี่</p>
-            <p class="text-[10px] text-gray-400">รองรับไฟล์ JPG, PNG, GIF</p>
-          </div>
-          <div id="imagePreviewContainer" class="hidden flex flex-col items-center">
-            <img id="imagePreview" src="" class="h-32 w-32 object-cover rounded-lg shadow-md border mb-2">
-            <span class="text-xs text-emerald-600 font-medium"><i class="fa-solid fa-circle-check"></i> เลือกรูปภาพแล้ว เปลี่ยนรูปภาพคลิกซ้ำ</span>
-          </div>
+    <aside id="sidebar" class="w-80 bg-slate-900 text-slate-300 flex flex-col min-h-screen shadow-xl border-r border-slate-800 shrink-0 transition-all duration-300 overflow-hidden">
+        <div class="p-6 border-b border-slate-800 bg-slate-950 flex items-center gap-3 w-80">
+            <span class="text-3xl">⚙️</span>
+            <div>
+                <h1 class="text-lg font-bold text-white leading-none mb-1">Admin Panel</h1>
+                <p class="text-xs text-slate-500 font-light">ระบบจัดการข้อมูลแพทย์ศาสตรศึกษา</p>
+            </div>
         </div>
-
-        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 font-medium">ยกเลิก</button>
-          <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium shadow-sm">บันทึกข้อมูล</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // 📌 ตรงนี้คือลิงก์ของคุณพี่ที่ผมใส่ให้เรียบร้อยแล้วครับ!
-    const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec"; 
-
-    let allData = {};
-    let currentTab = "Student_Profile";
-    let base64FileData = null;
-    let base64FileName = "";
-    let base64FileMimeType = "";
-
-    // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
-    window.onload = function() {
-      fetchAllData();
-    };
-
-    // ดึงข้อมูลทั้งหมดจากหลังบ้าน
-    async function fetchAllData() {
-      showLoadingTable();
-      try {
-        const response = await fetch(`${API_URL}?action=getAdminAllData`);
-        const resJson = await response.json();
-        if (resJson.result === "success") {
-          allData = resJson;
-          renderTable();
-        } else {
-          Swal.fire("เกิดข้อผิดพลาด", resJson.message || "ดึงข้อมูลไม่สำเร็จ", "error");
-        }
-      } catch (err) {
-        Swal.fire("เชื่อมต่อล้มเหลว", "กรุณาตรวจสอบลิงก์ API_URL หรือสิทธิ์การเข้าถึงหลังบ้าน", "error");
-        console.error(err);
-      }
-    }
-
-    // สลับแท็บข้อมูล
-    function switchTab(tabName) {
-      currentTab = tabName;
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-indigo-500', 'text-indigo-600');
-        btn.classList.add('border-transparent', 'text-gray-500');
-      });
-      document.getElementById(`tab-${tabName}`).classList.add('border-indigo-500', 'text-indigo-600');
-      document.getElementById(`tab-${tabName}`).classList.remove('border-transparent', 'text-gray-500');
-      
-      const titles = { 'Student_Profile': 'ตารางข้อมูลนิสิต (Student_Profile)', 'Main': 'ตารางข้อมูลเรียน (Main)', 'Evaluation_Results': 'ตารางผลการประเมิน' };
-      document.getElementById('current-tab-title').innerText = titles[tabName] || tabName;
-      
-      renderTable();
-    }
-
-    // แสดงตารางข้อมูล
-    function renderTable() {
-      const tableHead = document.getElementById("table-head");
-      const tableBody = document.getElementById("table-body");
-      
-      let rows = [];
-      let headers = [];
-
-      if (currentTab === "Student_Profile") {
-        rows = allData.studentProfiles || [];
-        headers = ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"];
-      } else if (currentTab === "Main") {
-        rows = allData.mainElectives || [];
-        headers = ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "รหัสวิชา", "วันที่ประเมิน", "อาจารย์ผู้ประเมิน"];
-      } else if (currentTab === "Evaluation_Results") {
-        rows = allData.evaluationResults || [];
-        headers = ["Timestamp", "อาจารย์ผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "ผลประเมิน"];
-      }
-
-      // 1. วาดหัวตาราง
-      let headHtml = "<tr>";
-      headers.forEach(h => headHtml += `<th class="px-4 py-3">${h}</th>`);
-      headHtml += `<th class="px-4 py-3 text-center">จัดการ</th></tr>`;
-      tableHead.innerHTML = headHtml;
-
-      // 2. วาดเนื้อหาตาราง
-      if (rows.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="${headers.length + 1}" class="text-center py-6 text-gray-400">ยังไม่มีข้อมูลในระบบ</td></tr>`;
-        return;
-      }
-
-      let bodyHtml = "";
-      rows.forEach(row => {
-        bodyHtml += `<tr class="hover:bg-gray-50 transition border-b border-gray-100">`;
-        headers.forEach(h => {
-          let cellValue = row[h] || "";
-          // ถ้ารายการนั้นเป็น ลิงก์รูปภาพ ให้วาดเป็นแท็ก <img> เพื่อแสดงผล
-          if (h === "ลิงก์รูปภาพ" || (typeof cellValue === "string" && cellValue.startsWith("http") && (cellValue.includes("drive.google.com") || cellValue.includes("uc?export")))) {
-            bodyHtml += `<td class="px-4 py-2">
-              ${cellValue ? `<img src="${cellValue}" class="h-10 w-10 object-cover rounded-full border shadow-sm bg-gray-100 onerror="this.src='https://placehold.co/100x100?text=No+Image'"" />` : `<span class="text-gray-300 text-xs">ไม่มีรูปภาพ</span>`}
-            </td>`;
-          } else {
-            bodyHtml += `<td class="px-4 py-3">${cellValue}</td>`;
-          }
-        });
         
-        // ปุ่มจัดการข้อมูล
-        bodyHtml += `<td class="px-4 py-3 text-center space-x-2 whitespace-nowrap">
-          <button onclick="openEditModal(${JSON.stringify(row).replace(/"/g, '&quot;')})" class="text-indigo-600 hover:text-indigo-900 transition"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
-          <button onclick="deleteRecord(${row._rowNum})" class="text-rose-600 hover:text-rose-900 transition pl-2"><i class="fa-solid fa-trash-can"></i> ลบ</button>
-        </td></tr>`;
-      });
-      tableBody.innerHTML = bodyHtml;
-    }
+        <nav class="flex-grow p-4 space-y-6 overflow-y-auto w-80" style="max-height: calc(100vh - 90px);">
+            <!-- เมนูใหม่: ข้อมูลนิสิต -->
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🧑‍🎓 ข้อมูลนิสิต</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('studentProfiles')" id="btn-studentProfiles" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📸 ข้อมูลนิสิต & รูปภาพ</button>
+                </div>
+            </div>
 
-    // 📸 จัดการไฟล์รูปภาพและแปลงเป็น Base64
-    function previewImage(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📊 ผลการประเมิน & ตารางงาน</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('evaluationResults')" id="btn-evaluationResults" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📝 ผลการประเมินทั้งหมด</button>
+                    <button onclick="switchTab('mainElectives')" id="btn-mainElectives" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📅 ตารางเรียนนิสิต (Elective)</button>
+                </div>
+            </div>
 
-      base64FileName = file.name;
-      base64FileMimeType = file.type;
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🎓 เกณฑ์ & รายชื่อวิชา</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('formCriteria')" id="btn-formCriteria" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📋 เกณฑ์การประเมิน (Rubrics)</button>
+                    <button onclick="switchTab('assessors')" id="btn-assessors" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">👨‍🏫 รายชื่ออาจารย์ผู้ประเมิน</button>
+                    <button onclick="switchTab('subjects')" id="btn-subjects" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📚 รายชื่อวิชาเรียน</button>
+                </div>
+            </div>
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        base64FileData = e.target.result.split(",")[1]; // ตัดเอาเฉพาะโค้ดฐานข้อมูลภาพ (Base64)
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🗂️ ข้อมูลระบบ (Master Data)</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('departments')" id="btn-departments" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏢 ข้อมูลภาควิชา</button>
+                    <button onclick="switchTab('specialties')" id="btn-specialties" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🧬 ข้อมูลสาขาวิชา</button>
+                    <button onclick="switchTab('positions')" id="btn-positions" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🎖️ ข้อมูลตำแหน่งอาจารย์</button>
+                    <button onclick="switchTab('institutes')" id="btn-institutes" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏥 ข้อมูลสถาบัน / รพ.</button>
+                    <button onclick="switchTab('provinces')" id="btn-provinces" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🗺️ ข้อมูลจังหวัด</button>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
+        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm shrink-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h2 id="current-title" class="text-xl font-bold text-slate-800">กำลังโหลดฐานข้อมูลระบบ...</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <input type="text" id="searchBox" oninput="searchTable()" placeholder="🔍 ค้นหาในหน้านี้..." class="px-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 transition-all">
+                <button id="addBtn" onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-lg shadow-blue-100 flex items-center gap-1.5 transition-all">
+                    ➕ เพิ่มข้อมูลใหม่
+                </button>
+            </div>
+        </header>
+
+        <section class="flex-grow p-8 overflow-auto">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead id="table-head" class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider sticky top-0 z-10">
+                        </thead>
+                        <tbody id="table-body" class="text-sm divide-y divide-slate-100 text-slate-600">
+                            <tr>
+                                <td colspan="15" class="text-center py-12 text-slate-400">กรุณารอสักครู่ ระบบกำลังดึงฐานข้อมูลสดจาก Excel...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec"; 
         
-        // แสดงผลภาพตัวอย่างบนหน้าจอ
-        document.getElementById("uploadPlaceholder").classList.add("hidden");
-        document.getElementById("imagePreviewContainer").classList.remove("hidden");
-        document.getElementById("imagePreview").src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
+        let ALL_DATA = {};
+        let currentActiveTab = "studentProfiles"; // เปลี่ยนให้เปิดมาหน้าแรกเป็นตารางนิสิต
 
-    // เปิดหน้าต่างเพิ่มข้อมูล
-    function openAddModal() {
-      document.getElementById("modalTitle").innerText = `เพิ่มข้อมูลใหม่ลงใน [${currentTab}]`;
-      document.getElementById("formRowNum").value = "";
-      document.getElementById("modalForm").reset();
-      
-      base64FileData = null;
-      document.getElementById("uploadPlaceholder").classList.remove("hidden");
-      document.getElementById("imagePreviewContainer").classList.add("hidden");
+        // เพิ่ม Schema ของตาราง Student_Profile
+        const schemas = {
+            studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
+            evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
+            mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
+            formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
+            assessors: { title: "รายชื่ออาจารย์ผู้ประเมิน", sheet: "Assessor", fields: ["คำนำหน้า", "ชื่อ", "นามสกุล", "ตำแหน่ง", "email", "เบอร์โทร", "สถาบัน", "ภาควิชา"] },
+            subjects: { title: "รายชื่อวิชาเรียน", sheet: "Subject", fields: ["รหัสวิชา", "ชื่อวิชา", "กลุ่มงาน", "สาขาวิชา"] },
+            departments: { title: "ข้อมูลภาควิชา", sheet: "Department_Master", fields: ["ชื่อกลุ่ม_ภาควิชา"] },
+            specialties: { title: "ข้อมูลสาขาวิชา", sheet: "Specialty_Master", fields: ["ชื่อสาขาวิชา"] },
+            positions: { title: "ข้อมูลตำแหน่งอาจารย์", sheet: "Position_Master", fields: ["ชื่อตำแหน่ง"] },
+            institutes: { title: "ข้อมูลสถาบัน / รพ.", sheet: "Institute_Master", fields: ["ชื่อสถาบัน"] },
+            provinces: { title: "ข้อมูลจังหวัด", sheet: "Province_Master", fields: ["ชื่อจังหวัด"] }
+        };
 
-      generateFormFields();
-      
-      // แสดงปุ่มอัปโหลดรูปภาพเฉพาะเมื่ออยู่ตาราง Student_Profile เท่านั้น
-      if (currentTab === "Student_Profile") {
-        document.getElementById("imageUploadSection").classList.remove("hidden");
-      } else {
-        document.getElementById("imageUploadSection").classList.add("hidden");
-      }
-      
-      document.getElementById("dataModal").classList.remove("hidden");
-    }
+        window.addEventListener("DOMContentLoaded", loadAllDataFromServer);
 
-    // เปิดหน้าต่างแก้ไขข้อมูล
-    function openEditModal(rowData) {
-      document.getElementById("modalTitle").innerText = `แก้ไขข้อมูลแถวที่ ${rowData._rowNum}`;
-      document.getElementById("formRowNum").value = rowData._rowNum;
-      
-      base64FileData = null;
-      generateFormFields(rowData);
-
-      if (currentTab === "Student_Profile") {
-        document.getElementById("imageUploadSection").classList.remove("hidden");
-        if (rowData["ลิงก์รูปภาพ"]) {
-          document.getElementById("uploadPlaceholder").classList.add("hidden");
-          document.getElementById("imagePreviewContainer").classList.remove("hidden");
-          document.getElementById("imagePreview").src = rowData["ลิงก์รูปภาพ"];
-        } else {
-          document.getElementById("uploadPlaceholder").classList.remove("hidden");
-          document.getElementById("imagePreviewContainer").classList.add("hidden");
-        }
-      } else {
-        document.getElementById("imageUploadSection").classList.add("hidden");
-      }
-
-      document.getElementById("dataModal").classList.remove("hidden");
-    }
-
-    // สร้างช่องรับข้อมูล Form input แบบอัตโนมัติอ้างอิงตามแท็บ
-    function generateFormFields(data = null) {
-      const container = document.getElementById("formFieldsContainer");
-      container.innerHTML = "";
-      let fields = [];
-
-      if (currentTab === "Student_Profile") fields = ["รหัสนิสิต", "ชื่อ-สกุล"];
-      else if (currentTab === "Main") fields = ["รหัสนิสิต", "ชื่อ-สกุล", "รหัสวิชา", "วันที่ประเมิน", "อาจารย์ผู้ประเมิน"];
-      else if (currentTab === "Evaluation_Results") fields = ["อาจารย์ผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "ผลประเมิน"];
-
-      fields.forEach(f => {
-        const value = data ? (data[f] || "") : "";
-        container.innerHTML += `
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">${f}</label>
-            <input type="text" name="${f}" value="${value}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          </div>
-        `;
-      });
-    }
-
-    // บันทึกฟอร์ม (ส่งข้อมูลก้าวหน้าไปหลังบ้าน)
-    async function handleFormSubmit(e) {
-      e.preventDefault();
-      Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
-      const rowNum = document.getElementById("formRowNum").value;
-      const formData = new FormData(document.getElementById("modalForm"));
-      
-      let payload = {
-        sheetName: currentTab,
-        rowNum: rowNum
-      };
-
-      // ดึงข้อมูลจากฟิลด์อินพุตทั้งหมดใส่ใน Payload
-      formData.forEach((value, key) => {
-        payload[key] = value;
-      });
-
-      // ตั้งค่า Action และใส่ข้อมูลไฟล์ Base64 ถ้ามีไฟล์รูปภาพแนบมา
-      if (currentTab === "Student_Profile") {
-        if (base64FileData) {
-          payload.fileData = base64FileData;
-          payload.fileName = base64FileName;
-          payload.fileMimeType = base64FileMimeType;
-        }
-        payload.action = rowNum ? "updateAdminRecordWithImage" : "addAdminRecordWithImage";
-      } else {
-        payload.action = rowNum ? "updateAdminRecord" : "addAdminRecord";
-      }
-
-      try {
-        // ส่งคำขอเป็นแบบ POST แบบ JSON payload ตามที่หลังบ้านรองรับ
-        const response = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-        
-        const resJson = await response.json();
-        if (resJson.result === "success") {
-          Swal.fire("สำเร็จ!", resJson.message || "บันทึกข้อมูลเรียบร้อย", "success");
-          closeModal();
-          fetchAllData();
-        } else {
-          Swal.fire("ล้มเหลว", resJson.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล", "error");
-        }
-      } catch (err) {
-        Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลไปหลังบ้านได้", "error");
-        console.error(err);
-      }
-    }
-
-    // ลบแถวข้อมูล
-    function deleteRecord(rowNum) {
-      Swal.fire({
-        title: 'ยืนยันการลบข้อมูล?',
-        text: `คุณกำลังจะลบข้อมูลแถวที่ ${rowNum} ซึ่งไม่สามารถกู้คืนได้`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e11d48',
-        cancelButtonColor: '#4b5563',
-        confirmButtonText: 'ใช่, ฉันต้องการลบ!',
-        cancelButtonText: 'ยกเลิก'
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          Swal.fire({ title: 'กำลังดำเนินการลบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-          try {
-            const response = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${currentTab}&rowNum=${rowNum}`);
-            const resJson = await response.json();
-            if (resJson.result === "success") {
-              Swal.fire("ลบสำเร็จ!", "ลบข้อมูลแถวดังกล่าวเรียบร้อยแล้ว", "success");
-              fetchAllData();
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            if (sidebar.classList.contains("w-80")) {
+                sidebar.classList.remove("w-80");
+                sidebar.classList.add("w-0");
             } else {
-              Swal.fire("เกิดข้อผิดพลาด", resJson.message || "ไม่สามารถลบข้อมูลได้", "error");
+                sidebar.classList.remove("w-0");
+                sidebar.classList.add("w-80");
             }
-          } catch (err) {
-            Swal.fire("เชื่อมต่อล้มเหลว", "เกิดปัญหาขึ้นในการส่งคำสั่งลบข้อมูล", "error");
-          }
         }
-      });
-    }
 
-    function closeModal() { document.getElementById("dataModal").classList.add("hidden"); }
-    function showLoadingTable() {
-      document.getElementById("table-body").innerHTML = `<tr><td colspan="10" class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><br>ระบบกำลังเรียกข้อมูลล่าสุด...</td></tr>`;
-    }
-  </script>
+        async function loadAllDataFromServer() {
+            try {
+                const response = await fetch(`${API_URL}?action=getAdminAllData`);
+                const res = await response.json();
+                if(res.result === "success") {
+                    ALL_DATA = res;
+                    switchTab(currentActiveTab);
+                } else {
+                    Swal.fire("ข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลได้", "error");
+                }
+            } catch(e) {
+                Swal.fire("เกิดข้อผิดพลาดในการเชื่อมต่อ", e.toString(), "error");
+            }
+        }
+
+        function switchTab(tabKey) {
+            currentActiveTab = tabKey;
+            const schema = schemas[tabKey];
+            
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("bg-blue-600", "text-white", "shadow-md"));
+            const activeBtn = document.getElementById(`btn-${tabKey}`);
+            if(activeBtn) activeBtn.classList.add("bg-blue-600", "text-white", "shadow-md");
+            
+            document.getElementById("current-title").innerText = schema.title;
+            document.getElementById("searchBox").value = "";
+            document.getElementById("addBtn").style.display = 'flex';
+
+            renderTable(ALL_DATA[tabKey] || [], schema.fields);
+            
+            if(window.innerWidth <= 768) {
+                document.getElementById("sidebar").classList.replace("w-80", "w-0");
+            }
+        }
+
+        function renderTable(dataRows, fields) {
+            const thead = document.getElementById("table-head");
+            const tbody = document.getElementById("table-body");
+            
+            let headHTML = "<tr>";
+            fields.forEach(f => headHTML += `<th class="px-6 py-4 whitespace-nowrap">${f}</th>`);
+            headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
+            thead.innerHTML = headHTML;
+
+            if (dataRows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${fields.length + 1}" class="text-center py-12 text-slate-400">📭 ไม่พบรายการข้อมูลในหน้านี้</td></tr>`;
+                return;
+            }
+
+            let bodyHTML = "";
+            dataRows.forEach(row => {
+                bodyHTML += `<tr class="hover:bg-slate-50 transition-colors">`;
+                fields.forEach(f => {
+                    let val = row[f] || "-";
+                    // แทรกเงื่อนไข: ถ้ารายการนั้นคือ ลิงก์รูปภาพ ให้แสดงเป็นรูป
+                    if (f === "ลิงก์รูปภาพ" && val !== "-" && val !== "") {
+                        bodyHTML += `<td class="px-6 py-4 whitespace-nowrap"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
+                    } else {
+                        if(f.includes("Timestamp") && val !== "-") val = new Date(val).toLocaleString('th-TH');
+                        bodyHTML += `<td class="px-6 py-4 whitespace-nowrap font-medium text-slate-700 max-w-xs truncate">${val}</td>`;
+                    }
+                });
+                bodyHTML += `
+                    <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)] flex items-center justify-center gap-2">
+                        <button onclick="openEditModal('${row._rowNum}')" class="text-xs font-bold text-amber-600 hover:bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 transition-colors">✏️ แก้ไข</button>
+                        <button onclick="deleteRecord('${row._rowNum}')" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition-colors">🗑️ ลบ</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = bodyHTML;
+        }
+
+        function searchTable() {
+            const query = document.getElementById("searchBox").value.toLowerCase();
+            const schema = schemas[currentActiveTab];
+            const filtered = ALL_DATA[currentActiveTab].filter(row => {
+                return schema.fields.some(f => String(row[f] || "").toLowerCase().includes(query));
+            });
+            renderTable(filtered, schema.fields);
+        }
+
+        function deleteRecord(rowNum) {
+            const schema = schemas[currentActiveTab];
+            Swal.fire({
+                title: 'ยืนยันการลบข้อมูล?',
+                text: `คุณกำลังจะลบข้อมูลแถวที่ ${rowNum} ในชีต "${schema.sheet}" ซึ่งเมื่อลบแล้วจะไม่สามารถกู้คืนได้`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                confirmButtonText: 'ใช่, ฉันต้องการลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'กำลังลบแถวข้อมูลจาก Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        const res = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${schema.sheet}&rowNum=${rowNum}`);
+                        const data = await res.json();
+                        if (data.result === "success") {
+                            await Swal.fire("สำเร็จ!", "ลบข้อมูลออกจากระบบเรียบร้อยแล้ว", "success");
+                            location.reload();
+                        } else {
+                            Swal.fire("ล้มเหลว", data.message, "error");
+                        }
+                    } catch(e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                }
+            });
+        }
+
+        // ฟังก์ชันอ่านไฟล์รูปภาพเป็น Base64
+        function encodeImageFileAsURL(element) {
+            let file = element.files[0];
+            if(!file) return;
+            document.getElementById("temp_fileName").value = file.name;
+            document.getElementById("temp_fileMimeType").value = file.type;
+            let reader = new FileReader();
+            reader.onloadend = function() {
+                document.getElementById("temp_base64Data").value = reader.result.split(',')[1];
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function openAddModal() {
+            const schema = schemas[currentActiveTab];
+            let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
+            
+            // เตรียม Hidden Input สำหรับเก็บข้อมูลไฟล์รูปภาพ
+            if (currentActiveTab === "studentProfiles") {
+                inputFormHTML += `<input type="hidden" id="temp_base64Data"><input type="hidden" id="temp_fileName"><input type="hidden" id="temp_fileMimeType">`;
+            }
+
+            schema.fields.forEach(f => {
+                if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
+                
+                inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
+                
+                // ถ้ารายการนั้นเป็น "ลิงก์รูปภาพ" ให้สร้างเป็นปุ่มอัปโหลดไฟล์
+                if (f === "ลิงก์รูปภาพ" && currentActiveTab === "studentProfiles") {
+                    inputFormHTML += `<input id="md_${f}" type="file" accept="image/*" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" onchange="encodeImageFileAsURL(this)">
+                    <p class="text-[10px] mt-1 text-slate-400">*รองรับเฉพาะไฟล์รูปภาพ (JPG, PNG)</p></div>`;
+                    return;
+                }
+
+                let dropdownOptions = [];
+                
+                if (f === "จังหวัด") {
+                    dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
+                } else if (f === "สถาบัน" || f === "สถานที่") {
+                    dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
+                } else if (f === "ตำแหน่ง") {
+                    dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
+                } else if (f === "สาขาวิชา") {
+                    dropdownOptions = ALL_DATA.specialties.map(item => item.ชื่อสาขาวิชา).filter(Boolean);
+                } else if (f === "กลุ่มงาน" || f === "ภาควิชา") {
+                    dropdownOptions = ALL_DATA.departments.map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
+                } else if (f === "ภายใน/ภายนอก") {
+                    dropdownOptions = ["ภายใน", "ภายนอก"];
+                }
+                
+                if (dropdownOptions.length > 0) {
+                    inputFormHTML += `<select id="md_${f}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">`;
+                    inputFormHTML += `<option value="">-- กรุณาเลือก --</option>`;
+                    
+                    let uniqueOptions = [...new Set(dropdownOptions)].sort();
+                    uniqueOptions.forEach(opt => {
+                        inputFormHTML += `<option value="${opt}">${opt}</option>`;
+                    });
+                    
+                    inputFormHTML += `</select></div>`;
+                } else {
+                    inputFormHTML += `<input id="md_${f}" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>`;
+                }
+            });
+            inputFormHTML += `</div>`;
+
+            Swal.fire({
+                title: `➕ เพิ่มข้อมูลใน ${schema.title}`,
+                html: inputFormHTML,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกลงฐานข้อมูล',
+                cancelButtonText: 'ปิดหน้าต่าง',
+                focusConfirm: false,
+                preConfirm: () => {
+                    let payload = { sheetName: schema.sheet };
+                    schema.fields.forEach(f => {
+                        if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด" || f === "ลิงก์รูปภาพ") return;
+                        payload[f] = document.getElementById(`md_${f}`).value;
+                    });
+                    return payload;
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed && result.value) {
+                    Swal.fire({ title: 'กำลังบันทึกข้อมูลเข้า Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        let res;
+                        // ถ้าเป็นตารางนิสิต ให้ยิง Request เป็น POST เพื่อส่งข้อมูลภาพที่แปลงแล้วไปด้วย
+                        if (currentActiveTab === "studentProfiles") {
+                            let payloadObj = { action: "addAdminRecordWithImage", ...result.value };
+                            let fileData = document.getElementById("temp_base64Data")?.value;
+                            if (fileData) {
+                                payloadObj.fileData = fileData;
+                                payloadObj.fileName = document.getElementById("temp_fileName").value;
+                                payloadObj.fileMimeType = document.getElementById("temp_fileMimeType").value;
+                            } else {
+                                payloadObj.action = "addAdminRecord"; 
+                            }
+                            res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payloadObj) });
+                        } else {
+                            // ตารางอื่นๆ ใช้ GET เหมือนเดิม
+                            const queryParams = new URLSearchParams({ action: "addAdminRecord", ...result.value });
+                            res = await fetch(`${API_URL}?${queryParams.toString()}`);
+                        }
+
+                        const data = await res.json();
+                        if (data.result === "success") {
+                            await Swal.fire("สำเร็จ!", "เพิ่มข้อมูลใหม่เข้าสู่ Excel เรียบร้อยแล้ว", "success");
+                            location.reload();
+                        } else {
+                            Swal.fire("ล้มเหลว", data.message, "error");
+                        }
+                    } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                }
+            });
+        }
+
+        function openEditModal(rowNum) {
+            const schema = schemas[currentActiveTab];
+            const rowData = ALL_DATA[currentActiveTab].find(r => String(r._rowNum) === String(rowNum));
+            if(!rowData) {
+                Swal.fire("ผิดพลาด", "ไม่พบข้อมูลของแถวนี้ในระบบ", "error");
+                return;
+            }
+
+            let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
+            
+            if (currentActiveTab === "studentProfiles") {
+                inputFormHTML += `<input type="hidden" id="temp_base64Data"><input type="hidden" id="temp_fileName"><input type="hidden" id="temp_fileMimeType">`;
+            }
+
+            schema.fields.forEach(f => {
+                if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
+                
+                let currentVal = rowData[f] || "";
+                inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
+
+                // แก้ไขรูประบบนิสิต
+                if (f === "ลิงก์รูปภาพ" && currentActiveTab === "studentProfiles") {
+                    inputFormHTML += `
+                    <div class="mb-2">
+                        ${currentVal !== "" && currentVal !== "-" ? `<img src="${currentVal}" class="h-16 w-16 object-cover rounded shadow">` : `<span class="text-xs text-slate-400">ยังไม่มีรูปภาพ</span>`}
+                    </div>
+                    <input id="edit_md_${f}" type="file" accept="image/*" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" onchange="encodeImageFileAsURL(this)">
+                    <p class="text-[10px] mt-1 text-slate-400">*หากไม่ต้องการเปลี่ยนรูปภาพ ให้ปล่อยช่องนี้ว่างไว้</p></div>`;
+                    return;
+                }
+
+                let dropdownOptions = [];
+                
+                if (f === "จังหวัด") {
+                    dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
+                } else if (f === "สถาบัน" || f === "สถานที่") {
+                    dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
+                } else if (f === "ตำแหน่ง") {
+                    dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
+                } else if (f === "สาขาวิชา") {
+                    dropdownOptions = ALL_DATA.specialties.map(item => item.ชื่อสาขาวิชา).filter(Boolean);
+                } else if (f === "กลุ่มงาน" || f === "ภาควิชา") {
+                    dropdownOptions = ALL_DATA.departments.map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
+                } else if (f === "ภายใน/ภายนอก") {
+                    dropdownOptions = ["ภายใน", "ภายนอก"];
+                }
+                
+                if (dropdownOptions.length > 0) {
+                    inputFormHTML += `<select id="edit_md_${f}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">`;
+                    inputFormHTML += `<option value="">-- กรุณาเลือก --</option>`;
+                    
+                    let uniqueOptions = [...new Set(dropdownOptions)].sort();
+                    uniqueOptions.forEach(opt => {
+                        let selected = (String(opt).trim() === String(currentVal).trim()) ? "selected" : "";
+                        inputFormHTML += `<option value="${opt}" ${selected}>${opt}</option>`;
+                    });
+                    
+                    inputFormHTML += `</select></div>`;
+                } else {
+                    let escapedVal = String(currentVal).replace(/"/g, '&quot;');
+                    inputFormHTML += `<input id="edit_md_${f}" type="text" value="${escapedVal}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>`;
+                }
+            });
+            inputFormHTML += `</div>`;
+
+            Swal.fire({
+                title: `✏️ แก้ไขข้อมูลแถวที่ ${rowNum} (${schema.title})`,
+                html: inputFormHTML,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกการแก้ไข',
+                cancelButtonText: 'ยกเลิก',
+                focusConfirm: false,
+                preConfirm: () => {
+                    let payload = { sheetName: schema.sheet, rowNum: rowNum };
+                    schema.fields.forEach(f => {
+                        if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด" || f === "ลิงก์รูปภาพ") return;
+                        payload[f] = document.getElementById(`edit_md_${f}`).value;
+                    });
+                    return payload;
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed && result.value) {
+                    Swal.fire({ title: 'กำลังบันทึกการแก้ไขข้อมูลลง Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        let res;
+                        // สำหรับแก้ไขข้อมูล ให้เช็คเหมือนกันว่ามีการอัปโหลดรูปไหม
+                        if (currentActiveTab === "studentProfiles") {
+                            let payloadObj = { action: "updateAdminRecordWithImage", ...result.value };
+                            let fileData = document.getElementById("temp_base64Data")?.value;
+                            if (fileData) {
+                                payloadObj.fileData = fileData;
+                                payloadObj.fileName = document.getElementById("temp_fileName").value;
+                                payloadObj.fileMimeType = document.getElementById("temp_fileMimeType").value;
+                            } else {
+                                payloadObj.action = "updateAdminRecord"; 
+                            }
+                            res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payloadObj) });
+                        } else {
+                            const queryParams = new URLSearchParams({ action: "updateAdminRecord", ...result.value });
+                            res = await fetch(`${API_URL}?${queryParams.toString()}`);
+                        }
+
+                        const data = await res.json();
+                        if (data.result === "success") {
+                            await Swal.fire("สำเร็จ!", "แก้ไขข้อมูลเรียบร้อยแล้วครับ", "success");
+                            location.reload();
+                        } else {
+                            Swal.fire("ล้มเหลว", data.message, "error");
+                        }
+                    } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
