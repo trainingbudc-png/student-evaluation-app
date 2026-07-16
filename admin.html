@@ -25,7 +25,6 @@
         </div>
         
         <nav class="flex-grow p-4 space-y-6 overflow-y-auto w-80" style="max-height: calc(100vh - 90px);">
-            <!-- เมนูใหม่: ข้อมูลนิสิต -->
             <div>
                 <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🧑‍🎓 ข้อมูลนิสิต</p>
                 <div class="space-y-1">
@@ -103,9 +102,8 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbx_x-pFk87VJZZElW0ywKYjvkrFyW4Xly7IYEtr4Lcsb1Dk1M838m6rwGDfSTTVxSFuHg/exec"; 
         
         let ALL_DATA = {};
-        let currentActiveTab = "studentProfiles"; // เปลี่ยนให้เปิดมาหน้าแรกเป็นตารางนิสิต
+        let currentActiveTab = "studentProfiles"; 
 
-        // เพิ่ม Schema ของตาราง Student_Profile
         const schemas = {
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
             evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
@@ -186,7 +184,6 @@
                 bodyHTML += `<tr class="hover:bg-slate-50 transition-colors">`;
                 fields.forEach(f => {
                     let val = row[f] || "-";
-                    // แทรกเงื่อนไข: ถ้ารายการนั้นคือ ลิงก์รูปภาพ ให้แสดงเป็นรูป
                     if (f === "ลิงก์รูปภาพ" && val !== "-" && val !== "") {
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
                     } else {
@@ -240,7 +237,6 @@
             });
         }
 
-        // ฟังก์ชันอ่านไฟล์รูปภาพเป็น Base64
         function encodeImageFileAsURL(element) {
             let file = element.files[0];
             if(!file) return;
@@ -257,7 +253,6 @@
             const schema = schemas[currentActiveTab];
             let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
             
-            // เตรียม Hidden Input สำหรับเก็บข้อมูลไฟล์รูปภาพ
             if (currentActiveTab === "studentProfiles") {
                 inputFormHTML += `<input type="hidden" id="temp_base64Data"><input type="hidden" id="temp_fileName"><input type="hidden" id="temp_fileMimeType">`;
             }
@@ -267,7 +262,6 @@
                 
                 inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
                 
-                // ถ้ารายการนั้นเป็น "ลิงก์รูปภาพ" ให้สร้างเป็นปุ่มอัปโหลดไฟล์
                 if (f === "ลิงก์รูปภาพ" && currentActiveTab === "studentProfiles") {
                     inputFormHTML += `<input id="md_${f}" type="file" accept="image/*" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" onchange="encodeImageFileAsURL(this)">
                     <p class="text-[10px] mt-1 text-slate-400">*รองรับเฉพาะไฟล์รูปภาพ (JPG, PNG)</p></div>`;
@@ -326,7 +320,6 @@
                     Swal.fire({ title: 'กำลังบันทึกข้อมูลเข้า Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     try {
                         let res;
-                        // ถ้าเป็นตารางนิสิต ให้ยิง Request เป็น POST เพื่อส่งข้อมูลภาพที่แปลงแล้วไปด้วย
                         if (currentActiveTab === "studentProfiles") {
                             let payloadObj = { action: "addAdminRecordWithImage", ...result.value };
                             let fileData = document.getElementById("temp_base64Data")?.value;
@@ -337,9 +330,13 @@
                             } else {
                                 payloadObj.action = "addAdminRecord"; 
                             }
-                            res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payloadObj) });
+                            // เพิ่ม headers: text/plain แก้ปัญหา CORS Failed to fetch
+                            res = await fetch(API_URL, { 
+                                method: "POST", 
+                                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                                body: JSON.stringify(payloadObj) 
+                            });
                         } else {
-                            // ตารางอื่นๆ ใช้ GET เหมือนเดิม
                             const queryParams = new URLSearchParams({ action: "addAdminRecord", ...result.value });
                             res = await fetch(`${API_URL}?${queryParams.toString()}`);
                         }
@@ -376,7 +373,6 @@
                 let currentVal = rowData[f] || "";
                 inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
 
-                // แก้ไขรูประบบนิสิต
                 if (f === "ลิงก์รูปภาพ" && currentActiveTab === "studentProfiles") {
                     inputFormHTML += `
                     <div class="mb-2">
@@ -441,7 +437,6 @@
                     Swal.fire({ title: 'กำลังบันทึกการแก้ไขข้อมูลลง Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     try {
                         let res;
-                        // สำหรับแก้ไขข้อมูล ให้เช็คเหมือนกันว่ามีการอัปโหลดรูปไหม
                         if (currentActiveTab === "studentProfiles") {
                             let payloadObj = { action: "updateAdminRecordWithImage", ...result.value };
                             let fileData = document.getElementById("temp_base64Data")?.value;
@@ -452,7 +447,12 @@
                             } else {
                                 payloadObj.action = "updateAdminRecord"; 
                             }
-                            res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payloadObj) });
+                            // เพิ่ม headers: text/plain แก้ปัญหา CORS Failed to fetch
+                            res = await fetch(API_URL, { 
+                                method: "POST", 
+                                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                                body: JSON.stringify(payloadObj) 
+                            });
                         } else {
                             const queryParams = new URLSearchParams({ action: "updateAdminRecord", ...result.value });
                             res = await fetch(`${API_URL}?${queryParams.toString()}`);
