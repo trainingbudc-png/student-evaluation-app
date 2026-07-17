@@ -250,6 +250,7 @@
             reader.readAsDataURL(file);
         }
 
+        // ======================= โค้ดที่แก้ไขใหม่ เริ่มตรงนี้ =======================
         function openAddModal() {
             const schema = schemas[currentActiveTab];
             let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
@@ -314,6 +315,14 @@
                         if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด" || f === "ลิงก์รูปภาพ") return;
                         payload[f] = document.getElementById(`md_${f}`).value;
                     });
+
+                    // 💡 แก้ไข: ดึงไฟล์รูปภาพแพ็คใส่ payload ตั้งแต่ตอนนี้ ก่อนที่กล่องข้อความจะหายไป!
+                    if (currentActiveTab === "studentProfiles") {
+                        payload.fileData = document.getElementById("temp_base64Data")?.value || "";
+                        payload.fileName = document.getElementById("temp_fileName")?.value || "";
+                        payload.fileMimeType = document.getElementById("temp_fileMimeType")?.value || "";
+                    }
+
                     return payload;
                 }
             }).then(async (result) => {
@@ -322,14 +331,7 @@
                     try {
                         let res;
                         if (currentActiveTab === "studentProfiles") {
-                            // 💡 แก้บั๊กตรงนี้: บังคับให้เป็น action WithImage เสมอ
                             let payloadObj = { action: "addAdminRecordWithImage", ...result.value };
-                            let fileData = document.getElementById("temp_base64Data")?.value;
-                            if (fileData) {
-                                payloadObj.fileData = fileData;
-                                payloadObj.fileName = document.getElementById("temp_fileName").value;
-                                payloadObj.fileMimeType = document.getElementById("temp_fileMimeType").value;
-                            }
                             
                             res = await fetch(API_URL, { 
                                 method: "POST", 
@@ -430,6 +432,14 @@
                         if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด" || f === "ลิงก์รูปภาพ") return;
                         payload[f] = document.getElementById(`edit_md_${f}`).value;
                     });
+
+                    // 💡 แก้ไข: ดึงไฟล์รูปภาพแพ็คใส่ payload ตั้งแต่ตอนนี้เช่นกัน!
+                    if (currentActiveTab === "studentProfiles") {
+                        payload.fileData = document.getElementById("temp_base64Data")?.value || "";
+                        payload.fileName = document.getElementById("temp_fileName")?.value || "";
+                        payload.fileMimeType = document.getElementById("temp_fileMimeType")?.value || "";
+                    }
+
                     return payload;
                 }
             }).then(async (result) => {
@@ -438,14 +448,7 @@
                     try {
                         let res;
                         if (currentActiveTab === "studentProfiles") {
-                            // 💡 แก้บั๊กตรงนี้: บังคับให้เป็น action WithImage เสมอ
                             let payloadObj = { action: "updateAdminRecordWithImage", ...result.value };
-                            let fileData = document.getElementById("temp_base64Data")?.value;
-                            if (fileData) {
-                                payloadObj.fileData = fileData;
-                                payloadObj.fileName = document.getElementById("temp_fileName").value;
-                                payloadObj.fileMimeType = document.getElementById("temp_fileMimeType").value;
-                            }
                             
                             res = await fetch(API_URL, { 
                                 method: "POST", 
