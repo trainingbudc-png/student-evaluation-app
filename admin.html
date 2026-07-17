@@ -102,7 +102,6 @@
     </main>
 
     <script>
-        // ⚠️ อย่าลืมเช็ค API_URL อีกครั้งนะครับ ว่าเป็นลิงก์ล่าสุด
         const API_URL = "https://script.google.com/macros/s/AKfycbzzj1yFfptnF1lBz-1-Yjq-7XiZugmDDzPva9kcXrhMCRWp0HHTLld-5x45sgFAdpiHdw/exec"; 
         
         let ALL_DATA = {};
@@ -110,7 +109,6 @@
 
         const schemas = {
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
-            // 🌟 แก้ไข: นำ Timestamp กลับมา
             evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
             mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
             formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
@@ -183,7 +181,6 @@
             
             let headHTML = "<tr>";
             fields.forEach(f => {
-                // เปลี่ยนหัวข้อคอลัมน์จาก Timestamp เป็น "วันที่ประเมิน" ให้ดูสวยขึ้น
                 let displayField = f === "Timestamp" ? "วันที่ประเมิน" : f;
                 headHTML += `<th class="px-6 py-4 whitespace-nowrap">${displayField}</th>`;
             });
@@ -203,17 +200,16 @@
                     if (f === "ลิงก์รูปภาพ" && val !== "-" && val !== "") {
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
                     } else {
-                       // ของใหม่ (ดักจับ Error กรณีวันที่พัง)
-if(f.includes("Timestamp") && val !== "-" && val !== "") {
-    let checkDate = new Date(val);
-    if (!isNaN(checkDate.getTime())) {
-        val = checkDate.toLocaleDateString('th-TH');
-    } else {
-        val = "-"; // ถ้าข้อมูลไม่ใช่วันที่ที่ถูกต้อง ให้แสดงผลเป็นขีดกลาง
-    }
-} else if (f.includes("Timestamp") && val === "") {
-    val = "-";
-}
+                        // 🌟 ดักจับและจัดการ Timestamp ไม่ให้ขึ้น Invalid Date
+                        if(f.includes("Timestamp") && val !== "-" && val !== "") {
+                            let checkDate = new Date(val);
+                            if (!isNaN(checkDate.getTime())) {
+                                val = checkDate.toLocaleDateString('th-TH');
+                            } else {
+                                val = val; // ถ้าแปลงไม่ได้ ให้ใช้ข้อความดิบๆ จาก Excel เลย
+                            }
+                        }
+
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap font-medium text-slate-700 max-w-xs truncate">${val}</td>`;
                     }
                 });
