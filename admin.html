@@ -102,7 +102,7 @@
     </main>
 
     <script>
-        // ⚠️ อย่าลืมแก้ API_URL ตรงนี้นะครับ! ให้เป็นลิงก์ที่คุณพี่เพิ่ง Deploy ใหม่ล่าสุด
+        // ⚠️ อย่าลืมเช็ค API_URL อีกครั้งนะครับ ว่าเป็นลิงก์ล่าสุด
         const API_URL = "https://script.google.com/macros/s/AKfycbzzj1yFfptnF1lBz-1-Yjq-7XiZugmDDzPva9kcXrhMCRWp0HHTLld-5x45sgFAdpiHdw/exec"; 
         
         let ALL_DATA = {};
@@ -110,8 +110,8 @@
 
         const schemas = {
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
-            // 🌟 แก้ไขตรงนี้: ลบ Timestamp ออกเรียบร้อยครับ
-            evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
+            // 🌟 แก้ไข: นำ Timestamp กลับมา
+            evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
             mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
             formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
             assessors: { title: "รายชื่ออาจารย์ผู้ประเมิน", sheet: "Assessor", fields: ["คำนำหน้า", "ชื่อ", "นามสกุล", "ตำแหน่ง", "email", "เบอร์โทร", "สถาบัน", "ภาควิชา"] },
@@ -163,7 +163,6 @@
             document.getElementById("searchBox").value = "";
             document.getElementById("addBtn").style.display = 'flex';
 
-            // 💡 ปรับเปลี่ยนข้อความปุ่มเพิ่มข้อมูลให้เข้ากับการใช้งาน
             const addBtnEl = document.getElementById("addBtn");
             if (tabKey === "studentProfiles") {
                 addBtnEl.innerHTML = "➕ อัปโหลดรูปภาพใหม่";
@@ -183,7 +182,11 @@
             const tbody = document.getElementById("table-body");
             
             let headHTML = "<tr>";
-            fields.forEach(f => headHTML += `<th class="px-6 py-4 whitespace-nowrap">${f}</th>`);
+            fields.forEach(f => {
+                // เปลี่ยนหัวข้อคอลัมน์จาก Timestamp เป็น "วันที่ประเมิน" ให้ดูสวยขึ้น
+                let displayField = f === "Timestamp" ? "วันที่ประเมิน" : f;
+                headHTML += `<th class="px-6 py-4 whitespace-nowrap">${displayField}</th>`;
+            });
             headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
             thead.innerHTML = headHTML;
 
@@ -200,7 +203,10 @@
                     if (f === "ลิงก์รูปภาพ" && val !== "-" && val !== "") {
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
                     } else {
-                        if(f.includes("Timestamp") && val !== "-") val = new Date(val).toLocaleString('th-TH');
+                        // 🌟 แก้ไข: ใช้ toLocaleDateString() เพื่อให้แสดงแค่วันที่ (ไม่มีเวลา)
+                        if(f.includes("Timestamp") && val !== "-") {
+                            val = new Date(val).toLocaleDateString('th-TH');
+                        }
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap font-medium text-slate-700 max-w-xs truncate">${val}</td>`;
                     }
                 });
@@ -262,11 +268,9 @@
             reader.readAsDataURL(file);
         }
 
-        // ======================= ฟังก์ชันเปิด Modal เพิ่มข้อมูล / อัปโหลดรูปภาพ =======================
         function openAddModal() {
             const schema = schemas[currentActiveTab];
             
-            // 🌟 กรณีพิเศษ: แท็บประวัตินิสิตและรูปภาพ ให้แสดงเป็นหน้าต่างอัปโหลดรูปภาพคลีนๆ 
             if (currentActiveTab === "studentProfiles") {
                 let uploadFormHTML = `
                 <div class="text-left space-y-4">
@@ -279,7 +283,6 @@
                         <input id="md_file_input" type="file" accept="image/*" class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" onchange="encodeImageFileAsURL(this)">
                     </div>
 
-                    <!-- ⚠️ กล่องหมายเหตุการตั้งชื่อไฟล์รูปตามรหัสนิสิต -->
                     <div class="bg-amber-50 text-amber-800 border border-amber-200 rounded-2xl p-4 text-xs space-y-1.5 shadow-sm">
                         <strong class="text-sm flex items-center gap-1">⚠️ หมายเหตุสำคัญ:</strong>
                         <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
@@ -306,7 +309,6 @@
                             return false;
                         }
 
-                        // สกัดแกะเอารหัสนิสิต 8 หลักจากชื่อไฟล์
                         const match = fileName.match(/\d{8}/);
                         if (!match) {
                             Swal.showValidationMessage('❌ ไม่พบรหัสนิสิต 8 หลักในชื่อไฟล์! กรุณาตั้งชื่อไฟล์ให้มีรหัสนิสิตด้วยครับ');
@@ -316,7 +318,7 @@
                         return {
                             sheetName: schema.sheet,
                             "รหัสนิสิต": match[0],
-                            "ชื่อ-สกุล": "", // เว้นว่างไว้เพราะข้อมูลชื่อ-สกุลมีอยู่ใน Excel อยู่แล้ว
+                            "ชื่อ-สกุล": "", 
                             fileData: fileData,
                             fileName: fileName,
                             fileMimeType: fileMimeType
@@ -346,7 +348,6 @@
                 return;
             }
 
-            // 🌟 กรณีแท็บอื่นๆ ให้ใช้ระบบฟอร์มกรอกข้อความดั้งเดิม
             let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
             schema.fields.forEach(f => {
                 if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
