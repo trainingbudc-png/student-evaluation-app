@@ -17,47 +17,61 @@
     <style>
         .student-list-container {
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-            gap: 12px;
-            max-height: 320px; 
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+            gap: 16px;
+            max-height: 460px; 
             overflow-y: auto; 
-            padding: 6px; 
+            padding: 10px; 
             border: 1px solid #e2e8f0; 
-            border-radius: 12px; 
+            border-radius: 16px; 
             background: #f8fafc;
         }
         .student-item {
             background: #ffffff; 
             border: 1px solid #e2e8f0; 
-            padding: 14px; 
-            border-radius: 12px;
+            padding: 18px 14px; 
+            border-radius: 16px;
             cursor: pointer; 
-            transition: all 0.2s ease; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
             font-size: 15px; 
             text-align: center; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .student-item:hover:not(.disabled) { 
             border-color: #3b82f6; 
             background: #eff6ff; 
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
         }
         .student-item.active { 
             background: #1d4ed8 !important; 
             color: white !important; 
             border-color: #1e40af !important; 
             font-weight: bold; 
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25); 
+            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.3); 
         }
         .student-item.active div {
             color: white !important;
             opacity: 1 !important;
         }
+        .student-item.active .student-img {
+            border-color: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+        .student-item.active .student-img-placeholder {
+            background: #1e40af !important;
+            border-color: #ffffff !important;
+            color: #ffffff !important;
+        }
         .student-item.disabled { 
-            background: #f1f5f9; 
+            background: #f8fafc; 
             border-color: #e2e8f0; 
             cursor: not-allowed; 
-            opacity: 0.65; 
+            opacity: 0.75; 
         }
         
         .student-list-container::-webkit-scrollbar { width: 6px; }
@@ -198,6 +212,7 @@
     let loggedInTeacher = null;
     let allStudents = [];
     let activeTopics = [];
+    let studentImgMap = {}; // ตัวเก็บลิงก์จับคู่รูปภาพนิสิต
 
     window.addEventListener("DOMContentLoaded", showTeacherLogin);
 
@@ -267,9 +282,29 @@
                 showConfirmButton: false
             });
 
-            // โหลดข้อมูลวิชาและเกณฑ์ หลังจากล็อกอินสำเร็จ
+            // โหลดข้อมูลวิชา, เกณฑ์ และข้อมูลลิงก์รูปภาพนิสิต
             loadSubjects();
             loadCriteria();
+            loadStudentProfiles();
+        }
+    }
+
+    // 🌟 ฟังก์ชันโหลดไฟล์รูปภาพนิสิตมาทำ Mapping ล่วงหน้า
+    async function loadStudentProfiles() {
+        try {
+            const response = await fetch(`${API_URL}?action=getAdminAllData`);
+            const res = await response.json();
+            if (res && res.studentProfiles) {
+                res.studentProfiles.forEach(p => {
+                    const sId = String(p["รหัสนิสิต"]).trim();
+                    const sImg = p["ลิงก์รูปภาพ"] || "";
+                    if (sId) {
+                        studentImgMap[sId] = sImg;
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("โหลดรูปภาพนิสิตล้มเหลว:", e);
         }
     }
 
@@ -395,25 +430,42 @@
                     const div = document.createElement("div");
                     const isEvaluatedByMe = s.evaluatedBy && s.evaluatedBy.includes(teacherName) && teacherName !== "";
                     
+                    // สกัดรูปภาพนิสิตจาก Map (ถ้ามี)
+                    const sIdTrim = String(s.studentId).trim();
+                    const imgUrl = studentImgMap[sIdTrim] || "";
+
                     if (isEvaluatedByMe) {
                         div.className = "student-item disabled";
                         div.innerHTML = `
-                            <div style="font-size:12px; color:#64748b;">${s.studentId}</div>
-                            <div style="font-weight:bold; margin-top:2px; color:#94a3b8; text-decoration: line-through;">${s.studentName}</div>
-                            <div style="font-size:12px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
+                            <div class="relative">
+                                ${imgUrl 
+                                    ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm opacity-40 grayscale" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
+                                    : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
+                                       </div>`}
+                                <span class="absolute -bottom-1 -right-1 bg-emerald-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs shadow-md border-2 border-white">✓</span>
+                            </div>
+                            <div style="font-size:11px; color:#94a3b8; margin-top:10px;">${s.studentId}</div>
+                            <div style="font-weight:bold; margin-top:2px; color:#cbd5e1; text-decoration: line-through;">${s.studentName}</div>
+                            <div style="font-size:11px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
                         `;
                         div.onclick = () => {
                             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
                             document.getElementById("selectedStudentId").value = "";
                             document.getElementById("selectedStudentName").value = "";
                             
-                            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'นิสิตคนนี้ได้ประเมินไปแล้ว' });
+                            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'นิสิตคนนี้ได้รับการประเมินไปแล้วโดยอาจารย์' });
                         };
                     } else {
                         div.className = "student-item";
                         div.innerHTML = `
-                            <div style="font-size:12px; color:#64748b; opacity:0.8;">${s.studentId}</div>
-                            <div style="font-weight:bold; margin-top:2px; color:#334155;">${s.studentName}</div>
+                            ${imgUrl 
+                                ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm transition-all duration-200" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
+                                : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 transition-all duration-200">
+                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
+                                   </div>`}
+                            <div class="student-id-text" style="font-size:11px; color:#64748b; opacity:0.8; margin-top:10px;">${s.studentId}</div>
+                            <div class="student-name-text" style="font-weight:bold; margin-top:2px; color:#334155;">${s.studentName}</div>
                         `;
                         div.onclick = () => {
                             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
