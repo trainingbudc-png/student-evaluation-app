@@ -159,6 +159,14 @@
             document.getElementById("searchBox").value = "";
             document.getElementById("addBtn").style.display = 'flex';
 
+            // 💡 ปรับเปลี่ยนข้อความปุ่มเพิ่มข้อมูลให้เข้ากับการใช้งาน
+            const addBtnEl = document.getElementById("addBtn");
+            if (tabKey === "studentProfiles") {
+                addBtnEl.innerHTML = "➕ อัปโหลดรูปภาพใหม่";
+            } else {
+                addBtnEl.innerHTML = "➕ เพิ่มข้อมูลใหม่";
+            }
+
             renderTable(ALL_DATA[tabKey] || [], schema.fields);
             
             if(window.innerWidth <= 768) {
@@ -250,28 +258,98 @@
             reader.readAsDataURL(file);
         }
 
-        // ======================= โค้ดที่แก้ไขใหม่ เริ่มตรงนี้ =======================
+        // ======================= ฟังก์ชันเปิด Modal เพิ่มข้อมูล / อัปโหลดรูปภาพ =======================
         function openAddModal() {
             const schema = schemas[currentActiveTab];
-            let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
             
+            // 🌟 กรณีพิเศษ: แท็บประวัตินิสิตและรูปภาพ ให้แสดงเป็นหน้าต่างอัปโหลดรูปภาพคลีนๆ 
             if (currentActiveTab === "studentProfiles") {
-                inputFormHTML += `<input type="hidden" id="temp_base64Data"><input type="hidden" id="temp_fileName"><input type="hidden" id="temp_fileMimeType">`;
+                let uploadFormHTML = `
+                <div class="text-left space-y-4">
+                    <input type="hidden" id="temp_base64Data">
+                    <input type="hidden" id="temp_fileName">
+                    <input type="hidden" id="temp_fileMimeType">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">เลือกไฟล์รูปภาพนิสิต</label>
+                        <input id="md_file_input" type="file" accept="image/*" class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" onchange="encodeImageFileAsURL(this)">
+                    </div>
+
+                    <!-- ⚠️ กล่องหมายเหตุการตั้งชื่อไฟล์รูปตามรหัสนิสิต -->
+                    <div class="bg-amber-50 text-amber-800 border border-amber-200 rounded-2xl p-4 text-xs space-y-1.5 shadow-sm">
+                        <strong class="text-sm flex items-center gap-1">⚠️ หมายเหตุสำคัญ:</strong>
+                        <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+                            <li>กรุณาตั้งชื่อไฟล์รูปด้วย <b class="text-amber-900">รหัสนิสิต 8 หลัก</b> (เช่น <code>64460091.jpg</code> หรือ <code>64460091_profile.png</code>)</li>
+                            <li>เมื่อกดปุ่มบันทึก ระบบจะตรวจจับตัวเลขรหัสจากชื่อไฟล์ และนำรูปภาพไปผูกเชื่อมลิงก์ให้กับประวัตินิสิตที่มีอยู่ในฐานข้อมูลให้โดยอัตโนมัติทันทีครับ</li>
+                        </ul>
+                    </div>
+                </div>`;
+
+                Swal.fire({
+                    title: `📸 อัปโหลดรูปภาพนิสิต`,
+                    html: uploadFormHTML,
+                    showCancelButton: true,
+                    confirmButtonText: 'อัปโหลดเข้าคลังรูปภาพ',
+                    cancelButtonText: 'ปิดหน้าต่าง',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const fileData = document.getElementById("temp_base64Data")?.value || "";
+                        const fileName = document.getElementById("temp_fileName")?.value || "";
+                        const fileMimeType = document.getElementById("temp_fileMimeType")?.value || "";
+
+                        if (!fileData) {
+                            Swal.showValidationMessage('❌ กรุณาเลือกไฟล์รูปภาพก่อนอัปโหลดครับ!');
+                            return false;
+                        }
+
+                        // สกัดแกะเอารหัสนิสิต 8 หลักจากชื่อไฟล์
+                        const match = fileName.match(/\d{8}/);
+                        if (!match) {
+                            Swal.showValidationMessage('❌ ไม่พบรหัสนิสิต 8 หลักในชื่อไฟล์! กรุณาตั้งชื่อไฟล์ให้มีรหัสนิสิตด้วยครับ');
+                            return false;
+                        }
+
+                        return {
+                            sheetName: schema.sheet,
+                            "รหัสนิสิต": match[0],
+                            "ชื่อ-สกุล": "", // เว้นว่างไว้เพราะข้อมูลชื่อ-สกุลมีอยู่ใน Excel อยู่แล้ว
+                            fileData: fileData,
+                            fileName: fileName,
+                            fileMimeType: fileMimeType
+                        };
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed && result.value) {
+                        Swal.fire({ title: 'กำลังอัปโหลดรูปภาพและเชื่อมโยงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                        try {
+                            let payloadObj = { action: "addAdminRecordWithImage", ...result.value };
+                            let res = await fetch(API_URL, { 
+                                method: "POST", 
+                                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                                body: JSON.stringify(payloadObj) 
+                            });
+
+                            const data = await res.json();
+                            if (data.result === "success") {
+                                await Swal.fire("สำเร็จ!", "อัปโหลดและผูกรูปภาพเข้ากับฐานข้อมูลนิสิตเรียบร้อยแล้ว!", "success");
+                                location.reload();
+                            } else {
+                                Swal.fire("ล้มเหลว", data.message, "error");
+                            }
+                        } catch (e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                    }
+                });
+                return;
             }
 
+            // 🌟 กรณีแท็บอื่นๆ ให้ใช้ระบบฟอร์มกรอกข้อความดั้งเดิม
+            let inputFormHTML = `<div class="text-left space-y-4 max-h-[60vh] overflow-y-auto p-1">`;
             schema.fields.forEach(f => {
                 if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด") return; 
                 
                 inputFormHTML += `<div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">${f}</label>`;
-                
-                if (f === "ลิงก์รูปภาพ" && currentActiveTab === "studentProfiles") {
-                    inputFormHTML += `<input id="md_${f}" type="file" accept="image/*" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" onchange="encodeImageFileAsURL(this)">
-                    <p class="text-[10px] mt-1 text-slate-400">*รองรับเฉพาะไฟล์รูปภาพ (JPG, PNG)</p></div>`;
-                    return;
-                }
 
                 let dropdownOptions = [];
-                
                 if (f === "จังหวัด") {
                     dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
                 } else if (f === "สถาบัน" || f === "สถานที่") {
@@ -289,12 +367,10 @@
                 if (dropdownOptions.length > 0) {
                     inputFormHTML += `<select id="md_${f}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">`;
                     inputFormHTML += `<option value="">-- กรุณาเลือก --</option>`;
-                    
                     let uniqueOptions = [...new Set(dropdownOptions)].sort();
                     uniqueOptions.forEach(opt => {
                         inputFormHTML += `<option value="${opt}">${opt}</option>`;
                     });
-                    
                     inputFormHTML += `</select></div>`;
                 } else {
                     inputFormHTML += `<input id="md_${f}" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"></div>`;
@@ -315,34 +391,14 @@
                         if(f === "Timestamp" || f === "ลำดับ" || f === "คะแนนรวม" || f === "เกรด" || f === "ลิงก์รูปภาพ") return;
                         payload[f] = document.getElementById(`md_${f}`).value;
                     });
-
-                    // 💡 แก้ไข: ดึงไฟล์รูปภาพแพ็คใส่ payload ตั้งแต่ตอนนี้ ก่อนที่กล่องข้อความจะหายไป!
-                    if (currentActiveTab === "studentProfiles") {
-                        payload.fileData = document.getElementById("temp_base64Data")?.value || "";
-                        payload.fileName = document.getElementById("temp_fileName")?.value || "";
-                        payload.fileMimeType = document.getElementById("temp_fileMimeType")?.value || "";
-                    }
-
                     return payload;
                 }
             }).then(async (result) => {
                 if (result.isConfirmed && result.value) {
                     Swal.fire({ title: 'กำลังบันทึกข้อมูลเข้า Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     try {
-                        let res;
-                        if (currentActiveTab === "studentProfiles") {
-                            let payloadObj = { action: "addAdminRecordWithImage", ...result.value };
-                            
-                            res = await fetch(API_URL, { 
-                                method: "POST", 
-                                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                                body: JSON.stringify(payloadObj) 
-                            });
-                        } else {
-                            const queryParams = new URLSearchParams({ action: "addAdminRecord", ...result.value });
-                            res = await fetch(`${API_URL}?${queryParams.toString()}`);
-                        }
-
+                        const queryParams = new URLSearchParams({ action: "addAdminRecord", ...result.value });
+                        let res = await fetch(`${API_URL}?${queryParams.toString()}`);
                         const data = await res.json();
                         if (data.result === "success") {
                             await Swal.fire("สำเร็จ!", "เพิ่มข้อมูลใหม่เข้าสู่ Excel เรียบร้อยแล้ว", "success");
@@ -433,7 +489,6 @@
                         payload[f] = document.getElementById(`edit_md_${f}`).value;
                     });
 
-                    // 💡 แก้ไข: ดึงไฟล์รูปภาพแพ็คใส่ payload ตั้งแต่ตอนนี้เช่นกัน!
                     if (currentActiveTab === "studentProfiles") {
                         payload.fileData = document.getElementById("temp_base64Data")?.value || "";
                         payload.fileName = document.getElementById("temp_fileName")?.value || "";
