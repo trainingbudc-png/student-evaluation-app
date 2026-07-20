@@ -176,6 +176,25 @@
         }
 
         function renderTable(dataRows, fields) {
+            // 🌟 เพิ่มฟิลเตอร์จัดเรียงข้อมูลเฉพาะหน้าเกณฑ์การประเมิน 🌟
+            if (currentActiveTab === "formCriteria") {
+                dataRows.sort((a, b) => {
+                    // เรียงตามหัวข้อ (ข้อ 1, 2, 3...)
+                    let topicA = String(a["หัวข้อการประเมิน"] || "");
+                    let topicB = String(b["หัวข้อการประเมิน"] || "");
+                    
+                    if (topicA !== topicB) {
+                        return topicA.localeCompare(topicB, 'th', { numeric: true });
+                    }
+                    
+                    // ถ้าหัวข้อเดียวกัน ให้เรียงตาม 'คะแนน' จากมากไปน้อย
+                    let scoreA = parseFloat(a["คะแนน"]) || 0;
+                    let scoreB = parseFloat(b["คะแนน"]) || 0;
+                    return scoreB - scoreA; 
+                });
+            }
+            // 🌟 สิ้นสุดการจัดเรียง 🌟
+
             const thead = document.getElementById("table-head");
             const tbody = document.getElementById("table-body");
             
@@ -200,7 +219,7 @@
                     if (f === "ลิงก์รูปภาพ" && val !== "-" && val !== "") {
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
                     } else {
-                        // 🌟 ดักจับและจัดการ Timestamp ไม่ให้ขึ้น Invalid Date (และตัดเวลาทิ้ง)
+                        // ดักจับและจัดการ Timestamp ไม่ให้ขึ้น Invalid Date (และตัดเวลาทิ้ง)
                         if(f.includes("Timestamp") && val !== "-" && val !== "") {
                             let checkDate = new Date(val);
                             if (!isNaN(checkDate.getTime())) {
