@@ -147,7 +147,7 @@
     <div id="deptBadge" class="hidden bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm border border-emerald-200">
         ภาควิชา: <span id="displayDept">กำลังโหลด...</span>
     </div>
-    <button onclick="location.reload()" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all">
+    <button onclick="localStorage.removeItem('assessorData'); window.location.href='index.html'" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all">
         🚪 ออกจากระบบ
     </button>
 </div>
@@ -217,79 +217,35 @@
     let activeTopics = [];
     let studentImgMap = {}; // ตัวเก็บลิงก์จับคู่รูปภาพนิสิต
 
-    window.addEventListener("DOMContentLoaded", showTeacherLogin);
+    // 🌟 เรียกใช้ฟังก์ชันเช็กสถานะการล็อกอินเมื่อเปิดหน้าเว็บ
+    window.addEventListener("DOMContentLoaded", checkLoginStatus);
 
-    // 🌟 ระบบ Teacher Login
-    async function showTeacherLogin() {
-        const { value: loginData } = await Swal.fire({
-            title: '👨‍🏫 เข้าสู่ระบบอาจารย์',
-            html: `
-                <div class="space-y-4 text-left mt-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">📧 อีเมล (Username)</label>
-                        <input id="swal-email" type="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="อีเมลของคุณ">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">📱 เบอร์โทรศัพท์ (Password)</label>
-                        <input id="swal-phone" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="เบอร์โทรศัพท์ของคุณ">
-                    </div>
-                </div>
-            `,
-            focusConfirm: false,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showCancelButton: false,
-            confirmButtonText: 'เข้าสู่ระบบ',
-            confirmButtonColor: '#1d4ed8',
-            showLoaderOnConfirm: true,
-            preConfirm: async () => {
-                const email = document.getElementById('swal-email').value.trim();
-                const phone = document.getElementById('swal-phone').value.trim();
-                
-                if (!email || !phone) {
-                    Swal.showValidationMessage('กรุณากรอกอีเมลและเบอร์โทรศัพท์ให้ครบถ้วน');
-                    return false;
-                }
-                
-                try {
-                    const response = await fetch(`${API_URL}?action=loginTeacher&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
-                    const data = await response.json();
-                    
-                    if (data.result !== 'success') {
-                        throw new Error(data.message);
-                    }
-                    return data.teacherData;
-                } catch (error) {
-                    Swal.showValidationMessage(`เข้าสู่ระบบล้มเหลว: ${error.message}`);
-                    return false;
-                }
-            }
-        });
-
-        if (loginData) {
-            loggedInTeacher = loginData;
-            
-            // นำข้อมูลอาจารย์ไปใส่ในฟอร์ม
-            const fullName = `${loginData.title}${loginData.firstname} ${loginData.lastname}`;
-            document.getElementById('teacherName').value = fullName;
-            
-            // แสดงป้ายบอกภาควิชา
-            document.getElementById('displayDept').innerText = loginData.department;
-            document.getElementById('deptBadge').classList.remove('hidden');
-            
-            Swal.fire({
-                title: 'ยินดีต้อนรับครับอาจารย์!',
-                text: fullName,
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
-            });
-
-            // โหลดข้อมูลวิชา, เกณฑ์ และข้อมูลลิงก์รูปภาพนิสิต
-            loadSubjects();
-            loadCriteria();
-            loadStudentProfiles();
+    // 🌟 เช็กสถานะการเข้าสู่ระบบจาก LocalStorage (ที่ล็อกอินมาจากหน้า index.html)
+    function checkLoginStatus() {
+        const storedData = localStorage.getItem("assessorData");
+        
+        if (!storedData) {
+            // ถ้าไม่มีข้อมูลแปลว่าแอบเข้าหน้านี้ตรงๆ ให้เด้งกลับไปหน้าล็อกอิน (index.html)
+            window.location.href = "index.html"; 
+            return;
         }
+
+        // ดึงข้อมูลอาจารย์ที่ล็อกอินไว้มาใช้งาน
+        const loginData = JSON.parse(storedData);
+        loggedInTeacher = loginData;
+        
+        // นำข้อมูลอาจารย์ไปใส่ในช่อง ชื่อ-นามสกุล
+        const fullName = `${loginData.prefix || ''}${loginData.firstName || ''} ${loginData.lastName || ''}`.trim();
+        document.getElementById('teacherName').value = fullName;
+        
+        // แสดงป้ายบอกภาควิชา
+        document.getElementById('displayDept').innerText = loginData.department || 'ไม่ระบุ';
+        document.getElementById('deptBadge').classList.remove('hidden');
+
+        // โหลดข้อมูลวิชา, เกณฑ์ และข้อมูลลิงก์รูปภาพนิสิต
+        loadSubjects();
+        loadCriteria();
+        loadStudentProfiles();
     }
 
     // 🌟 ฟังก์ชันโหลดไฟล์รูปภาพนิสิตมาทำ Mapping ล่วงหน้า

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบแบบประเมิน</title>
+    <!-- นำเข้า LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        /* ตกแต่งปุ่มและหน้าจอแบบคร่าวๆ ตามแบบของคุณ */
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .btn-line { background-color: #06C755; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
+        .btn-email { background-color: white; color: #3b82f6; width: 100%; padding: 12px; border: 1px solid #3b82f6; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .modal { display: none; margin-top: 20px; text-align: left; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn-submit { background-color: #1d4ed8; color: white; width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2 style="color: #1d4ed8;">เข้าสู่ระบบแบบประเมิน</h2>
+    <p style="color: gray; font-size: 14px;">สำหรับอาจารย์ผู้ประเมิน</p>
+    <br>
+
+    <!-- ปุ่มล็อกอิน LINE -->
+    <button class="btn-line" onclick="loginWithLine()">เข้าสู่ระบบด้วย LINE</button>
+    
+    <!-- ปุ่มล็อกอิน Email -->
+    <button class="btn-email" onclick="toggleEmailModal()">เข้าสู่ระบบด้วย Email / เบอร์โทร</button>
+
+    <!-- ฟอร์มกรอก Email/Phone (ซ่อนไว้ตอนแรก) -->
+    <div class="modal" id="emailModal">
+        <div class="input-group">
+            <label>อีเมล (Username)</label>
+            <input type="email" id="inputEmail" placeholder="อีเมลของคุณ">
+        </div>
+        <div class="input-group">
+            <label>เบอร์โทรศัพท์ (Password)</label>
+            <input type="text" id="inputPhone" placeholder="เบอร์โทรศัพท์ของคุณ">
+        </div>
+        <button class="btn-submit" onclick="loginWithEmail()">เข้าสู่ระบบ</button>
+    </div>
+</div>
+
+<!-- สคริปต์ควบคุมการทำงาน -->
+<script>
+    const LIFF_ID = "2010763201-zDYpgg5r"; // เปลี่ยนเป็น LIFF ID ของคุณ
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfy.../exec"; // เอาลิงก์ Web App ที่ Deploy ใหม่มาใส่ที่นี่
+    let userLineUID = ""; // ตัวแปรเก็บ UID
+
+    // 1. เริ่มต้น LIFF เมื่อเปิดหน้าเว็บ
+    window.onload = function() {
+        liff.init({ liffId: LIFF_ID }).then(() => {
+            if (liff.isLoggedIn()) {
+                liff.getProfile().then(profile => {
+                    userLineUID = profile.userId; // เก็บ UID ไว้ใช้
+                });
+            }
+        }).catch(err => console.error("LIFF Init Error: ", err));
+    };
+
+    // 2. ฟังก์ชันเมื่อกด "เข้าสู่ระบบด้วย LINE"
+    async function loginWithLine() {
+        // เช็กก่อนว่าเปิดใน LINE หรือล็อกอิน LINE ในเว็บหรือยัง
+        if (!liff.isLoggedIn()) {
+            liff.login(); // สั่งให้หน้าต่างล็อกอิน LINE เด้งขึ้นมา
+            return;
+        }
+
+        // ถ้าล็อกอินแล้ว ดึง UID ส่งไปเช็กที่ Apps Script
+        const profile = await liff.getProfile();
+        
+        // แสดงสถานะโหลด
+        document.querySelector('.btn-line').innerText = "กำลังเข้าสู่ระบบ...";
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "loginLine",
+                    uid: profile.userId
+                })
+            });
+            const result = await response.json();
+
+            if (result.status === "success") {
+                // บันทึกข้อมูลลง LocalStorage เพื่อให้หน้าถัดไป(หน้าประเมิน) รู้ว่าอาจารย์คนไหนล็อกอิน
+                localStorage.setItem("assessorData", JSON.stringify(result.userData));
+                // ล็อกอินสำเร็จ พาไปหน้าแบบประเมิน (เปลี่ยนชื่อไฟล์ตามที่คุณตั้งไว้)
+                window.location.href = "teacher.html"; 
+            } else {
+                alert("ไม่พบบัญชีของคุณในระบบ กรุณาเข้าสู่ระบบครั้งแรกด้วย Email / เบอร์โทรศัพท์ เพื่อผูกบัญชี LINE");
+                toggleEmailModal(); // เปิดฟอร์มอีเมลให้อัตโนมัติ
+                document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
+            }
+        } catch (error) {
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+            document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
+        }
+    }
+
+    // 3. ฟังก์ชันเปิด/ปิด ฟอร์ม Email
+    function toggleEmailModal() {
+        const modal = document.getElementById("emailModal");
+        modal.style.display = modal.style.display === "block" ? "none" : "block";
+    }
+
+    // 4. ฟังก์ชันเมื่อกดปุ่มเข้าสู่ระบบ (Email)
+    async function loginWithEmail() {
+        const email = document.getElementById("inputEmail").value;
+        const phone = document.getElementById("inputPhone").value;
+
+        if (!email || !phone) {
+            alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+            return;
+        }
+
+        document.querySelector('.btn-submit').innerText = "กำลังตรวจสอบ...";
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "loginEmail",
+                    email: email,
+                    phone: phone,
+                    uid: userLineUID // ส่ง UID ไปด้วย (ถ้าเปิดผ่าน LINE มันจะมีค่า ถ้าเปิดผ่านเบราว์เซอร์ปกติมันจะว่างเปล่า)
+                })
+            });
+            const result = await response.json();
+
+            if (result.status === "success") {
+                localStorage.setItem("assessorData", JSON.stringify(result.userData));
+                // พาไปหน้าแบบประเมิน
+                window.location.href = "teacher.html";
+            } else {
+                alert("อีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง!");
+                document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
+            }
+        } catch (error) {
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+            document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
+        }
+    }
+</script>
+
+</body>
+</html>
