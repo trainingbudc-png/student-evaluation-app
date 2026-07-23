@@ -31,6 +31,7 @@
             <div>
                 <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🧑‍🎓 ข้อมูลนิสิต</p>
                 <div class="space-y-1">
+                    <button onclick="switchTab('pendingStudents')" id="btn-pendingStudents" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all text-amber-400">⏳ จัดการนิสิตรออนุมัติ</button>
                     <button onclick="switchTab('studentProfiles')" id="btn-studentProfiles" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📸 ข้อมูลนิสิต & รูปภาพ</button>
                 </div>
             </div>
@@ -108,6 +109,7 @@
         let currentActiveTab = "studentProfiles"; 
 
         const schemas = {
+            pendingStudents: { title: "จัดการนิสิตรออนุมัติ", sheet: "รออนุมัติ", fields: ["date", "studentId", "fullName", "studentYear", "hospital"] },
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
             evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
             mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
@@ -138,8 +140,14 @@
             try {
                 const response = await fetch(`${API_URL}?action=getAdminAllData`);
                 const res = await response.json();
+                
+                // โหลดข้อมูลนิสิตรออนุมัติแยกมาต่างหาก
+                const pendingRes = await fetch(`${API_URL}?action=getPendingStudents`);
+                const pendingData = await pendingRes.json();
+                
                 if(res.result === "success") {
                     ALL_DATA = res;
+                    ALL_DATA['pendingStudents'] = pendingData; // เก็บข้อมูลลงตัวแปร
                     switchTab(currentActiveTab);
                 } else {
                     Swal.fire("ข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลได้", "error");
@@ -159,13 +167,17 @@
             
             document.getElementById("current-title").innerText = schema.title;
             document.getElementById("searchBox").value = "";
-            document.getElementById("addBtn").style.display = 'flex';
-
+            
             const addBtnEl = document.getElementById("addBtn");
-            if (tabKey === "studentProfiles") {
-                addBtnEl.innerHTML = "➕ อัปโหลดรูปภาพใหม่";
+            if (tabKey === "pendingStudents") {
+                addBtnEl.style.display = 'none'; // ซ่อนปุ่มเพิ่มข้อมูลในหน้าอนุมัติ
             } else {
-                addBtnEl.innerHTML = "➕ เพิ่มข้อมูลใหม่";
+                addBtnEl.style.display = 'flex';
+                if (tabKey === "studentProfiles") {
+                    addBtnEl.innerHTML = "➕ อัปโหลดรูปภาพใหม่";
+                } else {
+                    addBtnEl.innerHTML = "➕ เพิ่มข้อมูลใหม่";
+                }
             }
 
             renderTable(ALL_DATA[tabKey] || [], schema.fields);
@@ -176,31 +188,29 @@
         }
 
         function renderTable(dataRows, fields) {
-            // 🌟 เพิ่มฟิลเตอร์จัดเรียงข้อมูลเฉพาะหน้าเกณฑ์การประเมิน 🌟
             if (currentActiveTab === "formCriteria") {
                 dataRows.sort((a, b) => {
-                    // เรียงตามหัวข้อ (ข้อ 1, 2, 3...)
                     let topicA = String(a["หัวข้อการประเมิน"] || "");
                     let topicB = String(b["หัวข้อการประเมิน"] || "");
-                    
-                    if (topicA !== topicB) {
-                        return topicA.localeCompare(topicB, 'th', { numeric: true });
-                    }
-                    
-                    // ถ้าหัวข้อเดียวกัน ให้เรียงตาม 'คะแนน' จากมากไปน้อย
+                    if (topicA !== topicB) return topicA.localeCompare(topicB, 'th', { numeric: true });
                     let scoreA = parseFloat(a["คะแนน"]) || 0;
                     let scoreB = parseFloat(b["คะแนน"]) || 0;
                     return scoreB - scoreA; 
                 });
             }
-            // 🌟 สิ้นสุดการจัดเรียง 🌟
 
             const thead = document.getElementById("table-head");
             const tbody = document.getElementById("table-body");
             
             let headHTML = "<tr>";
             fields.forEach(f => {
-                let displayField = f === "Timestamp" ? "วันที่ประเมิน" : f;
+                let displayField = f;
+                if(f === "Timestamp") displayField = "วันที่ประเมิน";
+                if(f === "date") displayField = "วันที่ลงทะเบียน";
+                if(f === "studentId") displayField = "รหัสนิสิต";
+                if(f === "fullName") displayField = "ชื่อ-สกุล";
+                if(f === "studentYear") displayField = "ชั้นปี";
+                if(f === "hospital") displayField = "สถาบัน";
                 headHTML += `<th class="px-6 py-4 whitespace-nowrap">${displayField}</th>`;
             });
             headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
@@ -219,26 +229,34 @@
                     if (f === "ลิงก์รูปภาพ" && val !== "-" && val !== "") {
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
                     } else {
-                        // ดักจับและจัดการ Timestamp ไม่ให้ขึ้น Invalid Date (และตัดเวลาทิ้ง)
-                        if(f.includes("Timestamp") && val !== "-" && val !== "") {
+                        if((f.includes("Timestamp") || f === "date") && val !== "-" && val !== "") {
                             let checkDate = new Date(val);
                             if (!isNaN(checkDate.getTime())) {
                                 val = checkDate.toLocaleDateString('th-TH');
                             } else {
-                                // ถ้าแปลงไม่ได้ ให้ดึงข้อความดิบมา แล้วหั่นเอาเฉพาะข้อความส่วนแรกก่อนช่องว่าง (ทิ้งเวลา)
                                 val = String(val).split(' ')[0]; 
                             }
                         }
-
                         bodyHTML += `<td class="px-6 py-4 whitespace-nowrap font-medium text-slate-700 max-w-xs truncate">${val}</td>`;
                     }
                 });
-                bodyHTML += `
-                    <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)] flex items-center justify-center gap-2">
-                        <button onclick="openEditModal('${row._rowNum}')" class="text-xs font-bold text-amber-600 hover:bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 transition-colors">✏️ แก้ไข</button>
-                        <button onclick="deleteRecord('${row._rowNum}')" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition-colors">🗑️ ลบ</button>
-                    </td>
-                </tr>`;
+
+                // จัดการปุ่ม Action ขวาสุด
+                if (currentActiveTab === "pendingStudents") {
+                    bodyHTML += `
+                        <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)] flex items-center justify-center gap-2">
+                            <button onclick="managePendingStudent('${row.studentId}', 'approveStudent')" class="text-xs font-bold text-emerald-600 hover:bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors">✅ อนุมัติ</button>
+                            <button onclick="managePendingStudent('${row.studentId}', 'rejectStudent')" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition-colors">❌ ปฏิเสธ</button>
+                        </td>
+                    </tr>`;
+                } else {
+                    bodyHTML += `
+                        <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)] flex items-center justify-center gap-2">
+                            <button onclick="openEditModal('${row._rowNum}')" class="text-xs font-bold text-amber-600 hover:bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 transition-colors">✏️ แก้ไข</button>
+                            <button onclick="deleteRecord('${row._rowNum}')" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition-colors">🗑️ ลบ</button>
+                        </td>
+                    </tr>`;
+                }
             });
             tbody.innerHTML = bodyHTML;
         }
@@ -250,6 +268,41 @@
                 return schema.fields.some(f => String(row[f] || "").toLowerCase().includes(query));
             });
             renderTable(filtered, schema.fields);
+        }
+
+        // ฟังก์ชันใหม่: จัดการ อนุมัติ/ปฏิเสธ นิสิต
+        function managePendingStudent(studentId, actionType) {
+            let actionText = actionType === 'approveStudent' ? "อนุมัติ" : "ปฏิเสธ/ลบ";
+            let confirmColor = actionType === 'approveStudent' ? "#059669" : "#e11d48";
+            
+            Swal.fire({
+                title: `ยืนยันการ${actionText}?`,
+                text: `คุณต้องการ${actionText}รหัสนิสิต ${studentId} ใช่หรือไม่?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: confirmColor,
+                confirmButtonText: `ใช่, ${actionText}`,
+                cancelButtonText: 'ยกเลิก'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: `กำลังดำเนินการ...`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        let payloadObj = { action: actionType, studentId: studentId };
+                        let res = await fetch(API_URL, { 
+                            method: "POST", 
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
+                            body: JSON.stringify(payloadObj) 
+                        });
+                        const data = await res.json();
+                        if (data.result === "success") {
+                            await Swal.fire("สำเร็จ!", `ทำรายการเรียบร้อยแล้ว`, "success");
+                            location.reload();
+                        } else {
+                            Swal.fire("ล้มเหลว", data.message, "error");
+                        }
+                    } catch(e) { Swal.fire("ผิดพลาด", e.toString(), "error"); }
+                }
+            });
         }
 
         function deleteRecord(rowNum) {
