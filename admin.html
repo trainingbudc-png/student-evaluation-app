@@ -18,6 +18,26 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex">
 
+    <!-- Modal ล็อกอินเข้าสู่ระบบแอดมิน -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md border border-slate-100 text-center">
+            <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-slate-200">
+                🔒
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-1">เข้าสู่ระบบแอดมิน</h2>
+            <p class="text-xs text-slate-500 mb-6">กรุณากรอกรหัสผ่านเพื่อเข้าใช้งานระบบจัดการข้อมูล</p>
+            
+            <form onsubmit="checkAdminLogin(event)" class="space-y-4">
+                <div>
+                    <input type="password" id="adminPasswordInput" required placeholder="กรอกรหัสผ่านแอดมิน..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center font-medium focus:outline-none focus:ring-2 focus:ring-slate-800 focus:bg-white transition-all">
+                </div>
+                <button type="submit" class="w-full py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-md">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Sidebar ธีมเดิม (Dark Sidebar) ครบทุกหมวดหมู่ -->
     <aside id="sidebar" class="w-80 bg-slate-900 text-slate-300 flex flex-col min-h-screen shadow-xl border-r border-slate-800 shrink-0 transition-all duration-300 overflow-hidden">
         <div class="p-6 border-b border-slate-800 bg-slate-950 flex items-center gap-3 w-80">
@@ -141,7 +161,7 @@
         let currentActiveTab = "pendingStudents"; 
         let editingRowIndex = null;
 
-        // Schemas ทั้งหมด 12 ตาราง (ตัด studentYear ออกเรียบร้อย)
+        // Schemas ทั้งหมด 12 ตาราง
         const schemas = {
             pendingStudents: { title: "จัดการนิสิตรออนุมัติ", sheet: "รออนุมัติ", fields: ["date", "studentId", "fullName", "hospital"] },
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
@@ -158,8 +178,56 @@
         };
 
         window.addEventListener("DOMContentLoaded", () => {
-            loadAllData();
+            // เช็คว่าเคยล็อกอินสำเร็จหรือยัง
+            if (sessionStorage.getItem("adminAuth") === "true") {
+                document.getElementById("loginModal").classList.add("hidden");
+                loadAllData();
+            } else {
+                document.getElementById("loginModal").classList.remove("hidden");
+            }
         });
+
+        async function checkAdminLogin(e) {
+            e.preventDefault();
+            const inputPass = document.getElementById("adminPasswordInput").value.trim();
+            if (!inputPass) return;
+
+            Swal.fire({
+                title: 'กำลังตรวจสอบรหัสผ่าน...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const res = await fetch(`${API_URL}?action=verifyAdminPassword&password=${encodeURIComponent(inputPass)}`);
+                const result = await res.json();
+
+                if (result.result === "success") {
+                    sessionStorage.setItem("adminAuth", "true");
+                    document.getElementById("loginModal").classList.add("hidden");
+                    
+                    Swal.fire({
+                        icon: "success",
+                        title: "เข้าสู่ระบบสำเร็จ",
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+
+                    loadAllData();
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "รหัสผ่านไม่ถูกต้อง",
+                        text: "กรุณาตรวจสอบรหัสผ่านในคอลัมน์ M ของชีต Assessor",
+                        confirmButtonColor: "#0f172a"
+                    });
+                    document.getElementById("adminPasswordInput").value = "";
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อฐานข้อมูลได้", "error");
+            }
+        }
 
         async function loadAllData() {
             renderLoading();
