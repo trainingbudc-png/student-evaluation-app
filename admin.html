@@ -106,7 +106,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
         
         let ALL_DATA = {};
-        let currentActiveTab = "studentProfiles"; 
+        let currentActiveTab = "pendingStudents"; 
 
         const schemas = {
             pendingStudents: { title: "จัดการนิสิตรออนุมัติ", sheet: "รออนุมัติ", fields: ["date", "studentId", "fullName", "studentYear", "hospital"] },
@@ -141,13 +141,12 @@
                 const response = await fetch(`${API_URL}?action=getAdminAllData`);
                 const res = await response.json();
                 
-                // โหลดข้อมูลนิสิตรออนุมัติแยกมาต่างหาก
                 const pendingRes = await fetch(`${API_URL}?action=getPendingStudents`);
                 const pendingData = await pendingRes.json();
                 
                 if(res.result === "success") {
                     ALL_DATA = res;
-                    ALL_DATA['pendingStudents'] = pendingData; // เก็บข้อมูลลงตัวแปร
+                    ALL_DATA['pendingStudents'] = Array.isArray(pendingData) ? pendingData : [];
                     switchTab(currentActiveTab);
                 } else {
                     Swal.fire("ข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลได้", "error");
@@ -170,7 +169,7 @@
             
             const addBtnEl = document.getElementById("addBtn");
             if (tabKey === "pendingStudents") {
-                addBtnEl.style.display = 'none'; // ซ่อนปุ่มเพิ่มข้อมูลในหน้าอนุมัติ
+                addBtnEl.style.display = 'none';
             } else {
                 addBtnEl.style.display = 'flex';
                 if (tabKey === "studentProfiles") {
@@ -188,6 +187,10 @@
         }
 
         function renderTable(dataRows, fields) {
+            if (!Array.isArray(dataRows)) {
+                dataRows = [];
+            }
+
             if (currentActiveTab === "formCriteria") {
                 dataRows.sort((a, b) => {
                     let topicA = String(a["หัวข้อการประเมิน"] || "");
@@ -241,7 +244,6 @@
                     }
                 });
 
-                // จัดการปุ่ม Action ขวาสุด
                 if (currentActiveTab === "pendingStudents") {
                     bodyHTML += `
                         <td class="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 shadow-[-4px_0_12px_rgba(0,0,0,0.05)] flex items-center justify-center gap-2">
@@ -264,13 +266,12 @@
         function searchTable() {
             const query = document.getElementById("searchBox").value.toLowerCase();
             const schema = schemas[currentActiveTab];
-            const filtered = ALL_DATA[currentActiveTab].filter(row => {
+            const filtered = (ALL_DATA[currentActiveTab] || []).filter(row => {
                 return schema.fields.some(f => String(row[f] || "").toLowerCase().includes(query));
             });
             renderTable(filtered, schema.fields);
         }
 
-        // ฟังก์ชันใหม่: จัดการ อนุมัติ/ปฏิเสธ นิสิต
         function managePendingStudent(studentId, actionType) {
             let actionText = actionType === 'approveStudent' ? "อนุมัติ" : "ปฏิเสธ/ลบ";
             let confirmColor = actionType === 'approveStudent' ? "#059669" : "#e11d48";
@@ -309,7 +310,7 @@
             const schema = schemas[currentActiveTab];
             Swal.fire({
                 title: 'ยืนยันการลบข้อมูล?',
-                text: `คุณกำลังจะลบข้อมูลแถวที่ ${rowNum} ในชีต "${schema.sheet}" ซึ่งเมื่อลบแล้วจะไม่สามารถกู้คืนได้`,
+                text: `คุณกำลังจะลบข้อมูลแถวที่ ${rowNum} ในชีต "${schema.sheet}"`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#e11d48',
@@ -317,12 +318,12 @@
                 cancelButtonText: 'ยกเลิก'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'กำลังลบแถวข้อมูลจาก Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    Swal.fire({ title: 'กำลังลบแถวข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     try {
                         const res = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${schema.sheet}&rowNum=${rowNum}`);
                         const data = await res.json();
                         if (data.result === "success") {
-                            await Swal.fire("สำเร็จ!", "ลบข้อมูลออกจากระบบเรียบร้อยแล้ว", "success");
+                            await Swal.fire("สำเร็จ!", "ลบข้อมูลเรียบร้อยแล้ว", "success");
                             location.reload();
                         } else {
                             Swal.fire("ล้มเหลว", data.message, "error");
@@ -362,8 +363,8 @@
                     <div class="bg-amber-50 text-amber-800 border border-amber-200 rounded-2xl p-4 text-xs space-y-1.5 shadow-sm">
                         <strong class="text-sm flex items-center gap-1">⚠️ หมายเหตุสำคัญ:</strong>
                         <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
-                            <li>กรุณาตั้งชื่อไฟล์รูปด้วย <b class="text-amber-900">รหัสนิสิต 8 หลัก</b> (เช่น <code>64460091.jpg</code> หรือ <code>64460091_profile.png</code>)</li>
-                            <li>เมื่อกดปุ่มบันทึก ระบบจะตรวจจับตัวเลขรหัสจากชื่อไฟล์ และนำรูปภาพไปผูกเชื่อมลิงก์ให้กับประวัตินิสิตที่มีอยู่ในฐานข้อมูลให้โดยอัตโนมัติทันทีครับ</li>
+                            <li>กรุณาตั้งชื่อไฟล์รูปด้วย <b class="text-amber-900">รหัสนิสิต 8 หลัก</b> (เช่น <code>64460091.jpg</code>)</li>
+                            <li>ระบบจะตรวจจับรหัสจากชื่อไฟล์ และผูกลิงก์รูปให้อัตโนมัติครับ</li>
                         </ul>
                     </div>
                 </div>`;
@@ -387,7 +388,7 @@
 
                         const match = fileName.match(/\d{8}/);
                         if (!match) {
-                            Swal.showValidationMessage('❌ ไม่พบรหัสนิสิต 8 หลักในชื่อไฟล์! กรุณาตั้งชื่อไฟล์ให้มีรหัสนิสิตด้วยครับ');
+                            Swal.showValidationMessage('❌ ไม่พบรหัสนิสิต 8 หลักในชื่อไฟล์!');
                             return false;
                         }
 
@@ -402,7 +403,7 @@
                     }
                 }).then(async (result) => {
                     if (result.isConfirmed && result.value) {
-                        Swal.fire({ title: 'กำลังอัปโหลดรูปภาพและเชื่อมโยงข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                        Swal.fire({ title: 'กำลังอัปโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                         try {
                             let payloadObj = { action: "addAdminRecordWithImage", ...result.value };
                             let res = await fetch(API_URL, { 
@@ -413,7 +414,7 @@
 
                             const data = await res.json();
                             if (data.result === "success") {
-                                await Swal.fire("สำเร็จ!", "อัปโหลดและผูกรูปภาพเข้ากับฐานข้อมูลนิสิตเรียบร้อยแล้ว!", "success");
+                                await Swal.fire("สำเร็จ!", "อัปโหลดรูปภาพเรียบร้อยแล้ว!", "success");
                                 location.reload();
                             } else {
                                 Swal.fire("ล้มเหลว", data.message, "error");
@@ -432,15 +433,15 @@
 
                 let dropdownOptions = [];
                 if (f === "จังหวัด") {
-                    dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.provinces || []).map(item => item.ชื่อจังหวัด).filter(Boolean);
                 } else if (f === "สถาบัน" || f === "สถานที่") {
-                    dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.institutes || []).map(item => item.ชื่อสถาบัน).filter(Boolean);
                 } else if (f === "ตำแหน่ง") {
-                    dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.positions || []).map(item => item.ชื่อตำแหน่ง).filter(Boolean);
                 } else if (f === "สาขาวิชา") {
-                    dropdownOptions = ALL_DATA.specialties.map(item => item.ชื่อสาขาวิชา).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.specialties || []).map(item => item.ชื่อสาขาวิชา).filter(Boolean);
                 } else if (f === "กลุ่มงาน" || f === "ภาควิชา") {
-                    dropdownOptions = ALL_DATA.departments.map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.departments || []).map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
                 } else if (f === "ภายใน/ภายนอก") {
                     dropdownOptions = ["ภายใน", "ภายนอก"];
                 }
@@ -476,13 +477,13 @@
                 }
             }).then(async (result) => {
                 if (result.isConfirmed && result.value) {
-                    Swal.fire({ title: 'กำลังบันทึกข้อมูลเข้า Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     try {
                         const queryParams = new URLSearchParams({ action: "addAdminRecord", ...result.value });
                         let res = await fetch(`${API_URL}?${queryParams.toString()}`);
                         const data = await res.json();
                         if (data.result === "success") {
-                            await Swal.fire("สำเร็จ!", "เพิ่มข้อมูลใหม่เข้าสู่ Excel เรียบร้อยแล้ว", "success");
+                            await Swal.fire("สำเร็จ!", "เพิ่มข้อมูลใหม่เรียบร้อยแล้ว", "success");
                             location.reload();
                         } else {
                             Swal.fire("ล้มเหลว", data.message, "error");
@@ -494,7 +495,7 @@
 
         function openEditModal(rowNum) {
             const schema = schemas[currentActiveTab];
-            const rowData = ALL_DATA[currentActiveTab].find(r => String(r._rowNum) === String(rowNum));
+            const rowData = (ALL_DATA[currentActiveTab] || []).find(r => String(r._rowNum) === String(rowNum));
             if(!rowData) {
                 Swal.fire("ผิดพลาด", "ไม่พบข้อมูลของแถวนี้ในระบบ", "error");
                 return;
@@ -525,15 +526,15 @@
                 let dropdownOptions = [];
                 
                 if (f === "จังหวัด") {
-                    dropdownOptions = ALL_DATA.provinces.map(item => item.ชื่อจังหวัด).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.provinces || []).map(item => item.ชื่อจังหวัด).filter(Boolean);
                 } else if (f === "สถาบัน" || f === "สถานที่") {
-                    dropdownOptions = ALL_DATA.institutes.map(item => item.ชื่อสถาบัน).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.institutes || []).map(item => item.ชื่อสถาบัน).filter(Boolean);
                 } else if (f === "ตำแหน่ง") {
-                    dropdownOptions = ALL_DATA.positions.map(item => item.ชื่อตำแหน่ง).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.positions || []).map(item => item.ชื่อตำแหน่ง).filter(Boolean);
                 } else if (f === "สาขาวิชา") {
-                    dropdownOptions = ALL_DATA.specialties.map(item => item.ชื่อสาขาวิชา).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.specialties || []).map(item => item.ชื่อสาขาวิชา).filter(Boolean);
                 } else if (f === "กลุ่มงาน" || f === "ภาควิชา") {
-                    dropdownOptions = ALL_DATA.departments.map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
+                    dropdownOptions = (ALL_DATA.departments || []).map(item => item.ชื่อกลุ่ม_ภาควิชา).filter(Boolean);
                 } else if (f === "ภายใน/ภายนอก") {
                     dropdownOptions = ["ภายใน", "ภายนอก"];
                 }
@@ -580,7 +581,7 @@
                 }
             }).then(async (result) => {
                 if (result.isConfirmed && result.value) {
-                    Swal.fire({ title: 'กำลังบันทึกการแก้ไขข้อมูลลง Excel...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                     try {
                         let res;
                         if (currentActiveTab === "studentProfiles") {
