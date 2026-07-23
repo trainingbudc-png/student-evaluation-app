@@ -194,7 +194,7 @@
             <input type="hidden" id="selectedStudentName">
         </div>
 
-        <!-- 🌟 ส่วนที่เพิ่มใหม่: ข้อมูลเวลาปฏิบัติงาน -->
+        <!-- 🌟 ส่วนข้อมูลเวลาปฏิบัติงาน (อัปเดตแบบมีลาหลายประเภท) -->
         <div class="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm mt-4">
             <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -208,19 +208,20 @@
                         <option value="ป่วย">🟡 ป่วย</option>
                         <option value="ลากิจ">🟠 ลากิจ</option>
                         <option value="ขาด">🔴 ขาด</option>
+                        <option value="ลาหลายประเภท">🟣 อื่นๆ / ลาหลายประเภท</option>
                     </select>
                 </div>
                 <div>
-                    <label for="attendanceDays" class="block text-xs font-semibold text-slate-500 mb-2">จำนวนวัน (ถ้ามี)</label>
-                    <input type="number" id="attendanceDays" min="0.5" step="0.5" placeholder="เช่น 1 หรือ 1.5" disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 font-medium transition-colors">
+                    <label for="attendanceDays" class="block text-xs font-semibold text-slate-500 mb-2">จำนวนวัน (รวมทั้งหมด)</label>
+                    <input type="number" id="attendanceDays" min="0.5" step="0.5" placeholder="เช่น 1.5" disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 font-medium transition-colors">
                 </div>
                 <div>
                     <label for="attendanceReason" class="block text-xs font-semibold text-slate-500 mb-2">หมายเหตุ (สาเหตุ)</label>
-                    <input type="text" id="attendanceReason" placeholder="ระบุสาเหตุ..." disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 font-medium transition-colors">
+                    <input type="text" id="attendanceReason" placeholder="เช่น ป่วย 1 วัน, ลากิจ 0.5 วัน..." disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 font-medium transition-colors">
                 </div>
             </div>
         </div>
-        <!-- 🌟 สิ้นสุดส่วนที่เพิ่มใหม่ -->
+        <!-- 🌟 สิ้นสุดส่วนที่อัปเดต -->
 
         <div id="criteriaContainer" class="pt-2">
         </div>
@@ -520,7 +521,7 @@
             if (result.isConfirmed) {
                 Swal.fire({ title: 'กำลังประมวลผลข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                 
-                // 🌟 เพิ่มตัวแปรเวลาปฏิบัติงาน จำนวนวัน และหมายเหตุเพื่อส่งไปให้ Code.gs
+                // 🌟 ส่งข้อมูลเวลาปฏิบัติงานไปให้ Code.gs
                 const payload = {
                     action: "submitEvaluation",
                     teacherName: document.getElementById("teacherName").value,
@@ -554,7 +555,7 @@
                         document.getElementById("attendanceStatus").value = "ครบ";
                         document.getElementById("attendanceDays").value = "";
                         document.getElementById("attendanceReason").value = "";
-                        toggleAttendanceDetails(); // ปิดช่องจำนวนวันและหมายเหตุกลับไปเหมือนเดิม
+                        toggleAttendanceDetails(); // ปิดช่องจำนวนวันและหมายเหตุ
 
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
                     } else { 
