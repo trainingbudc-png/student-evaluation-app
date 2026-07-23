@@ -3,459 +3,486 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแอดมิน - จัดการข้อมูลฐานข้อมูลนิสิตแพทย์</title>
+    <title>ระบบควบคุมแอดมินหลัก - 10 เมนูจัดการฐานข้อมูล</title>
+
+    <link rel="icon" type="image/png" href="logo.png">
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Prompt', sans-serif; }
-        .tab-btn.active {
-            background-color: #059669;
-            color: white;
-            font-weight: 600;
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
         }
-    </style>
+    </script>
 </head>
-<body class="bg-slate-100 min-h-screen">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex">
 
-    <div class="flex flex-col lg:flex-row min-h-screen">
-
-        <!-- Sidebar Navigation -->
-        <aside class="w-full lg:w-64 bg-white border-r border-slate-200 p-5 flex flex-col justify-between shrink-0">
+    <!-- Sidebar ธีมเดิม (Dark Sidebar) ครบทุกหมวดหมู่ -->
+    <aside id="sidebar" class="w-80 bg-slate-900 text-slate-300 flex flex-col min-h-screen shadow-xl border-r border-slate-800 shrink-0 transition-all duration-300 overflow-hidden">
+        <div class="p-6 border-b border-slate-800 bg-slate-950 flex items-center gap-3 w-80">
+            <span class="text-3xl">⚙️</span>
             <div>
-                <div class="flex items-center gap-3 mb-8 px-2">
-                    <div class="bg-emerald-100 text-emerald-700 p-2.5 rounded-2xl text-2xl">⚙️</div>
-                    <div>
-                        <h1 class="font-bold text-slate-800 text-lg leading-tight">Admin Portal</h1>
-                        <p class="text-xs text-slate-400">ระบบจัดการข้อมูลนิสิตแพทย์</p>
-                    </div>
+                <h1 class="text-lg font-bold text-white leading-none mb-1">Admin Panel</h1>
+                <p class="text-xs text-slate-500 font-light">ระบบจัดการข้อมูลแพทย์ศาสตรศึกษา</p>
+            </div>
+        </div>
+        
+        <nav class="flex-grow p-4 space-y-6 overflow-y-auto w-80" style="max-height: calc(100vh - 90px);">
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🧑‍🎓 ข้อมูลนิสิต</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('pendingStudents')" id="btn-pendingStudents" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all text-amber-400">⏳ จัดการนิสิตรออนุมัติ</button>
+                    <button onclick="switchTab('studentProfiles')" id="btn-studentProfiles" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📸 ข้อมูลนิสิต & รูปภาพ</button>
                 </div>
-
-                <nav class="space-y-1.5" id="tabContainer">
-                    <button onclick="switchTab('pending')" id="tab-pending" class="tab-btn active w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        <span class="flex items-center gap-2.5">📋 รออนุมัติลงทะเบียน</span>
-                        <span id="pendingBadge" class="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
-                    </button>
-                    <button onclick="switchTab('studentProfiles')" id="tab-studentProfiles" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        👨‍⚕️ โปรไฟล์นิสิต (Student_Profile)
-                    </button>
-                    <button onclick="switchTab('mainElectives')" id="tab-mainElectives" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        📑 ข้อมูลลงทะเบียน (Main)
-                    </button>
-                    <button onclick="switchTab('assessors')" id="tab-assessors" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        👨‍🏫 ข้อมูลอาจารย์ (Assessor)
-                    </button>
-                    <button onclick="switchTab('subjects')" id="tab-subjects" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        📚 รายวิชา (Subject)
-                    </button>
-                    <button onclick="switchTab('institutes')" id="tab-institutes" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        🏥 สถาบัน / รพ. (Institute_Master)
-                    </button>
-                    <button onclick="switchTab('evaluationResults')" id="tab-evaluationResults" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        📊 ผลการประเมิน (Evaluation)
-                    </button>
-                    <button onclick="switchTab('formCriteria')" id="tab-formCriteria" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        📝 เกณฑ์ประเมิน (Form)
-                    </button>
-                    <button onclick="switchTab('departments')" id="tab-departments" class="tab-btn w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all text-left">
-                        🏢 ภาควิชา (Department)
-                    </button>
-                </nav>
             </div>
 
-            <div class="pt-6 border-t border-slate-100 mt-6">
-                <button onclick="loadAllData()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
-                    🔄 รีเฟรชข้อมูลทั้งหมด
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📊 ผลการประเมิน & ตารางงาน</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('evaluationResults')" id="btn-evaluationResults" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📝 ผลการประเมินทั้งหมด</button>
+                    <button onclick="switchTab('mainElectives')" id="btn-mainElectives" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📅 ตารางเรียนนิสิต (Elective)</button>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🎓 เกณฑ์ & รายชื่อวิชา</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('formCriteria')" id="btn-formCriteria" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📋 เกณฑ์การประเมิน (Rubrics)</button>
+                    <button onclick="switchTab('assessors')" id="btn-assessors" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">👨‍🏫 รายชื่ออาจารย์ผู้ประเมิน</button>
+                    <button onclick="switchTab('subjects')" id="btn-subjects" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📚 รายชื่อวิชาเรียน</button>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🗂️ ข้อมูลระบบ (Master Data)</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('departments')" id="btn-departments" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏢 ข้อมูลภาควิชา</button>
+                    <button onclick="switchTab('specialties')" id="btn-specialties" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🧬 ข้อมูลสาขาวิชา</button>
+                    <button onclick="switchTab('positions')" id="btn-positions" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🎖️ ข้อมูลตำแหน่งอาจารย์</button>
+                    <button onclick="switchTab('institutes')" id="btn-institutes" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏥 ข้อมูลสถาบัน / รพ.</button>
+                    <button onclick="switchTab('provinces')" id="btn-provinces" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🗺️ ข้อมูลจังหวัด</button>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content Body -->
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
+        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm shrink-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h2 id="current-title" class="text-xl font-bold text-slate-800">กำลังโหลดฐานข้อมูลระบบ...</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <input type="text" id="searchInput" onkeyup="filterData()" placeholder="🔍 ค้นหาข้อมูลในตาราง..." class="w-64 pl-4 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition-all">
+                </div>
+                <button onclick="refreshCurrentTab()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm">
+                    <span>🔄</span> รีเฟรช
+                </button>
+                <button onclick="openAddModal()" id="btn-add-new" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-sm">
+                    <span>➕</span> เพิ่มข้อมูลใหม่
                 </button>
             </div>
-        </aside>
+        </header>
 
-        <!-- Main Content Area -->
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-
-            <!-- Top Header & Search Bar -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 id="currentTabTitle" class="text-xl font-bold text-slate-800">📋 รายชื่อนิสิตรออนุมัติ</h2>
-                    <p id="currentTabDesc" class="text-xs text-slate-400 mt-1">อนุมัติหรือปฏิเสธคำขอลงทะเบียนของนิสิตใหม่</p>
-                </div>
-
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 ค้นหาข้อมูล..." class="w-full md:w-64 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
-                    <button id="addBtn" onclick="openAddModal()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition-colors shrink-0 flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
-                        ➕ เพิ่มข้อมูล
-                    </button>
-                </div>
-            </div>
-
-            <!-- Table Container -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-hidden">
+        <section class="flex-grow p-8 overflow-y-auto bg-slate-100">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-600" id="dataTable">
-                        <thead class="bg-slate-50 text-slate-700 font-semibold uppercase text-xs border-b border-slate-100" id="tableHeader">
-                            <!-- JS จะเรนเดอร์ส่วนนี้ -->
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr id="table-head" class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase font-semibold tracking-wider">
+                                <th class="px-6 py-4">กำลังโหลด...</th>
+                            </tr>
                         </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-100">
+                        <tbody id="table-body" class="divide-y divide-slate-200 text-sm">
                             <tr>
-                                <td colspan="10" class="text-center py-12 text-slate-400 font-light">กำลังโหลดข้อมูล...</td>
+                                <td class="px-6 py-12 text-center text-slate-400">
+                                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-slate-800 mb-2"></div>
+                                    <p>กำลังเชื่อมต่อฐานข้อมูลระบบ...</p>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+        </section>
+    </main>
 
-        </main>
-    </div>
-
-    <!-- Modal Form สำหรับเพิ่ม/แก้ไขข้อมูล -->
-    <div id="crudModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center pb-4 border-b border-slate-100">
-                <h3 id="modalTitle" class="text-lg font-bold text-slate-800">เพิ่มข้อมูล</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">✕</button>
+    <!-- Modal เพิ่ม/แก้ไข ข้อมูล -->
+    <div id="dataModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 id="modalTitle" class="font-bold text-lg">เพิ่มข้อมูลใหม่</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-xl">✕</button>
             </div>
-
-            <form id="modalForm" onsubmit="handleFormSubmit(event)" class="space-y-4 py-4 overflow-y-auto flex-1">
-                <div id="dynamicInputs" class="space-y-3">
-                    <!-- JS จะเรนเดอร์ Form Inputs ตามตารางที่เลือก -->
+            <form id="modalForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <div id="modalFormFields" class="space-y-4">
+                    <!-- Dynamic Fields -->
+                </div>
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 text-sm font-medium hover:bg-slate-50">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 shadow-sm">บันทึกข้อมูล</button>
                 </div>
             </form>
-
-            <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
-                <button type="button" onclick="closeModal()" class="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">ยกเลิก</button>
-                <button type="submit" form="modalForm" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-md">บันทึกข้อมูล</button>
-            </div>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
+        
+        let ALL_DATA = {};
+        let currentActiveTab = "pendingStudents"; 
+        let editingRowIndex = null;
 
-        let allData = {};
-        let pendingStudentsList = [];
-        let activeTab = "pending";
-        let editRowNumber = null;
-
-        // การตั้งค่าแต่ละ Tab
-        const TAB_CONFIG = {
-            pending: { title: "📋 รายชื่อนิสิตรออนุมัติ", desc: "อนุมัติหรือปฏิเสธคำขอลงทะเบียนของนิสิตใหม่", sheetName: "รออนุมัติ", canAdd: false },
-            studentProfiles: { title: "👨‍⚕️ โปรไฟล์นิสิต", desc: "จัดการรหัสนิสิต ชื่อ-สกุล และลิงก์รูปภาพ", sheetName: "Student_Profile", canAdd: true },
-            mainElectives: { title: "📑 ข้อมูลการลงทะเบียนเรียน", desc: "จัดการการจับคู่นิสิต รายวิชา และสถานะการประเมิน", sheetName: "Main", canAdd: true },
-            assessors: { title: "👨‍🏫 รายชื่ออาจารย์ผู้ประเมิน", desc: "จัดการบัญชีผู้ประเมิน อีเมล เบอร์โทร และ LINE UID", sheetName: "Assessor", canAdd: true },
-            subjects: { title: "📚 รหัสวิชาและรายวิชา", desc: "จัดการรหัสวิชา ชื่อวิชา และภาควิชาที่สังกัด", sheetName: "Subject", canAdd: true },
-            institutes: { title: "🏥 รายชื่อสถาบัน / โรงพยาบาล", desc: "จัดการสถาบันที่เปิดรับนิสิตแพทย์", sheetName: "Institute_Master", canAdd: true },
-            evaluationResults: { title: "📊 ผลการประเมินย้อนหลัง", desc: "ดูและจัดการประวัติการประเมินจากอาจารย์", sheetName: "Evaluation_Results", canAdd: false },
-            formCriteria: { title: "📝 เกณฑ์และหัวข้อการประเมิน", desc: "จัดการข้อสอบและสเกลคะแนนการประเมิน", sheetName: "Form", canAdd: true },
-            departments: { title: "🏢 รายชื่อภาควิชา", desc: "จัดการข้อมูลภาควิชาหลัก", sheetName: "Department_Master", canAdd: true }
+        // Schemas ทั้งหมด 12 ตาราง (ตัด studentYear ออกเรียบร้อย)
+        const schemas = {
+            pendingStudents: { title: "จัดการนิสิตรออนุมัติ", sheet: "รออนุมัติ", fields: ["date", "studentId", "fullName", "hospital"] },
+            studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
+            evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
+            mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
+            formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
+            assessors: { title: "รายชื่ออาจารย์ผู้ประเมิน", sheet: "Assessor", fields: ["คำนำหน้า", "ชื่อ", "นามสกุล", "ตำแหน่ง", "email", "เบอร์โทร", "สถาบัน", "ภาควิชา"] },
+            subjects: { title: "รายชื่อวิชาเรียน", sheet: "Subject", fields: ["รหัสวิชา", "ชื่อวิชา", "กลุ่มงาน", "สาขาวิชา"] },
+            departments: { title: "ข้อมูลภาควิชา", sheet: "Department_Master", fields: ["ชื่อกลุ่ม_ภาควิชา"] },
+            specialties: { title: "ข้อมูลสาขาวิชา", sheet: "Specialty_Master", fields: ["ชื่อสาขาวิชา"] },
+            positions: { title: "ข้อมูลตำแหน่งอาจารย์", sheet: "Position_Master", fields: ["ชื่อตำแหน่ง"] },
+            institutes: { title: "ข้อมูลสถาบัน / รพ.", sheet: "Institute_Master", fields: ["ชื่อสถาบัน"] },
+            provinces: { title: "ข้อมูลจังหวัด", sheet: "Province_Master", fields: ["ชื่อจังหวัด"] }
         };
 
-        window.addEventListener("DOMContentLoaded", loadAllData);
+        window.addEventListener("DOMContentLoaded", () => {
+            loadAllData();
+        });
 
-        // 🚀 ดึงข้อมูลทั้งหมดจาก Google Sheet
         async function loadAllData() {
-            showTableLoading();
+            renderLoading();
             try {
-                // ดึงข้อมูลหลัก + ดึงนิสิตรออนุมัติ
-                const [adminRes, pendingRes] = await Promise.all([
-                    fetch(`${API_URL}?action=getAdminAllData`).then(r => r.json()),
-                    fetch(`${API_URL}?action=getPendingStudents`).then(r => r.json())
-                ]);
+                const response = await fetch(`${API_URL}?action=getAdminAllData`);
+                const data = await response.json();
+                
+                const pendingRes = await fetch(`${API_URL}?action=getPendingStudents`);
+                const pendingData = await pendingRes.json();
 
-                if (adminRes.result === "success") {
-                    allData = adminRes;
-                }
-                if (Array.isArray(pendingRes)) {
-                    pendingStudentsList = pendingRes;
-                    const badge = document.getElementById("pendingBadge");
-                    badge.textContent = pendingRes.length;
-                    badge.classList.toggle("hidden", pendingRes.length === 0);
-                }
+                ALL_DATA = data || {};
+                ALL_DATA.pendingStudents = pendingData || [];
 
-                renderCurrentTab();
+                switchTab(currentActiveTab);
             } catch (err) {
-                Swal.fire("ข้อผิดพลาด", "ไม่สามารถดึงข้อมูลจากเซิร์ฟเวอร์ได้", "error");
+                console.error(err);
+                Swal.fire("ข้อผิดพลาด", "ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้", "error");
             }
         }
 
-        // 🔄 เปลี่ยน Tab
         function switchTab(tabKey) {
-            activeTab = tabKey;
-            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-            document.getElementById(`tab-${tabKey}`)?.classList.add("active");
+            currentActiveTab = tabKey;
+            editingRowIndex = null;
             
-            document.getElementById("currentTabTitle").textContent = TAB_CONFIG[tabKey].title;
-            document.getElementById("currentTabDesc").textContent = TAB_CONFIG[tabKey].desc;
-            document.getElementById("addBtn").classList.toggle("hidden", !TAB_CONFIG[tabKey].canAdd);
-            document.getElementById("searchInput").value = "";
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.remove("bg-slate-800", "text-amber-400", "font-semibold");
+                btn.classList.add("hover:bg-slate-800");
+            });
 
-            renderCurrentTab();
-        }
+            const activeBtn = document.getElementById(`btn-${tabKey}`);
+            if (activeBtn) {
+                activeBtn.classList.add("bg-slate-800", "text-amber-400", "font-semibold");
+            }
 
-        // 🎨 เรนเดอร์ ตารางตาม Tab ที่เลือก
-        function renderCurrentTab() {
-            if (activeTab === "pending") {
-                renderPendingTable();
+            const schema = schemas[tabKey];
+            if (schema) {
+                document.getElementById("current-title").innerText = schema.title;
+            }
+
+            const btnAdd = document.getElementById("btn-add-new");
+            if (tabKey === "pendingStudents" || tabKey === "evaluationResults") {
+                btnAdd.style.display = "none";
             } else {
-                renderGenericTable(TAB_CONFIG[activeTab].sheetName, allData[activeTab] || []);
+                btnAdd.style.display = "flex";
             }
+
+            document.getElementById("searchInput").value = "";
+            renderTable();
         }
 
-        // 1️⃣ เรนเดอร์ตารางรออนุมัติ
-        function renderPendingTable() {
-            const header = document.getElementById("tableHeader");
-            const body = document.getElementById("tableBody");
+        function renderTable(filterText = "") {
+            const schema = schemas[currentActiveTab];
+            const thead = document.getElementById("table-head");
+            const tbody = document.getElementById("table-body");
 
-            header.innerHTML = `
-                <tr>
-                    <th class="p-3.5 rounded-l-xl">วันที่ลงทะเบียน</th>
-                    <th class="p-3.5">รหัสนิสิต</th>
-                    <th class="p-3.5">ชื่อ - นามสกุล</th>
-                    <th class="p-3.5">สถาบัน / รพ.</th>
-                    <th class="p-3.5 text-center rounded-r-xl">จัดการ</th>
-                </tr>
-            `;
+            if (!schema) return;
 
-            if (pendingStudentsList.length === 0) {
-                body.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-400 font-light">🎉 ไม่มีรายการที่รออนุมัติในขณะนี้</td></tr>`;
+            // Render Table Header
+            let headHTML = "<tr>";
+            schema.fields.forEach(f => {
+                let displayField = f;
+                if(f === "Timestamp") displayField = "วันที่ประเมิน";
+                if(f === "date") displayField = "วันที่ลงทะเบียน";
+                if(f === "studentId") displayField = "รหัสนิสิต";
+                if(f === "fullName") displayField = "ชื่อ-สกุล";
+                if(f === "hospital") displayField = "สถาบัน";
+                headHTML += `<th class="px-6 py-4 whitespace-nowrap">${displayField}</th>`;
+            });
+            headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
+            thead.innerHTML = headHTML;
+
+            // Filter Data
+            const list = ALL_DATA[currentActiveTab] || [];
+            let filteredList = list;
+
+            if (filterText.trim() !== "") {
+                const q = filterText.toLowerCase();
+                filteredList = list.filter(item => JSON.stringify(item).toLowerCase().includes(q));
+            }
+
+            if (filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${schema.fields.length + 1}" class="px-6 py-12 text-center text-slate-400">ไม่พบข้อมูลในระบบ</td></tr>`;
                 return;
             }
 
-            body.innerHTML = pendingStudentsList.map(st => `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="p-3.5 text-slate-500">${formatDate(st.date)}</td>
-                    <td class="p-3.5 font-bold text-slate-800">${st.studentId}</td>
-                    <td class="p-3.5 font-medium text-slate-700">${st.fullName}</td>
-                    <td class="p-3.5 text-slate-600">${st.hospital || '-'}</td>
-                    <td class="p-3.5 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="approveStudent('${st.studentId}', '${st.fullName}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">✅ อนุมัติ</button>
-                            <button onclick="rejectStudent('${st.studentId}', '${st.fullName}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">❌ ปฏิเสธ</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join("");
+            // Render Table Body
+            let bodyHTML = "";
+            filteredList.forEach((item, index) => {
+                bodyHTML += `<tr class="hover:bg-slate-50/80 transition-colors">`;
+                
+                schema.fields.forEach(f => {
+                    let val = item[f] !== undefined && item[f] !== null ? item[f] : "-";
+                    
+                    if (f === "ลิงก์รูปภาพ" && val !== "-") {
+                        bodyHTML += `<td class="px-6 py-3"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
+                    } else {
+                        bodyHTML += `<td class="px-6 py-4 whitespace-nowrap text-slate-700">${val}</td>`;
+                    }
+                });
+
+                // Render Actions
+                if (currentActiveTab === "pendingStudents") {
+                    bodyHTML += `
+                        <td class="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white shadow-sm">
+                            <button onclick="approveStudent('${item.studentId}')" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-all mr-1.5 shadow-sm">อนุมัติ</button>
+                            <button onclick="rejectStudent('${item.studentId}')" class="px-3 py-1.5 bg-rose-500 text-white text-xs font-semibold rounded-lg hover:bg-rose-600 transition-all shadow-sm">ปฏิเสธ</button>
+                        </td>
+                    `;
+                } else {
+                    bodyHTML += `
+                        <td class="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white shadow-sm">
+                            <button onclick="openEditModal(${index})" class="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium rounded-lg hover:bg-amber-100 transition-all mr-1.5">แก้ไข</button>
+                            <button onclick="deleteRow('${schema.sheet}', ${index + 2})" class="px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 text-xs font-medium rounded-lg hover:bg-rose-100 transition-all">ลบ</button>
+                        </td>
+                    `;
+                }
+
+                bodyHTML += `</tr>`;
+            });
+
+            tbody.innerHTML = bodyHTML;
         }
 
-        // 2️⃣ เรนเดอร์ตาราง Master Data ทั่วไป
-        function renderGenericTable(sheetName, rows) {
-            const header = document.getElementById("tableHeader");
-            const body = document.getElementById("tableBody");
+        function filterData() {
+            const q = document.getElementById("searchInput").value;
+            renderTable(q);
+        }
 
-            if (!rows || rows.length === 0) {
-                header.innerHTML = `<tr><th class="p-3.5">ไม่มีข้อมูล</th></tr>`;
-                body.innerHTML = `<tr><td class="text-center py-12 text-slate-400 font-light">ไม่พบข้อมูลในตารางนี้</td></tr>`;
-                return;
-            }
+        function refreshCurrentTab() {
+            loadAllData();
+        }
 
-            // ดึงชื่อ Column ยกเว้น _rowNum
-            const keys = Object.keys(rows[0]).filter(k => k !== "_rowNum");
-
-            header.innerHTML = `
+        function renderLoading() {
+            document.getElementById("table-body").innerHTML = `
                 <tr>
-                    ${keys.map(k => `<th class="p-3.5">${k}</th>`).join("")}
-                    <th class="p-3.5 text-center">จัดการ</th>
+                    <td colspan="10" class="px-6 py-12 text-center text-slate-400">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-slate-800 mb-2"></div>
+                        <p>กำลังเชื่อมต่อฐานข้อมูลระบบ...</p>
+                    </td>
                 </tr>
             `;
-
-            body.innerHTML = rows.map(row => `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    ${keys.map(k => {
-                        let val = row[k] || "-";
-                        if (typeof val === 'string' && val.startsWith('http')) {
-                            val = `<a href="${val}" target="_blank" class="text-emerald-600 hover:underline flex items-center gap-1">🖼️ เปิดลิงก์</a>`;
-                        }
-                        return `<td class="p-3.5 max-w-xs truncate">${val}</td>`;
-                    }).join("")}
-                    <td class="p-3.5 text-center">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <button onclick='openEditModal(${JSON.stringify(row)})' class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1.5 rounded-lg">✏️ แก้ไข</button>
-                            <button onclick="deleteRecord('${sheetName}', '${row._rowNum}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium px-2.5 py-1.5 rounded-lg">🗑️ ลบ</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join("");
         }
 
-        // ➕ เปิด Modal เพิ่มข้อมูล
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("w-80");
+            sidebar.classList.toggle("w-0");
+        }
+
+        // Modal Functions
         function openAddModal() {
-            editRowNumber = null;
-            document.getElementById("modalTitle").textContent = `เพิ่มข้อมูล (${TAB_CONFIG[activeTab].sheetName})`;
-            buildFormInputs({});
-            document.getElementById("crudModal").classList.remove("hidden");
+            editingRowIndex = null;
+            const schema = schemas[currentActiveTab];
+            document.getElementById("modalTitle").innerText = `เพิ่มข้อมูลใน ${schema.title}`;
+            
+            let fieldsHTML = "";
+            schema.fields.forEach(f => {
+                fieldsHTML += `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <input type="text" name="${f}" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                `;
+            });
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
         }
 
-        // ✏️ เปิด Modal แก้ไขข้อมูล
-        function openEditModal(rowData) {
-            editRowNumber = rowData._rowNum;
-            document.getElementById("modalTitle").textContent = `แก้ไขข้อมูล (${TAB_CONFIG[activeTab].sheetName})`;
-            buildFormInputs(rowData);
-            document.getElementById("crudModal").classList.remove("hidden");
+        function openEditModal(index) {
+            editingRowIndex = index;
+            const schema = schemas[currentActiveTab];
+            const item = (ALL_DATA[currentActiveTab] || [])[index];
+            if (!item) return;
+
+            document.getElementById("modalTitle").innerText = `แก้ไขข้อมูลใน ${schema.title}`;
+            
+            let fieldsHTML = "";
+            schema.fields.forEach(f => {
+                const currentVal = item[f] !== undefined && item[f] !== null ? item[f] : "";
+                fieldsHTML += `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <input type="text" name="${f}" value="${currentVal}" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                `;
+            });
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
         }
 
         function closeModal() {
-            document.getElementById("crudModal").classList.add("hidden");
+            document.getElementById("dataModal").classList.add("hidden");
+            document.getElementById("dataModal").classList.remove("flex");
         }
 
-        // 🛠️ สร้าง Form Dynamic ตาม คอลัมน์ของชีตนั้นๆ
-        function buildFormInputs(data) {
-            const container = document.getElementById("dynamicInputs");
-            const rows = allData[activeTab] || [];
-            if (rows.length === 0) return;
-
-            const keys = Object.keys(rows[0]).filter(k => k !== "_rowNum" && k !== "Timestamp");
-
-            container.innerHTML = keys.map(key => `
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">${key}</label>
-                    <input type="text" name="${key}" value="${data[key] || ''}" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white outline-none">
-                </div>
-            `).join("");
-        }
-
-        // 💾 ส่งฟอร์ม บันทึก/แก้ไข
         async function handleFormSubmit(e) {
             e.preventDefault();
+            const schema = schemas[currentActiveTab];
             const formData = new FormData(e.target);
-            const sheetName = TAB_CONFIG[activeTab].sheetName;
+            const rowData = {};
             
-            let payload = { sheetName: sheetName };
-            formData.forEach((val, key) => payload[key] = val);
+            schema.fields.forEach(f => {
+                rowData[f] = formData.get(f);
+            });
 
-            const action = editRowNumber ? "updateAdminRecord" : "addAdminRecord";
-            if (editRowNumber) payload.rowNum = editRowNumber;
-
-            Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
+            Swal.showLoading();
             try {
-                const queryStr = new URLSearchParams(payload).toString();
-                const res = await fetch(`${API_URL}?action=${action}&${queryStr}`).then(r => r.json());
+                let action = "addAdminRecord";
+                let payload = { action: action, sheetName: schema.sheet, rowData: rowData };
 
-                if (res.result === "success") {
-                    Swal.fire("สำเร็จ!", res.message, "success");
+                if (editingRowIndex !== null) {
+                    payload.action = "updateAdminRecord";
+                    payload.rowNum = editingRowIndex + 2;
+                }
+
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.result === "success") {
                     closeModal();
+                    Swal.fire("สำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
                     loadAllData();
                 } else {
-                    Swal.fire("แจ้งเตือน", res.message, "warning");
+                    Swal.fire("ผิดพลาด", result.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
                 }
             } catch (err) {
-                Swal.fire("ผิดพลาด", "การเชื่อมต่อล้มเหลว", "error");
+                Swal.fire("ผิดพลาด", "เกิดปัญหาในการส่งข้อมูล", "error");
             }
         }
 
-        // 🗑️ ลบข้อมูล
-        async function deleteRecord(sheetName, rowNum) {
-            const confirm = await Swal.fire({
-                title: 'ยืนยันการลบ?',
-                text: "ข้อมูลนี้จะถูกลบออกจากฐานข้อมูลอย่างถาวร!",
-                icon: 'warning',
+        async function approveStudent(studentId) {
+            const res = await Swal.fire({
+                title: "อนุมัติการลงทะเบียน?",
+                text: `ต้องการอนุมัติรหัสนิสิต ${studentId} เข้าสู่ระบบหลักใช่หรือไม่`,
+                icon: "question",
                 showCancelButton: true,
-                confirmButtonColor: '#e11d48',
-                confirmButtonText: 'ลบข้อมูล',
-                cancelButtonText: 'ยกเลิก'
+                confirmButtonText: "อนุมัติ",
+                cancelButtonText: "ยกเลิก",
+                confirmButtonColor: "#059669"
             });
 
-            if (!confirm.isConfirmed) return;
-
-            Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            try {
-                const res = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${sheetName}&rowNum=${rowNum}`).then(r => r.json());
-
-                if (res.result === "success") {
-                    Swal.fire("เรียบร้อย!", "ลบข้อมูลสำเร็จแล้ว", "success");
-                    loadAllData();
-                } else {
-                    Swal.fire("แจ้งเตือน", res.message, "warning");
+            if (res.isConfirmed) {
+                Swal.showLoading();
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "approveStudent", studentId: studentId })
+                    });
+                    const result = await response.json();
+                    if (result.result === "success") {
+                        Swal.fire("อนุมัติสำเร็จ", "", "success");
+                        loadAllData();
+                    } else {
+                        Swal.fire("ผิดพลาด", result.message || "อนุมัติไม่สำเร็จ", "error");
+                    }
+                } catch (e) {
+                    Swal.fire("ผิดพลาด", "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้", "error");
                 }
-            } catch (err) {
-                Swal.fire("ผิดพลาด", "การเชื่อมต่อล้มเหลว", "error");
             }
         }
 
-        // ✅ อนุมัตินิสิต
-        async function approveStudent(studentId, fullName) {
-            const confirm = await Swal.fire({
-                title: 'ยืนยันอนุมัติ?',
-                text: `อนุมัติ ${fullName} (${studentId}) เข้าสู่ระบบ`,
-                icon: 'question',
+        async function rejectStudent(studentId) {
+            const res = await Swal.fire({
+                title: "ปฏิเสธคำขอลงทะเบียน?",
+                text: `ต้องการปฏิเสธคำขอของรหัสนิสิต ${studentId} ใช่หรือไม่`,
+                icon: "warning",
                 showCancelButton: true,
-                confirmButtonColor: '#059669',
-                confirmButtonText: 'อนุมัติ'
+                confirmButtonText: "ปฏิเสธคำขอ",
+                cancelButtonText: "ยกเลิก",
+                confirmButtonColor: "#e11d48"
             });
 
-            if (!confirm.isConfirmed) return;
-
-            Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "approveStudent", studentId: studentId })
-                }).then(r => r.json());
-
-                if (res.result === "success") {
-                    Swal.fire("สำเร็จ!", `อนุมัติเรียบร้อยแล้ว`, "success");
-                    loadAllData();
-                } else {
-                    Swal.fire("แจ้งเตือน", res.message, "warning");
+            if (res.isConfirmed) {
+                Swal.showLoading();
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "rejectStudent", studentId: studentId })
+                    });
+                    const result = await response.json();
+                    if (result.result === "success") {
+                        Swal.fire("ดำเนินการเรียบร้อย", "", "success");
+                        loadAllData();
+                    } else {
+                        Swal.fire("ผิดพลาด", result.message || "ปฏิเสธไม่สำเร็จ", "error");
+                    }
+                } catch (e) {
+                    Swal.fire("ผิดพลาด", "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้", "error");
                 }
-            } catch (err) { Swal.fire("ผิดพลาด", "เชื่อมต่อไม่ได้", "error"); }
+            }
         }
 
-        // ❌ ปฏิเสธนิสิต
-        async function rejectStudent(studentId, fullName) {
-            const confirm = await Swal.fire({
-                title: 'ปฏิเสธคำขอ?',
-                text: `ลบคำขอของ ${fullName} (${studentId})`,
-                icon: 'warning',
+        async function deleteRow(sheetName, rowNum) {
+            const res = await Swal.fire({
+                title: "ยืนยันการลบ?",
+                text: "ต้องการลบรายการนี้ออกจากระบบใช่หรือไม่",
+                icon: "warning",
                 showCancelButton: true,
-                confirmButtonColor: '#e11d48',
-                confirmButtonText: 'ปฏิเสธ'
+                confirmButtonText: "ลบข้อมูล",
+                cancelButtonText: "ยกเลิก",
+                confirmButtonColor: "#e11d48"
             });
 
-            if (!confirm.isConfirmed) return;
-
-            Swal.fire({ title: 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "rejectStudent", studentId: studentId })
-                }).then(r => r.json());
-
-                if (res.result === "success") {
-                    Swal.fire("เรียบร้อย", `ลบรายการแล้ว`, "success");
-                    loadAllData();
-                } else {
-                    Swal.fire("แจ้งเตือน", res.message, "warning");
+            if (res.isConfirmed) {
+                Swal.showLoading();
+                try {
+                    const response = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${sheetName}&rowNum=${rowNum}`);
+                    const result = await response.json();
+                    if (result.result === "success") {
+                        Swal.fire("ลบสำเร็จ", "", "success");
+                        loadAllData();
+                    } else {
+                        Swal.fire("ผิดพลาด", result.message || "ลบไม่สำเร็จ", "error");
+                    }
+                } catch (e) {
+                    Swal.fire("ผิดพลาด", "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้", "error");
                 }
-            } catch (err) { Swal.fire("ผิดพลาด", "เชื่อมต่อไม่ได้", "error"); }
-        }
-
-        // 🔍 ช่องค้นหาในตาราง
-        function filterTable() {
-            const query = document.getElementById("searchInput").value.toLowerCase();
-            const rows = document.querySelectorAll("#tableBody tr");
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(query) ? "" : "none";
-            });
-        }
-
-        function showTableLoading() {
-            document.getElementById("tableBody").innerHTML = `<tr><td colspan="10" class="text-center py-12 text-slate-400 font-light">กำลังโหลดข้อมูล...</td></tr>`;
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            try {
-                const d = new Date(dateStr);
-                if (isNaN(d.getTime())) return dateStr;
-                return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            } catch (e) { return dateStr; }
+            }
         }
     </script>
 </body>
