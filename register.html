@@ -28,7 +28,9 @@
                 <div class="col-span-1">
                     <label class="block text-sm font-semibold text-slate-700 mb-1">คำนำหน้า <span class="text-rose-500">*</span></label>
                     <select id="prefix" required class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white outline-none">
-                        <option value="">เลือก</option><option value="นาย">นาย</option><option value="นางสาว">นางสาว</option>
+                        <option value="">เลือก</option>
+                        <option value="นาย">นาย</option>
+                        <option value="นางสาว">นางสาว</option>
                     </select>
                 </div>
                 <div class="col-span-2">
@@ -42,31 +44,46 @@
                 <input type="text" id="lastName" required placeholder="นามสกุล" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white outline-none">
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mt-2">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">ชั้นปี <span class="text-rose-500">*</span></label>
-                    <select id="studentYear" required class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white outline-none">
-                        <option value="">-- เลือก --</option><option value="4">ปีที่ 4</option><option value="5">ปีที่ 5</option><option value="6">ปีที่ 6</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">สถาบัน / รพ. <span class="text-rose-500">*</span></label>
-                    <select id="hospital" required class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white outline-none">
-                        <option value="">-- เลือก --</option><option value="รพ.ศูนย์">รพ.ศูนย์</option><option value="รพ.สมทบ A">รพ.สมทบ A</option>
-                    </select>
-                </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">สถาบัน / รพ. <span class="text-rose-500">*</span></label>
+                <select id="hospital" required class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white outline-none">
+                    <option value="">-- กำลังโหลดสถาบัน... --</option>
+                </select>
             </div>
 
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg mt-4">
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg mt-4 transition-all">
                 ✅ ยืนยันการลงทะเบียน
             </button>
         </form>
     </div>
 
     <script>
-        // ⚠️ เปลี่ยนลิงก์ตรงนี้ให้เป็น Web App URL ของคุณ
         const API_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
 
+        // 🚀 ดึงรายชื่อสถาบันจากชีต Institute_Master เมื่อเปิดหน้าเว็บ
+        window.addEventListener("DOMContentLoaded", loadInstitutes);
+
+        async function loadInstitutes() {
+            const hospitalSelect = document.getElementById("hospital");
+            try {
+                const res = await fetch(`${API_URL}?action=getInstitutes`).then(r => r.json());
+                if (Array.isArray(res) && res.length > 0) {
+                    hospitalSelect.innerHTML = '<option value="">-- เลือกสถาบัน / รพ. --</option>';
+                    res.forEach(item => {
+                        const opt = document.createElement("option");
+                        opt.value = item;
+                        opt.textContent = item;
+                        hospitalSelect.appendChild(opt);
+                    });
+                } else {
+                    hospitalSelect.innerHTML = '<option value="">-- ไม่พบข้อมูลสถาบัน --</option>';
+                }
+            } catch (err) {
+                hospitalSelect.innerHTML = '<option value="">-- โหลดข้อมูลสถาบันล้มเหลว --</option>';
+            }
+        }
+
+        // 📩 ระบบลงทะเบียน
         document.getElementById("registerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const studentId = document.getElementById("studentId").value.trim();
@@ -81,7 +98,6 @@
                 prefix: document.getElementById("prefix").value,
                 firstName: document.getElementById("firstName").value.trim(),
                 lastName: document.getElementById("lastName").value.trim(),
-                studentYear: document.getElementById("studentYear").value,
                 hospital: document.getElementById("hospital").value
             };
 
