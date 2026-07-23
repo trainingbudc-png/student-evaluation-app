@@ -194,29 +194,42 @@
             <input type="hidden" id="selectedStudentName">
         </div>
 
-        <!-- 🌟 ส่วนข้อมูลเวลาปฏิบัติงาน (อัปเดตแบบมีลาหลายประเภท) -->
-        <div class="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm mt-4">
+        <!-- 🌟 ส่วนข้อมูลเวลาปฏิบัติงาน (อัปเดตแบบ Checkbox เลือกได้หลายอัน) -->
+        <div class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm mt-4">
             <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 ข้อมูลเวลาปฏิบัติงาน
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label for="attendanceStatus" class="block text-xs font-semibold text-slate-500 mb-2">สถานะการเข้างาน <span class="text-rose-500">*</span></label>
-                    <select id="attendanceStatus" required onchange="toggleAttendanceDetails()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 font-medium">
-                        <option value="ครบ">🟢 ครบ (100%)</option>
-                        <option value="ป่วย">🟡 ป่วย</option>
-                        <option value="ลากิจ">🟠 ลากิจ</option>
-                        <option value="ขาด">🔴 ขาด</option>
-                        <option value="ลาหลายประเภท">🟣 อื่นๆ / ลาหลายประเภท</option>
-                    </select>
+            
+            <div class="mb-5">
+                <label class="block text-xs font-semibold text-slate-500 mb-3">สถานะการเข้างาน (สามารถติ๊กเลือกได้มากกว่า 1 ข้อ) <span class="text-rose-500">*</span></label>
+                <div class="flex flex-wrap gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer py-2 px-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                        <input type="checkbox" name="attendance" value="ครบ" class="w-5 h-5 text-emerald-500 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer" onchange="handleAttendanceChange('ครบ')" checked>
+                        <span class="text-sm font-medium text-slate-700">🟢 ครบ (100%)</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer py-2 px-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                        <input type="checkbox" name="attendance" value="ป่วย" class="w-5 h-5 text-amber-500 border-slate-300 rounded focus:ring-amber-500 cursor-pointer" onchange="handleAttendanceChange('อื่นๆ')">
+                        <span class="text-sm font-medium text-slate-700">🟡 ป่วย</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer py-2 px-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                        <input type="checkbox" name="attendance" value="ลากิจ" class="w-5 h-5 text-orange-500 border-slate-300 rounded focus:ring-orange-500 cursor-pointer" onchange="handleAttendanceChange('อื่นๆ')">
+                        <span class="text-sm font-medium text-slate-700">🟠 ลากิจ</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer py-2 px-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                        <input type="checkbox" name="attendance" value="ขาด" class="w-5 h-5 text-rose-500 border-slate-300 rounded focus:ring-rose-500 cursor-pointer" onchange="handleAttendanceChange('อื่นๆ')">
+                        <span class="text-sm font-medium text-slate-700">🔴 ขาด</span>
+                    </label>
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                 <div>
-                    <label for="attendanceDays" class="block text-xs font-semibold text-slate-500 mb-2">จำนวนวัน (รวมทั้งหมด)</label>
+                    <label for="attendanceDays" class="block text-xs font-semibold text-slate-500 mb-2">จำนวนวัน (รวมที่ลาและขาดทั้งหมด)</label>
                     <input type="number" id="attendanceDays" min="0.5" step="0.5" placeholder="เช่น 1.5" disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 font-medium transition-colors">
                 </div>
                 <div>
-                    <label for="attendanceReason" class="block text-xs font-semibold text-slate-500 mb-2">หมายเหตุ (สาเหตุ)</label>
+                    <label for="attendanceReason" class="block text-xs font-semibold text-slate-500 mb-2">หมายเหตุ (ระบุรายละเอียด)</label>
                     <input type="text" id="attendanceReason" placeholder="เช่น ป่วย 1 วัน, ลากิจ 0.5 วัน..." disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 font-medium transition-colors">
                 </div>
             </div>
@@ -270,13 +283,33 @@
         loadStudentProfiles();
     }
 
-    // 🌟 ฟังก์ชันจัดการการเปิด/ปิด ช่องกรอกจำนวนวันและหมายเหตุ
-    function toggleAttendanceDetails() {
-        const status = document.getElementById("attendanceStatus").value;
+    // 🌟 ฟังก์ชันจัดการ Checkbox การเข้างาน (ใหม่ล่าสุด)
+    function handleAttendanceChange(triggerType) {
+        const checkboxes = document.querySelectorAll('input[name="attendance"]');
+        const cbComplete = document.querySelector('input[name="attendance"][value="ครบ"]');
         const daysInput = document.getElementById("attendanceDays");
         const reasonInput = document.getElementById("attendanceReason");
-        
-        if (status === "ครบ") {
+
+        if (triggerType === 'ครบ') {
+            if (cbComplete.checked) {
+                // ถ้าเลือก "ครบ" ให้เอาติ๊กอันอื่นออก
+                checkboxes.forEach(cb => {
+                    if (cb.value !== 'ครบ') cb.checked = false;
+                });
+            }
+        } else {
+            // ถ้าเลือกอันอื่น ให้เอาติ๊ก "ครบ" ออก
+            const anyChecked = Array.from(checkboxes).some(cb => cb.value !== 'ครบ' && cb.checked);
+            if (anyChecked) {
+                cbComplete.checked = false;
+            } else {
+                // ถ้าเอาอันอื่นออกจนหมด ให้กลับไปติ๊ก "ครบ" แทน
+                cbComplete.checked = true;
+            }
+        }
+
+        // ตรวจสอบเพื่อเปิด/ปิดช่องกรอกข้อมูล
+        if (cbComplete.checked) {
             daysInput.value = "";
             reasonInput.value = "";
             daysInput.disabled = true;
@@ -513,6 +546,16 @@
             Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกนิสิต!', text: 'กรุณาคลิกที่รายชื่อนิสิตในกล่องตัวเลือกก่อนครับ' });
             return;
         }
+
+        // 🌟 รวมค่า Checkbox ที่ติ๊กเลือกทั้งหมดคั่นด้วยลูกน้ำ
+        const checkedAttendance = Array.from(document.querySelectorAll('input[name="attendance"]:checked'))
+                                       .map(cb => cb.value)
+                                       .join(', ');
+
+        if (!checkedAttendance) {
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกสถานะการเข้างานอย่างน้อย 1 รายการ' });
+            return;
+        }
         
         Swal.fire({
             title: `ยืนยันส่งผลประเมิน?\n${studentName}`,
@@ -521,14 +564,13 @@
             if (result.isConfirmed) {
                 Swal.fire({ title: 'กำลังประมวลผลข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                 
-                // 🌟 ส่งข้อมูลเวลาปฏิบัติงานไปให้ Code.gs
                 const payload = {
                     action: "submitEvaluation",
                     teacherName: document.getElementById("teacherName").value,
                     subjectCode: document.getElementById("subjectCode").value,
                     studentId: studentId,
                     studentName: studentName,
-                    attendanceStatus: document.getElementById("attendanceStatus").value,
+                    attendanceStatus: checkedAttendance, // 🌟 ส่งข้อมูลที่รวมกันไปหลังบ้าน
                     attendanceDays: document.getElementById("attendanceDays").value,
                     attendanceReason: document.getElementById("attendanceReason").value,
                     comment: document.getElementById("comment").value
@@ -552,10 +594,8 @@
                         
                         // 🌟 รีเซ็ตฟอร์มกลับเป็นค่าเริ่มต้น
                         document.getElementById("comment").value = "";
-                        document.getElementById("attendanceStatus").value = "ครบ";
-                        document.getElementById("attendanceDays").value = "";
-                        document.getElementById("attendanceReason").value = "";
-                        toggleAttendanceDetails(); // ปิดช่องจำนวนวันและหมายเหตุ
+                        handleAttendanceChange('ครบ'); // เรียกฟังก์ชันเพื่อรีเซ็ตปุ่มติ๊ก
+                        document.querySelector('input[name="attendance"][value="ครบ"]').checked = true;
 
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
                     } else { 
