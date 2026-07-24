@@ -377,6 +377,145 @@
             sidebar.classList.toggle("w-0");
         }
 
+        // =========================================================
+        // 🎯 ฟังก์ชันสร้าง HTML ของ Input/Select แต่ละช่อง (ดึงข้อมูล Master)
+        // =========================================================
+        function generateFormFieldHTML(f, val = "") {
+            val = (val !== undefined && val !== null) ? String(val).trim() : "";
+
+            // 1️⃣ ตัวเลือก ภายใน/ภายนอก
+            if (f === "ภายใน/ภายนอก") {
+                const options = ["ภายใน", "ภายนอก"];
+                let optHTML = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกภายใน/ภายนอก --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            // 2️⃣ ตัวเลือก สถานที่ / สถาบัน (ดึงจาก Institute_Master)
+            if (f === "สถานที่" || f === "สถาบัน") {
+                const list = ALL_DATA.institutes || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อสถาบัน"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกสถานที่ / สถาบัน --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            // 3️⃣ ตัวเลือก จังหวัด (ดึงจาก Province_Master)
+            if (f === "จังหวัด") {
+                const list = ALL_DATA.provinces || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อจังหวัด"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกจังหวัด --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            // 4️⃣ ตัวเลือก รหัสวิชา (ดึงจาก Subject)
+            if (f === "รหัสวิชา") {
+                const list = ALL_DATA.subjects || [];
+                let optHTML = list.map(item => {
+                    let code = typeof item === 'object' ? (item["รหัสวิชา"] || item.code || "") : item;
+                    let name = typeof item === 'object' ? (item["ชื่อวิชา"] || item.name || "") : "";
+                    code = String(code).trim();
+                    let label = name ? `${code} - ${name}` : code;
+                    return `<option value="${code}" ${code === val ? 'selected' : ''}>${label}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกรหัสวิชา --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            // 5️⃣ ตัวเลือก ภาควิชา / กลุ่มงาน (ดึงจาก Department_Master)
+            if (f === "ภาควิชา" || f === "กลุ่มงาน") {
+                const list = ALL_DATA.departments || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อกลุ่ม_ภาควิชา"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกภาควิชา/กลุ่มงาน --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            // 6️⃣ ตัวเลือก สาขาวิชา (ดึงจาก Specialty_Master)
+            if (f === "สาขาวิชา") {
+                const list = ALL_DATA.specialties || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อสาขาวิชา"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกสาขาวิชา --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            // 7️⃣ ตัวเลือก ตำแหน่ง (ดึงจาก Position_Master)
+            if (f === "ตำแหน่ง") {
+                const list = ALL_DATA.positions || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อตำแหน่ง"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกตำแหน่ง --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            // 🛑 ช่องกรอกธรรมดา (Default Input Text)
+            return `
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                    <input type="text" name="${f}" value="${val}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            `;
+        }
+
         // Modal Functions
         function openAddModal() {
             editingRowIndex = null;
@@ -385,12 +524,7 @@
             
             let fieldsHTML = "";
             schema.fields.forEach(f => {
-                fieldsHTML += `
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
-                        <input type="text" name="${f}" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                `;
+                fieldsHTML += generateFormFieldHTML(f, "");
             });
             document.getElementById("modalFormFields").innerHTML = fieldsHTML;
             document.getElementById("dataModal").classList.remove("hidden");
@@ -408,12 +542,7 @@
             let fieldsHTML = "";
             schema.fields.forEach(f => {
                 const currentVal = item[f] !== undefined && item[f] !== null ? item[f] : "";
-                fieldsHTML += `
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
-                        <input type="text" name="${f}" value="${currentVal}" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                `;
+                fieldsHTML += generateFormFieldHTML(f, currentVal);
             });
             document.getElementById("modalFormFields").innerHTML = fieldsHTML;
             document.getElementById("dataModal").classList.remove("hidden");
