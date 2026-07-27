@@ -249,7 +249,6 @@
 </div>
 
 <script>
-    // ⚠️ ลิงก์ Web App ของคุณ (อย่าลืมเช็กให้ตรงกับที่ Deploy ล่าสุด)
     const API_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec";
 
     let loggedInTeacher = null;
@@ -261,24 +260,71 @@
 
     function checkLoginStatus() {
         const storedData = localStorage.getItem("assessorData");
-        
-        if (!storedData) {
-            window.location.href = "index.html"; 
-            return;
-        }
+        if (!storedData) { window.location.href = "index.html"; return; }
 
         const loginData = JSON.parse(storedData);
         loggedInTeacher = loginData;
         
         const fullName = `${loginData.prefix || ''}${loginData.firstName || ''} ${loginData.lastName || ''}`.trim();
         document.getElementById('teacherName').value = fullName;
-        
         document.getElementById('displayDept').innerText = loginData.department || 'ไม่ระบุ';
         document.getElementById('deptBadge').classList.remove('hidden');
 
         loadSubjects();
         loadCriteria();
         loadStudentProfiles();
+    }
+
+    // 💡 ฟังก์ชันแปลงวันที่รูปแบบไทย/พ.ศ. ให้เป็น Date Object สากล (ค.ศ.)
+    function parseThaiDate(dateInput) {
+        if (!dateInput) return null;
+        if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
+            let d = new Date(dateInput);
+            if (d.getFullYear() > 2400) d.setFullYear(d.getFullYear() - 543);
+            return d;
+        }
+
+        let str = String(dateInput).trim();
+        const thaiMonths = {
+            "ม.ค.": 0, "ก.พ.": 1, "มี.ค.": 2, "เม.ย.": 3, "พ.ค.": 4, "มิ.ย.": 5,
+            "ก.ค.": 6, "ส.ค.": 7, "ก.ย.": 8, "ต.ค.": 9, "พ.ย.": 10, "ธ.ค.": 11,
+            "มกราคม": 0, "กุมภาพันธ์": 1, "มีนาคม": 2, "เมษายน": 3, "พฤษภาคม": 4, "มิถุนายน": 5,
+            "กรกฎาคม": 6, "สิงหาคม": 7, "กันยายน": 8, "ตุลาคม": 9, "พฤศจิกายน": 10, "ธันวาคม": 11
+        };
+
+        // แบบ text เช่น "3 ส.ค. 2568"
+        let parts = str.split(/\s+/);
+        if (parts.length === 3) {
+            let day = parseInt(parts[0], 10);
+            let monthStr = parts[1];
+            let year = parseInt(parts[2], 10);
+            if (year > 2400) year -= 543;
+            if (thaiMonths[monthStr] !== undefined) {
+                return new Date(year, thaiMonths[monthStr], day);
+            }
+        }
+
+        // แบบตัวเลขแยกด้วย slash เช่น "03/08/2568"
+        if (str.includes('/')) {
+            let p = str.split('/');
+            if (p.length === 3) {
+                let day = parseInt(p[0], 10);
+                let month = parseInt(p[1], 10) - 1;
+                let year = parseInt(p[2], 10);
+                if (year > 2400) year -= 543;
+                return new Date(year, month, day);
+            }
+        }
+
+        let standardDate = new Date(str);
+        if (!isNaN(standardDate.getTime())) {
+            if (standardDate.getFullYear() > 2400) {
+                standardDate.setFullYear(standardDate.getFullYear() - 543);
+            }
+            return standardDate;
+        }
+
+        return null;
     }
 
     function handleAttendanceChange(triggerType) {
@@ -289,35 +335,23 @@
 
         if (triggerType === 'ครบ') {
             if (cbComplete.checked) {
-                checkboxes.forEach(cb => {
-                    if (cb.value !== 'ครบ') cb.checked = false;
-                });
+                checkboxes.forEach(cb => { if (cb.value !== 'ครบ') cb.checked = false; });
             }
         } else {
             const anyChecked = Array.from(checkboxes).some(cb => cb.value !== 'ครบ' && cb.checked);
-            if (anyChecked) {
-                cbComplete.checked = false;
-            } else {
-                cbComplete.checked = true;
-            }
+            if (anyChecked) cbComplete.checked = false;
+            else cbComplete.checked = true;
         }
 
         if (cbComplete.checked) {
-            daysInput.value = "";
-            reasonInput.value = "";
-            daysInput.disabled = true;
-            reasonInput.disabled = true;
-            daysInput.classList.add("bg-slate-100");
-            daysInput.classList.remove("bg-slate-50");
-            reasonInput.classList.add("bg-slate-100");
-            reasonInput.classList.remove("bg-slate-50");
+            daysInput.value = ""; reasonInput.value = "";
+            daysInput.disabled = true; reasonInput.disabled = true;
+            daysInput.classList.add("bg-slate-100"); daysInput.classList.remove("bg-slate-50");
+            reasonInput.classList.add("bg-slate-100"); reasonInput.classList.remove("bg-slate-50");
         } else {
-            daysInput.disabled = false;
-            reasonInput.disabled = false;
-            daysInput.classList.remove("bg-slate-100");
-            daysInput.classList.add("bg-slate-50");
-            reasonInput.classList.remove("bg-slate-100");
-            reasonInput.classList.add("bg-slate-50");
+            daysInput.disabled = false; reasonInput.disabled = false;
+            daysInput.classList.remove("bg-slate-100"); daysInput.classList.add("bg-slate-50");
+            reasonInput.classList.remove("bg-slate-100"); reasonInput.classList.add("bg-slate-50");
         }
     }
 
@@ -329,14 +363,10 @@
                 res.studentProfiles.forEach(p => {
                     const sId = String(p["รหัสนิสิต"]).trim();
                     const sImg = p["ลิงก์รูปภาพ"] || "";
-                    if (sId) {
-                        studentImgMap[sId] = sImg;
-                    }
+                    if (sId) studentImgMap[sId] = sImg;
                 });
             }
-        } catch (e) {
-            console.error("โหลดรูปภาพนิสิตล้มเหลว:", e);
-        }
+        } catch (e) { console.error("โหลดรูปภาพนิสิตล้มเหลว:", e); }
     }
 
     async function loadSubjects() {
@@ -379,19 +409,12 @@
             data.sort((a, b) => {
                 let matchA = String(a.topic || "").match(/^\d+/);
                 let matchB = String(b.topic || "").match(/^\d+/);
-                
                 let numA = matchA ? parseInt(matchA[0], 10) : 9999;
                 let numB = matchB ? parseInt(matchB[0], 10) : 9999;
-                
                 if (numA !== numB) return numA - numB;
-                
                 let scoreA = parseFloat(a.score);
                 let scoreB = parseFloat(b.score);
-                
-                scoreA = isNaN(scoreA) ? -9999 : scoreA;
-                scoreB = isNaN(scoreB) ? -9999 : scoreB;
-                
-                return scoreB - scoreA; 
+                return (isNaN(scoreB) ? -9999 : scoreB) - (isNaN(scoreA) ? -9999 : scoreA);
             });
 
             let currentTopic = "";
@@ -430,21 +453,15 @@
                     </tr>
                 `;
                 
-                if (!activeTopics.includes(currentTopic)) {
-                    activeTopics.push(currentTopic);
-                }
-                
+                if (!activeTopics.includes(currentTopic)) activeTopics.push(currentTopic);
                 const nextItem = data[data.indexOf(item) + 1];
-                if (!nextItem || nextItem.topic !== currentTopic) {
-                    questionCounter++;
-                }
+                if (!nextItem || nextItem.topic !== currentTopic) questionCounter++;
             });
 
             if (tableHTML !== "") {
                 tableHTML += `</tbody></table>`;
                 container.innerHTML += tableHTML;
             }
-            
         } catch (error) {
             document.getElementById("criteriaContainer").innerHTML = `<div class="error-box">⚠️ เกิดข้อผิดพลาดในการโหลดเกณฑ์ประเมิน</div>`;
         }
@@ -481,31 +498,21 @@
                     const sIdTrim = String(s.studentId).trim();
                     const imgUrl = studentImgMap[sIdTrim] || "";
 
-                    // 🌟 เพิ่มระบบ Time Window คำนวณวันที่
-                    let startObj = new Date(s.startDate);
-                    let endObj = new Date(s.endDate);
+                    // 🎯 แปลงวันที่ด้วยฟังก์ชันใหม่
+                    let startObj = parseThaiDate(s.startDate);
+                    let endObj = parseThaiDate(s.endDate);
                     
-                    // ป้องกันปัญหารูปแบบวันที่เป็น DD/MM/YYYY
-                    if(isNaN(startObj.getTime()) && typeof s.startDate === 'string' && s.startDate.includes('/')) {
-                        let p = s.startDate.split('/');
-                        if(p.length === 3) startObj = new Date(`${p[2]}-${p[1]}-${p[0]}`);
-                    }
-                    if(isNaN(endObj.getTime()) && typeof s.endDate === 'string' && s.endDate.includes('/')) {
-                        let p = s.endDate.split('/');
-                        if(p.length === 3) endObj = new Date(`${p[2]}-${p[1]}-${p[0]}`);
-                    }
-
                     let isTimeExpired = false;
                     let isBeforeStart = false;
                     let now = new Date();
                     
-                    if (!isNaN(startObj.getTime()) && now < startObj) {
+                    if (startObj && now < startObj) {
                         isBeforeStart = true;
                     }
                     
-                    if (!isNaN(endObj.getTime())) {
-                        let expireDate = new Date(endObj);
-                        expireDate.setDate(expireDate.getDate() + 14); // บวกเผื่อ 14 วันจากวันสิ้นสุด
+                    if (endObj) {
+                        let expireDate = new Date(endObj.getTime());
+                        expireDate.setDate(expireDate.getDate() + 14); // ครบกำหนด 14 วันหลังวันสิ้นสุด
                         expireDate.setHours(23, 59, 59, 999);
                         
                         if (now > expireDate) {
@@ -513,7 +520,6 @@
                         }
                     }
 
-                    // สร้าง UI แสดงผลตามเงื่อนไข
                     if (isEvaluatedByMe) {
                         div.className = "student-item disabled";
                         div.innerHTML = `
@@ -657,11 +663,9 @@
                     if (resData.result === "success") {
                         await Swal.fire("สำเร็จ!", "บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว", "success");
                         loadStudents(); 
-                        
                         document.getElementById("comment").value = "";
                         handleAttendanceChange('ครบ'); 
                         document.querySelector('input[name="attendance"][value="ครบ"]').checked = true;
-
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
                     } else { 
                         Swal.fire("ล้มเหลว", resData.message || "เกิดข้อผิดพลาดจากระบบฐานข้อมูล", "error"); 
