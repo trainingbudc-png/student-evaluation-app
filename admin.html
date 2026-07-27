@@ -178,7 +178,6 @@
         };
 
         window.addEventListener("DOMContentLoaded", () => {
-            // เช็คว่าเคยล็อกอินสำเร็จหรือยัง
             if (sessionStorage.getItem("adminAuth") === "true") {
                 document.getElementById("loginModal").classList.add("hidden");
                 loadAllData();
@@ -382,6 +381,16 @@
         // =========================================================
         function generateFormFieldHTML(f, val = "") {
             val = (val !== undefined && val !== null) ? String(val).trim() : "";
+
+            // 0️⃣ ปิดการแก้ไขช่อง "ลิงก์รูปภาพ" (เพราะระบบจะจับคู่อัตโนมัติจาก Google Drive ตามรหัสนิสิต)
+            if (f === "ลิงก์รูปภาพ") {
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <input type="text" name="${f}" value="${val}" readonly placeholder="(ระบบจะดึงรูปจาก Google Drive อัตโนมัติตามรหัสนิสิต)" 
+                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-100 text-slate-500 cursor-not-allowed">
+                    </div>`;
+            }
 
             // 1️⃣ ตัวเลือก ภายใน/ภายนอก
             if (f === "ภายใน/ภายนอก") {
