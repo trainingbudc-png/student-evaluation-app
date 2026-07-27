@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <!-- Sidebar ธีมเดิม (Dark Sidebar) ครบทุกหมวดหมู่ -->
+    <!-- Sidebar ธีมเดิม -->
     <aside id="sidebar" class="w-80 bg-slate-900 text-slate-300 flex flex-col min-h-screen shadow-xl border-r border-slate-800 shrink-0 transition-all duration-300 overflow-hidden">
         <div class="p-6 border-b border-slate-800 bg-slate-950 flex items-center gap-3 w-80">
             <span class="text-3xl">⚙️</span>
@@ -161,7 +161,6 @@
         let currentActiveTab = "pendingStudents"; 
         let editingRowIndex = null;
 
-        // Schemas ทั้งหมด 12 ตาราง
         const schemas = {
             pendingStudents: { title: "จัดการนิสิตรออนุมัติ", sheet: "รออนุมัติ", fields: ["date", "studentId", "fullName", "hospital"] },
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
@@ -284,7 +283,6 @@
 
             if (!schema) return;
 
-            // Render Table Header
             let headHTML = "<tr>";
             schema.fields.forEach(f => {
                 let displayField = f;
@@ -298,7 +296,6 @@
             headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
             thead.innerHTML = headHTML;
 
-            // Filter Data
             const list = ALL_DATA[currentActiveTab] || [];
             let filteredList = list;
 
@@ -312,7 +309,6 @@
                 return;
             }
 
-            // Render Table Body
             let bodyHTML = "";
             filteredList.forEach((item, index) => {
                 bodyHTML += `<tr class="hover:bg-slate-50/80 transition-colors">`;
@@ -327,7 +323,6 @@
                     }
                 });
 
-                // Render Actions
                 if (currentActiveTab === "pendingStudents") {
                     bodyHTML += `
                         <td class="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white shadow-sm">
@@ -377,22 +372,23 @@
         }
 
         // =========================================================
-        // 🎯 ฟังก์ชันสร้าง HTML ของ Input/Select แต่ละช่อง (ดึงข้อมูล Master)
+        // 🎯 ฟังก์ชันสร้าง HTML ของ Input/Select (เพิ่มปุ่มแนบไฟล์รูปภาพ)
         // =========================================================
         function generateFormFieldHTML(f, val = "") {
             val = (val !== undefined && val !== null) ? String(val).trim() : "";
 
-            // 0️⃣ ปิดการแก้ไขช่อง "ลิงก์รูปภาพ" (เพราะระบบจะจับคู่อัตโนมัติจาก Google Drive ตามรหัสนิสิต)
+            // 📸 แนบไฟล์รูปภาพ (เพื่อส่งขึ้น Google Drive อัตโนมัติ)
             if (f === "ลิงก์รูปภาพ") {
                 return `
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
-                        <input type="text" name="${f}" value="${val}" readonly placeholder="(ระบบจะดึงรูปจาก Google Drive อัตโนมัติตามรหัสนิสิต)" 
-                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-100 text-slate-500 cursor-not-allowed">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">แนบไฟล์รูปภาพนิสิต</label>
+                        <input type="file" id="studentImageFileInput" accept="image/*" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                        <input type="hidden" name="${f}" value="${val}">
+                        ${val ? `<p class="text-xs text-slate-500 mt-1">รูปภาพปัจจุบัน: <a href="${val}" target="_blank" class="text-emerald-600 underline">คลิกเพื่อดูรูปภาพ</a></p>` : ''}
                     </div>`;
             }
 
-            // 1️⃣ ตัวเลือก ภายใน/ภายนอก
             if (f === "ภายใน/ภายนอก") {
                 const options = ["ภายใน", "ภายนอก"];
                 let optHTML = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join("");
@@ -406,7 +402,6 @@
                     </div>`;
             }
 
-            // 2️⃣ ตัวเลือก สถานที่ / สถาบัน (ดึงจาก Institute_Master)
             if (f === "สถานที่" || f === "สถาบัน") {
                 const list = ALL_DATA.institutes || [];
                 let optHTML = list.map(item => {
@@ -424,7 +419,6 @@
                     </div>`;
             }
 
-            // 3️⃣ ตัวเลือก จังหวัด (ดึงจาก Province_Master)
             if (f === "จังหวัด") {
                 const list = ALL_DATA.provinces || [];
                 let optHTML = list.map(item => {
@@ -442,7 +436,6 @@
                     </div>`;
             }
 
-            // 4️⃣ ตัวเลือก รหัสวิชา (ดึงจาก Subject)
             if (f === "รหัสวิชา") {
                 const list = ALL_DATA.subjects || [];
                 let optHTML = list.map(item => {
@@ -462,7 +455,6 @@
                     </div>`;
             }
 
-            // 5️⃣ ตัวเลือก ภาควิชา / กลุ่มงาน (ดึงจาก Department_Master)
             if (f === "ภาควิชา" || f === "กลุ่มงาน") {
                 const list = ALL_DATA.departments || [];
                 let optHTML = list.map(item => {
@@ -480,7 +472,6 @@
                     </div>`;
             }
 
-            // 6️⃣ ตัวเลือก สาขาวิชา (ดึงจาก Specialty_Master)
             if (f === "สาขาวิชา") {
                 const list = ALL_DATA.specialties || [];
                 let optHTML = list.map(item => {
@@ -498,7 +489,6 @@
                     </div>`;
             }
 
-            // 7️⃣ ตัวเลือก ตำแหน่ง (ดึงจาก Position_Master)
             if (f === "ตำแหน่ง") {
                 const list = ALL_DATA.positions || [];
                 let optHTML = list.map(item => {
@@ -516,7 +506,6 @@
                     </div>`;
             }
 
-            // 🛑 ช่องกรอกธรรมดา (Default Input Text)
             return `
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
@@ -525,7 +514,6 @@
             `;
         }
 
-        // Modal Functions
         function openAddModal() {
             editingRowIndex = null;
             const schema = schemas[currentActiveTab];
@@ -563,6 +551,16 @@
             document.getElementById("dataModal").classList.remove("flex");
         }
 
+        // แปลงไฟล์ภาพเป็น Base64
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
         async function handleFormSubmit(e) {
             e.preventDefault();
             const schema = schemas[currentActiveTab];
@@ -573,10 +571,28 @@
                 rowData[f] = formData.get(f);
             });
 
-            Swal.showLoading();
+            // 📸 อ่านไฟล์รูปภาพที่แนบ (ถ้ามี)
+            let fileData = null;
+            const fileInput = document.getElementById("studentImageFileInput");
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const base64Str = await convertFileToBase64(file);
+                fileData = {
+                    base64: base64Str.split(',')[1],
+                    mimeType: file.type,
+                    fileName: `${rowData["รหัสนิสิต"] || 'student'}_${Date.now()}.${file.name.split('.').pop()}`
+                };
+            }
+
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูลและอัปโหลดรูปภาพ...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
             try {
                 let action = "addAdminRecord";
-                let payload = { action: action, sheetName: schema.sheet, rowData: rowData };
+                let payload = { action: action, sheetName: schema.sheet, rowData: rowData, fileData: fileData };
 
                 if (editingRowIndex !== null) {
                     payload.action = "updateAdminRecord";
@@ -591,7 +607,7 @@
 
                 if (result.result === "success") {
                     closeModal();
-                    Swal.fire("สำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
+                    Swal.fire("สำเร็จ", "บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว", "success");
                     loadAllData();
                 } else {
                     Swal.fire("ผิดพลาด", result.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
