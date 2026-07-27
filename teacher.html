@@ -194,7 +194,6 @@
             <input type="hidden" id="selectedStudentName">
         </div>
 
-        <!-- 🌟 ส่วนข้อมูลเวลาปฏิบัติงาน (อัปเดตแบบ Checkbox เลือกได้หลายอัน) -->
         <div class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm mt-4">
             <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -234,7 +233,6 @@
                 </div>
             </div>
         </div>
-        <!-- 🌟 สิ้นสุดส่วนที่อัปเดต -->
 
         <div id="criteriaContainer" class="pt-2">
         </div>
@@ -283,7 +281,6 @@
         loadStudentProfiles();
     }
 
-    // 🌟 ฟังก์ชันจัดการ Checkbox การเข้างาน (ใหม่ล่าสุด)
     function handleAttendanceChange(triggerType) {
         const checkboxes = document.querySelectorAll('input[name="attendance"]');
         const cbComplete = document.querySelector('input[name="attendance"][value="ครบ"]');
@@ -292,23 +289,19 @@
 
         if (triggerType === 'ครบ') {
             if (cbComplete.checked) {
-                // ถ้าเลือก "ครบ" ให้เอาติ๊กอันอื่นออก
                 checkboxes.forEach(cb => {
                     if (cb.value !== 'ครบ') cb.checked = false;
                 });
             }
         } else {
-            // ถ้าเลือกอันอื่น ให้เอาติ๊ก "ครบ" ออก
             const anyChecked = Array.from(checkboxes).some(cb => cb.value !== 'ครบ' && cb.checked);
             if (anyChecked) {
                 cbComplete.checked = false;
             } else {
-                // ถ้าเอาอันอื่นออกจนหมด ให้กลับไปติ๊ก "ครบ" แทน
                 cbComplete.checked = true;
             }
         }
 
-        // ตรวจสอบเพื่อเปิด/ปิดช่องกรอกข้อมูล
         if (cbComplete.checked) {
             daysInput.value = "";
             reasonInput.value = "";
@@ -488,6 +481,39 @@
                     const sIdTrim = String(s.studentId).trim();
                     const imgUrl = studentImgMap[sIdTrim] || "";
 
+                    // 🌟 เพิ่มระบบ Time Window คำนวณวันที่
+                    let startObj = new Date(s.startDate);
+                    let endObj = new Date(s.endDate);
+                    
+                    // ป้องกันปัญหารูปแบบวันที่เป็น DD/MM/YYYY
+                    if(isNaN(startObj.getTime()) && typeof s.startDate === 'string' && s.startDate.includes('/')) {
+                        let p = s.startDate.split('/');
+                        if(p.length === 3) startObj = new Date(`${p[2]}-${p[1]}-${p[0]}`);
+                    }
+                    if(isNaN(endObj.getTime()) && typeof s.endDate === 'string' && s.endDate.includes('/')) {
+                        let p = s.endDate.split('/');
+                        if(p.length === 3) endObj = new Date(`${p[2]}-${p[1]}-${p[0]}`);
+                    }
+
+                    let isTimeExpired = false;
+                    let isBeforeStart = false;
+                    let now = new Date();
+                    
+                    if (!isNaN(startObj.getTime()) && now < startObj) {
+                        isBeforeStart = true;
+                    }
+                    
+                    if (!isNaN(endObj.getTime())) {
+                        let expireDate = new Date(endObj);
+                        expireDate.setDate(expireDate.getDate() + 14); // บวกเผื่อ 14 วันจากวันสิ้นสุด
+                        expireDate.setHours(23, 59, 59, 999);
+                        
+                        if (now > expireDate) {
+                            isTimeExpired = true;
+                        }
+                    }
+
+                    // สร้าง UI แสดงผลตามเงื่อนไข
                     if (isEvaluatedByMe) {
                         div.className = "student-item disabled";
                         div.innerHTML = `
@@ -507,8 +533,49 @@
                             document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
                             document.getElementById("selectedStudentId").value = "";
                             document.getElementById("selectedStudentName").value = "";
-                            
                             Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'นิสิตคนนี้ได้รับการประเมินไปแล้วโดยอาจารย์' });
+                        };
+                    } else if (isTimeExpired) {
+                        div.className = "student-item disabled";
+                        div.innerHTML = `
+                            <div class="relative">
+                                ${imgUrl 
+                                    ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm opacity-40 grayscale" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
+                                    : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
+                                       </div>`}
+                                <span class="absolute -bottom-1 -right-1 bg-rose-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs shadow-md border-2 border-white">!</span>
+                            </div>
+                            <div style="font-size:11px; color:#94a3b8; margin-top:10px;">${s.studentId}</div>
+                            <div style="font-weight:bold; margin-top:2px; color:#cbd5e1; text-decoration: line-through;">${s.studentName}</div>
+                            <div style="font-size:11px; color:#ef4444; margin-top:4px; font-weight:bold;">❌ เกินเวลาประเมิน</div>
+                        `;
+                        div.onclick = () => {
+                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+                            document.getElementById("selectedStudentId").value = "";
+                            document.getElementById("selectedStudentName").value = "";
+                            Swal.fire({ icon: 'error', title: 'หมดเขตประเมิน', text: 'นิสิตคนนี้เกินกำหนดเวลาการประเมินแล้ว (เกิน 14 วันจากวันสิ้นสุด)' });
+                        };
+                    } else if (isBeforeStart) {
+                        div.className = "student-item disabled";
+                        div.innerHTML = `
+                            <div class="relative">
+                                ${imgUrl 
+                                    ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm opacity-40 grayscale" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
+                                    : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
+                                       </div>`}
+                                <span class="absolute -bottom-1 -right-1 bg-amber-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs shadow-md border-2 border-white">⏳</span>
+                            </div>
+                            <div style="font-size:11px; color:#94a3b8; margin-top:10px;">${s.studentId}</div>
+                            <div style="font-weight:bold; margin-top:2px; color:#cbd5e1;">${s.studentName}</div>
+                            <div style="font-size:11px; color:#f59e0b; margin-top:4px; font-weight:bold;">⏳ ยังไม่ถึงเวลา</div>
+                        `;
+                        div.onclick = () => {
+                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+                            document.getElementById("selectedStudentId").value = "";
+                            document.getElementById("selectedStudentName").value = "";
+                            Swal.fire({ icon: 'warning', title: 'ยังไม่ถึงเวลาประเมิน', text: 'นิสิตคนนี้ยังไม่ถึงกำหนดวันเริ่มปฏิบัติงาน' });
                         };
                     } else {
                         div.className = "student-item";
@@ -547,7 +614,6 @@
             return;
         }
 
-        // 🌟 รวมค่า Checkbox ที่ติ๊กเลือกทั้งหมดคั่นด้วยลูกน้ำ
         const checkedAttendance = Array.from(document.querySelectorAll('input[name="attendance"]:checked'))
                                        .map(cb => cb.value)
                                        .join(', ');
@@ -570,7 +636,7 @@
                     subjectCode: document.getElementById("subjectCode").value,
                     studentId: studentId,
                     studentName: studentName,
-                    attendanceStatus: checkedAttendance, // 🌟 ส่งข้อมูลที่รวมกันไปหลังบ้าน
+                    attendanceStatus: checkedAttendance, 
                     attendanceDays: document.getElementById("attendanceDays").value,
                     attendanceReason: document.getElementById("attendanceReason").value,
                     comment: document.getElementById("comment").value
@@ -592,9 +658,8 @@
                         await Swal.fire("สำเร็จ!", "บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว", "success");
                         loadStudents(); 
                         
-                        // 🌟 รีเซ็ตฟอร์มกลับเป็นค่าเริ่มต้น
                         document.getElementById("comment").value = "";
-                        handleAttendanceChange('ครบ'); // เรียกฟังก์ชันเพื่อรีเซ็ตปุ่มติ๊ก
+                        handleAttendanceChange('ครบ'); 
                         document.querySelector('input[name="attendance"][value="ครบ"]').checked = true;
 
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
