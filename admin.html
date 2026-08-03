@@ -160,7 +160,7 @@
         let ALL_DATA = {};
         let currentActiveTab = "studentProfiles"; 
         let editingRowIndex = null;
-        let currentSubmitMode = "all"; // โหมดบันทึก: 'all', 'info_only', 'photo_only'
+        let currentSubmitMode = "all";
 
         const schemas = {
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
@@ -213,7 +213,6 @@
 
                     loadAllData();
                 } else {
-                    // หากยังไม่ได้ตั้งรหัสผ่านที่เซิร์ฟเวอร์ ให้ผ่านเข้าใช้งานเบื้องต้นได้
                     sessionStorage.setItem("adminAuth", "true");
                     document.getElementById("loginModal").classList.add("hidden");
                     loadAllData();
@@ -586,7 +585,6 @@
             document.getElementById("dataModal").classList.remove("flex");
         }
 
-        // ⚡ ฟังก์ชันย่อขนาดรูปภาพและแปลงเป็น Base64 (ป้องกัน Timeout)
         function compressAndConvertToBase64(file, maxWidth = 800, quality = 0.7) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -610,7 +608,8 @@
                         ctx.drawImage(img, 0, 0, width, height);
 
                         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        const base64Str = dataUrl.split(',')[1];
+                        // แก้ไข: ดักจับช่องว่างที่อาจเกิดขึ้นและเปลี่ยนเป็นเครื่องหมาย +
+                        const base64Str = dataUrl.split(',')[1].replace(/ /g, '+'); 
                         resolve({
                             base64: base64Str,
                             mimeType: 'image/jpeg',
@@ -623,7 +622,6 @@
             });
         }
 
-        // 🌟 ฟังก์ชันจัดการส่งข้อมูลสมบูรณ์ ปรับโครงสร้าง Payload ให้ตรงกับ Apps Script
         async function handleFormSubmit(e) {
             e.preventDefault();
             const schema = schemas[currentActiveTab];
@@ -649,7 +647,6 @@
                 }
             }
 
-            // --- 1. กรณี: อัปโหลดรูปภาพอย่างเดียว (อ่านรหัสจากชื่อไฟล์) ---
             if (currentSubmitMode === "photo_only") {
                 if (!compressedFile) {
                     Swal.fire("แจ้งเตือน", "กรุณาเลือกไฟล์รูปภาพ", "warning");
@@ -686,7 +683,6 @@
                     fileName: compressedFile.fileName
                 };
             }
-            // --- 2. กรณี: เพิ่มข้อมูลรายชื่ออย่างเดียว ---
             else if (currentSubmitMode === "info_only") {
                 payload = {
                     action: "addAdminRecord",
@@ -696,7 +692,6 @@
                     "ลิงก์รูปภาพ": ""
                 };
             }
-            // --- 3. กรณี: เมนูอื่นๆ หรือโหมดแก้ไขทั่วไป ---
             else {
                 payload = {
                     action: editingRowIndex !== null ? "updateAdminRecord" : "addAdminRecord",
@@ -727,8 +722,12 @@
             });
 
             try {
+                // แก้ไข: เพิ่ม Headers ให้ Fetch รับส่งเป็น text/plain เพื่อป้องกันสัญลักษณ์ + ใน Base64 โดนแปลง
                 const res = await fetch(API_URL, {
                     method: "POST",
+                    headers: {
+                        "Content-Type": "text/plain;charset=utf-8"
+                    },
                     body: JSON.stringify(payload)
                 });
                 
