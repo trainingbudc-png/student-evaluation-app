@@ -136,6 +136,7 @@
 
     <!-- Modal เพิ่ม/แก้ไข ข้อมูล -->
     <div id="dataModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <!-- 🌟 ตัว Modal จะถูกสลับ class ขนาด (max-w-lg / max-w-3xl) ด้วย JS -->
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
             <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
                 <h3 id="modalTitle" class="font-bold text-lg">เพิ่มข้อมูลใหม่</h3>
@@ -499,15 +500,46 @@
             `;
         }
 
+        // =========================================================
+        // 🌟 ส่วนที่ปรับแก้: แยกฝั่งซ้าย-ขวา เฉพาะเมนูข้อมูลนิสิต
+        // =========================================================
         function openAddModal() {
             editingRowIndex = null;
             const schema = schemas[currentActiveTab];
             document.getElementById("modalTitle").innerText = `เพิ่มข้อมูลใน ${schema.title}`;
             
             let fieldsHTML = "";
-            schema.fields.forEach(f => {
-                fieldsHTML += generateFormFieldHTML(f, "");
-            });
+            const modalContent = document.querySelector("#dataModal > div");
+
+            if (currentActiveTab === "studentProfiles") {
+                modalContent.classList.remove("max-w-lg");
+                modalContent.classList.add("max-w-3xl");
+                
+                fieldsHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- ฝั่งซ้าย: เพิ่มรหัสนิสิต -->
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4 shadow-sm">
+                            <h4 class="font-semibold text-slate-700 text-sm border-b pb-2 mb-3">1. 🆔 ข้อมูลและรหัสนิสิต</h4>
+                            ${generateFormFieldHTML("รหัสนิสิต", "")}
+                            ${generateFormFieldHTML("ชื่อ-สกุล", "")}
+                        </div>
+                        
+                        <!-- ฝั่งขวา: เพิ่มรูปภาพ -->
+                        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4 shadow-sm">
+                            <h4 class="font-semibold text-emerald-700 text-sm border-b border-emerald-200 pb-2 mb-3">2. 📸 รูปภาพนิสิต</h4>
+                            ${generateFormFieldHTML("ลิงก์รูปภาพ", "")}
+                        </div>
+                    </div>
+                `;
+            } else {
+                modalContent.classList.remove("max-w-3xl");
+                modalContent.classList.add("max-w-lg");
+                
+                schema.fields.forEach(f => {
+                    fieldsHTML += generateFormFieldHTML(f, "");
+                });
+            }
+
             document.getElementById("modalFormFields").innerHTML = fieldsHTML;
             document.getElementById("dataModal").classList.remove("hidden");
             document.getElementById("dataModal").classList.add("flex");
@@ -522,10 +554,38 @@
             document.getElementById("modalTitle").innerText = `แก้ไขข้อมูลใน ${schema.title}`;
             
             let fieldsHTML = "";
-            schema.fields.forEach(f => {
-                const currentVal = item[f] !== undefined && item[f] !== null ? item[f] : "";
-                fieldsHTML += generateFormFieldHTML(f, currentVal);
-            });
+            const modalContent = document.querySelector("#dataModal > div");
+
+            if (currentActiveTab === "studentProfiles") {
+                modalContent.classList.remove("max-w-lg");
+                modalContent.classList.add("max-w-3xl");
+
+                fieldsHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- ฝั่งซ้าย: แก้ไขรหัสนิสิต -->
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4 shadow-sm">
+                            <h4 class="font-semibold text-slate-700 text-sm border-b pb-2 mb-3">1. 🆔 ข้อมูลและรหัสนิสิต</h4>
+                            ${generateFormFieldHTML("รหัสนิสิต", item["รหัสนิสิต"])}
+                            ${generateFormFieldHTML("ชื่อ-สกุล", item["ชื่อ-สกุล"])}
+                        </div>
+                        
+                        <!-- ฝั่งขวา: แก้ไขรูปภาพ -->
+                        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4 shadow-sm">
+                            <h4 class="font-semibold text-emerald-700 text-sm border-b border-emerald-200 pb-2 mb-3">2. 📸 รูปภาพนิสิต</h4>
+                            ${generateFormFieldHTML("ลิงก์รูปภาพ", item["ลิงก์รูปภาพ"])}
+                        </div>
+                    </div>
+                `;
+            } else {
+                modalContent.classList.remove("max-w-3xl");
+                modalContent.classList.add("max-w-lg");
+
+                schema.fields.forEach(f => {
+                    const currentVal = item[f] !== undefined && item[f] !== null ? item[f] : "";
+                    fieldsHTML += generateFormFieldHTML(f, currentVal);
+                });
+            }
+
             document.getElementById("modalFormFields").innerHTML = fieldsHTML;
             document.getElementById("dataModal").classList.remove("hidden");
             document.getElementById("dataModal").classList.add("flex");
