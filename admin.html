@@ -105,9 +105,11 @@
                 <button onclick="refreshCurrentTab()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm">
                     <span>🔄</span> รีเฟรช
                 </button>
-                <button onclick="openAddModal()" id="btn-add-new" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-sm">
-                    <span>➕</span> เพิ่มข้อมูลใหม่
-                </button>
+                
+                <!-- 🌟 จุดที่เปลี่ยน: เปลี่ยนปุ่มตรงนี้ให้เปลี่ยนไปตามเมนูที่กด -->
+                <div id="dynamic-action-buttons" class="flex items-center gap-2">
+                    <!-- ปุ่มจะถูก Inject ผ่าน JavaScript ที่นี่ -->
+                </div>
             </div>
         </header>
 
@@ -159,6 +161,7 @@
         let ALL_DATA = {};
         let currentActiveTab = "studentProfiles"; 
         let editingRowIndex = null;
+        let currentSubmitMode = "all"; // เช็คโหมดการกดบันทึก: 'all', 'info_only', 'photo_only'
 
         const schemas = {
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
@@ -259,11 +262,30 @@
                 document.getElementById("current-title").innerText = schema.title;
             }
 
-            const btnAdd = document.getElementById("btn-add-new");
-            if (tabKey === "evaluationResults") {
-                btnAdd.style.display = "none";
+            // 🌟 🌟 จุดที่เปลี่ยน: ระบบจัดการปุ่ม Header ด้านบนขวาแบบแยกส่วน
+            const actionBtnsContainer = document.getElementById("dynamic-action-buttons");
+            actionBtnsContainer.innerHTML = "";
+
+            if (tabKey === "studentProfiles") {
+                // เมนูนักเรียน: แสดง 2 ปุ่มแยกกันชัดเจน
+                actionBtnsContainer.innerHTML = `
+                    <button onclick="openStudentInfoModal()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm">
+                        <span>🧑‍🎓</span> เพิ่มรายชื่อและรหัส
+                    </button>
+                    <button onclick="openStudentPhotoModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-sm">
+                        <span>📸</span> เพิ่มรูปนิสิต
+                    </button>
+                `;
+            } else if (tabKey === "evaluationResults") {
+                // เมนูประเมิน: ซ่อนปุ่มเพิ่ม
+                actionBtnsContainer.innerHTML = "";
             } else {
-                btnAdd.style.display = "flex";
+                // เมนูอื่นๆ: แสดงปุ่มแบบเดิม
+                actionBtnsContainer.innerHTML = `
+                    <button onclick="openAddModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-sm">
+                        <span>➕</span> เพิ่มข้อมูลใหม่
+                    </button>
+                `;
             }
 
             document.getElementById("searchInput").value = "";
@@ -361,7 +383,7 @@
             if (f === "ลิงก์รูปภาพ") {
                 return `
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">แนบไฟล์รูปภาพนิสิต</label>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">แนบไฟล์รูปภาพ</label>
                         <input type="file" id="studentImageFileInput" accept="image/*" 
                             class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
                         <input type="hidden" name="${f}" value="${val}">
@@ -494,42 +516,63 @@
             `;
         }
 
+        // 🌟 🌟 ฟังก์ชัน: เปิดหน้าต่างเพิ่มรายชื่อและรหัสนิสิต (ข้อมูลอย่างเดียว)
+        function openStudentInfoModal() {
+            editingRowIndex = null;
+            currentSubmitMode = "info_only";
+            document.getElementById("modalTitle").innerText = `เพิ่มรายชื่อและรหัสนิสิต`;
+            
+            let fieldsHTML = `
+                <div class="space-y-4">
+                    ${generateFormFieldHTML("รหัสนิสิต", "")}
+                    ${generateFormFieldHTML("ชื่อ-สกุล", "")}
+                </div>
+            `;
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
+        }
+
+        // 🌟 🌟 ฟังก์ชัน: เปิดหน้าต่างเพิ่มรูปภาพ (เลือกรหัสนิสิต แล้วอัปโหลด)
+        function openStudentPhotoModal() {
+            editingRowIndex = null;
+            currentSubmitMode = "photo_only";
+            document.getElementById("modalTitle").innerText = `อัปโหลดเพิ่มรูปภาพนิสิต`;
+            
+            // สร้าง Dropdown ให้นิสิตที่มีรายชื่ออยู่แล้ว
+            const list = ALL_DATA.studentProfiles || [];
+            let optHTML = list.map((item, idx) => `<option value="${idx}">${item["รหัสนิสิต"]} - ${item["ชื่อ-สกุล"]}</option>`).join("");
+            
+            let fieldsHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">เลือกรหัสนิสิตที่ต้องการเพิ่มรูป</label>
+                        <select id="selectStudentForPhoto" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white" required>
+                            <option value="">-- เลือกรหัสนิสิต --</option>
+                            ${optHTML}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">แนบไฟล์รูปภาพนิสิต</label>
+                        <input type="file" id="studentImageFileInput" accept="image/*" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                    </div>
+                </div>
+            `;
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
+        }
+
         function openAddModal() {
             editingRowIndex = null;
+            currentSubmitMode = "all";
             const schema = schemas[currentActiveTab];
             document.getElementById("modalTitle").innerText = `เพิ่มข้อมูลใน ${schema.title}`;
             
             let fieldsHTML = "";
-            const modalContent = document.querySelector("#dataModal > div");
-
-            if (currentActiveTab === "studentProfiles") {
-                modalContent.classList.remove("max-w-lg");
-                modalContent.classList.add("max-w-3xl");
-                
-                fieldsHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- ฝั่งซ้าย: เพิ่มรหัสนิสิต -->
-                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4 shadow-sm">
-                            <h4 class="font-semibold text-slate-700 text-sm border-b pb-2 mb-3">1. 🆔 ข้อมูลและรหัสนิสิต</h4>
-                            ${generateFormFieldHTML("รหัสนิสิต", "")}
-                            ${generateFormFieldHTML("ชื่อ-สกุล", "")}
-                        </div>
-                        
-                        <!-- ฝั่งขวา: เพิ่มรูปภาพ -->
-                        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4 shadow-sm">
-                            <h4 class="font-semibold text-emerald-700 text-sm border-b border-emerald-200 pb-2 mb-3">2. 📸 รูปภาพนิสิต</h4>
-                            ${generateFormFieldHTML("ลิงก์รูปภาพ", "")}
-                        </div>
-                    </div>
-                `;
-            } else {
-                modalContent.classList.remove("max-w-3xl");
-                modalContent.classList.add("max-w-lg");
-                
-                schema.fields.forEach(f => {
-                    fieldsHTML += generateFormFieldHTML(f, "");
-                });
-            }
+            schema.fields.forEach(f => {
+                fieldsHTML += generateFormFieldHTML(f, "");
+            });
 
             document.getElementById("modalFormFields").innerHTML = fieldsHTML;
             document.getElementById("dataModal").classList.remove("hidden");
@@ -538,44 +581,17 @@
 
         function openEditModal(index) {
             editingRowIndex = index;
+            currentSubmitMode = "all"; // โหมดแก้ไขจะแสดงทุกช่องเหมือนเดิม
             const schema = schemas[currentActiveTab];
             const item = (ALL_DATA[currentActiveTab] || [])[index];
             if (!item) return;
 
             document.getElementById("modalTitle").innerText = `แก้ไขข้อมูลใน ${schema.title}`;
-            
             let fieldsHTML = "";
-            const modalContent = document.querySelector("#dataModal > div");
-
-            if (currentActiveTab === "studentProfiles") {
-                modalContent.classList.remove("max-w-lg");
-                modalContent.classList.add("max-w-3xl");
-
-                fieldsHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- ฝั่งซ้าย: แก้ไขรหัสนิสิต -->
-                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4 shadow-sm">
-                            <h4 class="font-semibold text-slate-700 text-sm border-b pb-2 mb-3">1. 🆔 ข้อมูลและรหัสนิสิต</h4>
-                            ${generateFormFieldHTML("รหัสนิสิต", item["รหัสนิสิต"])}
-                            ${generateFormFieldHTML("ชื่อ-สกุล", item["ชื่อ-สกุล"])}
-                        </div>
-                        
-                        <!-- ฝั่งขวา: แก้ไขรูปภาพ -->
-                        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4 shadow-sm">
-                            <h4 class="font-semibold text-emerald-700 text-sm border-b border-emerald-200 pb-2 mb-3">2. 📸 รูปภาพนิสิต</h4>
-                            ${generateFormFieldHTML("ลิงก์รูปภาพ", item["ลิงก์รูปภาพ"])}
-                        </div>
-                    </div>
-                `;
-            } else {
-                modalContent.classList.remove("max-w-3xl");
-                modalContent.classList.add("max-w-lg");
-
-                schema.fields.forEach(f => {
-                    const currentVal = item[f] !== undefined && item[f] !== null ? item[f] : "";
-                    fieldsHTML += generateFormFieldHTML(f, currentVal);
-                });
-            }
+            schema.fields.forEach(f => {
+                const currentVal = item[f] !== undefined && item[f] !== null ? item[f] : "";
+                fieldsHTML += generateFormFieldHTML(f, currentVal);
+            });
 
             document.getElementById("modalFormFields").innerHTML = fieldsHTML;
             document.getElementById("dataModal").classList.remove("hidden");
@@ -596,49 +612,90 @@
             });
         }
 
+        // 🌟 🌟 ฟังก์ชันจัดการส่งข้อมูลแบบแยกส่วน
         async function handleFormSubmit(e) {
             e.preventDefault();
             const schema = schemas[currentActiveTab];
             const formData = new FormData(e.target);
-            const rowData = {};
+            let rowData = {};
+            let payload = { action: "addAdminRecord", sheetName: schema.sheet };
             
-            schema.fields.forEach(f => {
-                rowData[f] = formData.get(f);
-            });
-
-            // 📸 อ่านไฟล์รูปภาพที่แนบ (ถ้ามี)
             let fileData = null;
             const fileInput = document.getElementById("studentImageFileInput");
-            const studentId = rowData["รหัสนิสิต"] ? rowData["รหัสนิสิต"].trim() : `Student_${Date.now()}`;
 
-            if (fileInput && fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const base64Str = await convertFileToBase64(file);
-                const fileExtension = file.name.split('.').pop();
+            // --- 1. กรณี: เพิ่มรูปภาพอย่างเดียว ---
+            if (currentSubmitMode === "photo_only") {
+                const selectEl = document.getElementById("selectStudentForPhoto");
+                const selectedIdx = parseInt(selectEl.value);
                 
-                fileData = {
-                    base64: base64Str.split(',')[1],
-                    mimeType: file.type,
-                    fileName: `${studentId}.${fileExtension}`
-                };
-            }
+                if (isNaN(selectedIdx)) {
+                    Swal.fire("แจ้งเตือน", "กรุณาเลือกรหัสนิสิต", "warning");
+                    return;
+                }
+                
+                const student = ALL_DATA.studentProfiles[selectedIdx];
+                rowData["รหัสนิสิต"] = student["รหัสนิสิต"];
+                rowData["ชื่อ-สกุล"] = student["ชื่อ-สกุล"];
+                rowData["ลิงก์รูปภาพ"] = student["ลิงก์รูปภาพ"]; // เก็บของเก่าไว้ก่อน เดี๋ยวสคริปต์หลังบ้านแทนที่ให้
+                
+                payload.action = "updateAdminRecord"; // เพิ่มรูป = เป็นการอัปเดตบรรทัดของนิสิตคนนั้น
+                payload.rowNum = selectedIdx + 2;
 
-            Swal.fire({
-                title: 'กำลังบันทึกข้อมูลและอัปโหลดรูปภาพ...',
-                text: fileData ? `กำลังตั้งชื่อไฟล์ภาพเป็น: ${fileData.fileName}` : 'บันทึกเฉพาะข้อมูล',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            try {
-                let action = "addAdminRecord";
-                let payload = { action: action, sheetName: schema.sheet, rowData: rowData, fileData: fileData };
+                if (fileInput && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const base64Str = await convertFileToBase64(file);
+                    const fileExtension = file.name.split('.').pop();
+                    fileData = {
+                        base64: base64Str.split(',')[1],
+                        mimeType: file.type,
+                        fileName: `${student["รหัสนิสิต"]}.${fileExtension}` // ดึงรหัสนิสิตมาตั้งชื่อไฟล์
+                    };
+                }
+            } 
+            // --- 2. กรณี: เพิ่มข้อมูลรายชื่ออย่างเดียว ---
+            else if (currentSubmitMode === "info_only") {
+                rowData["รหัสนิสิต"] = formData.get("รหัสนิสิต") || "";
+                rowData["ชื่อ-สกุล"] = formData.get("ชื่อ-สกุล") || "";
+                rowData["ลิงก์รูปภาพ"] = ""; 
+                // ไม่ต้องจัดการ fileData
+            } 
+            // --- 3. กรณี: เมนูอื่นๆ หรือโหมดแก้ไข (ทำงานเหมือนเดิม) ---
+            else {
+                schema.fields.forEach(f => {
+                    rowData[f] = formData.get(f);
+                });
 
                 if (editingRowIndex !== null) {
                     payload.action = "updateAdminRecord";
                     payload.rowNum = editingRowIndex + 2;
                 }
 
+                if (fileInput && fileInput.files.length > 0) {
+                    const studentId = rowData["รหัสนิสิต"] ? rowData["รหัสนิสิต"].trim() : `Student_${Date.now()}`;
+                    const file = fileInput.files[0];
+                    const base64Str = await convertFileToBase64(file);
+                    const fileExtension = file.name.split('.').pop();
+                    
+                    fileData = {
+                        base64: base64Str.split(',')[1],
+                        mimeType: file.type,
+                        fileName: `${studentId}.${fileExtension}` 
+                    };
+                }
+            }
+
+            // นำข้อมูลแพ็คลง Payload
+            payload.rowData = rowData;
+            payload.fileData = fileData;
+
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูล...',
+                text: fileData ? `กำลังตั้งชื่อไฟล์ภาพเป็น: ${fileData.fileName}` : 'กำลังบันทึกข้อมูลลงฐานข้อมูล',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
                 const res = await fetch(API_URL, {
                     method: "POST",
                     body: JSON.stringify(payload)
@@ -647,7 +704,7 @@
 
                 if (result.result === "success") {
                     closeModal();
-                    Swal.fire("สำเร็จ", "บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว", "success");
+                    Swal.fire("สำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
                     loadAllData();
                 } else {
                     Swal.fire("ผิดพลาด", result.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
