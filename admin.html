@@ -136,7 +136,6 @@
 
     <!-- Modal เพิ่ม/แก้ไข ข้อมูล -->
     <div id="dataModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <!-- 🌟 ตัว Modal จะถูกสลับ class ขนาด (max-w-lg / max-w-3xl) ด้วย JS -->
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
             <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
                 <h3 id="modalTitle" class="font-bold text-lg">เพิ่มข้อมูลใหม่</h3>
@@ -158,7 +157,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
         
         let ALL_DATA = {};
-        let currentActiveTab = "studentProfiles"; // อัปเดตให้เป็นหน้าเริ่มต้น
+        let currentActiveTab = "studentProfiles"; 
         let editingRowIndex = null;
 
         const schemas = {
@@ -261,7 +260,6 @@
             }
 
             const btnAdd = document.getElementById("btn-add-new");
-            // ซ่อนปุ่มเพิ่มข้อมูลเฉพาะหน้าผลการประเมิน
             if (tabKey === "evaluationResults") {
                 btnAdd.style.display = "none";
             } else {
@@ -357,13 +355,9 @@
             sidebar.classList.toggle("w-0");
         }
 
-        // =========================================================
-        // 🎯 ฟังก์ชันสร้าง HTML ของ Input/Select (เพิ่มปุ่มแนบไฟล์รูปภาพ)
-        // =========================================================
         function generateFormFieldHTML(f, val = "") {
             val = (val !== undefined && val !== null) ? String(val).trim() : "";
 
-            // 📸 แนบไฟล์รูปภาพ (เพื่อส่งขึ้น Google Drive อัตโนมัติ)
             if (f === "ลิงก์รูปภาพ") {
                 return `
                     <div>
@@ -500,9 +494,6 @@
             `;
         }
 
-        // =========================================================
-        // 🌟 ส่วนที่ปรับแก้: แยกฝั่งซ้าย-ขวา เฉพาะเมนูข้อมูลนิสิต
-        // =========================================================
         function openAddModal() {
             editingRowIndex = null;
             const schema = schemas[currentActiveTab];
@@ -596,7 +587,6 @@
             document.getElementById("dataModal").classList.remove("flex");
         }
 
-        // แปลงไฟล์ภาพเป็น Base64
         function convertFileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -619,18 +609,23 @@
             // 📸 อ่านไฟล์รูปภาพที่แนบ (ถ้ามี)
             let fileData = null;
             const fileInput = document.getElementById("studentImageFileInput");
+            const studentId = rowData["รหัสนิสิต"] ? rowData["รหัสนิสิต"].trim() : `Student_${Date.now()}`;
+
             if (fileInput && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 const base64Str = await convertFileToBase64(file);
+                const fileExtension = file.name.split('.').pop();
+                
                 fileData = {
                     base64: base64Str.split(',')[1],
                     mimeType: file.type,
-                    fileName: `${rowData["รหัสนิสิต"] || 'student'}_${Date.now()}.${file.name.split('.').pop()}`
+                    fileName: `${studentId}.${fileExtension}`
                 };
             }
 
             Swal.fire({
                 title: 'กำลังบันทึกข้อมูลและอัปโหลดรูปภาพ...',
+                text: fileData ? `กำลังตั้งชื่อไฟล์ภาพเป็น: ${fileData.fileName}` : 'บันทึกเฉพาะข้อมูล',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
