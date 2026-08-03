@@ -533,24 +533,16 @@
             document.getElementById("dataModal").classList.add("flex");
         }
 
-        // 🌟 🌟 ฟังก์ชัน: เปิดหน้าต่างเพิ่มรูปภาพ (เลือกรหัสนิสิต แล้วอัปโหลด)
+        // 🌟 🌟 ฟังก์ชัน: เปิดหน้าต่างเพิ่มรูปภาพ (ตัดเลือกรหัสนิสิตออก เหลือแค่อัปโหลดรูป)
         function openStudentPhotoModal() {
             editingRowIndex = null;
             currentSubmitMode = "photo_only";
             document.getElementById("modalTitle").innerText = `อัปโหลดเพิ่มรูปภาพนิสิต`;
             
-            // สร้าง Dropdown ให้นิสิตที่มีรายชื่ออยู่แล้ว
-            const list = ALL_DATA.studentProfiles || [];
-            let optHTML = list.map((item, idx) => `<option value="${idx}">${item["รหัสนิสิต"]} - ${item["ชื่อ-สกุล"]}</option>`).join("");
-            
             let fieldsHTML = `
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">เลือกรหัสนิสิตที่ต้องการเพิ่มรูป</label>
-                        <select id="selectStudentForPhoto" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white" required>
-                            <option value="">-- เลือกรหัสนิสิต --</option>
-                            ${optHTML}
-                        </select>
+                    <div class="p-3 bg-blue-50 text-blue-700 rounded-xl text-sm border border-blue-200">
+                        💡 <b>ข้อแนะนำ:</b> ระบบจะอ่านรหัสนิสิตจาก <b>ชื่อไฟล์รูปภาพ</b> อัตโนมัติ (เช่น 64460046.jpg หรือ 64460046_64460046.jpg)
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">แนบไฟล์รูปภาพนิสิต</label>
@@ -612,7 +604,7 @@
             });
         }
 
-        // 🌟 🌟 ฟังก์ชันจัดการส่งข้อมูลแบบแยกส่วน
+        // 🌟 🌟 ฟังก์ชันจัดการส่งข้อมูลแบบแยกส่วน (ปรับให้อ่านรหัสจากชื่อไฟล์)
         async function handleFormSubmit(e) {
             e.preventDefault();
             const schema = schemas[currentActiveTab];
@@ -623,34 +615,49 @@
             let fileData = null;
             const fileInput = document.getElementById("studentImageFileInput");
 
-            // --- 1. กรณี: เพิ่มรูปภาพอย่างเดียว ---
+            // --- 1. กรณี: เพิ่มรูปภาพอย่างเดียว (อ่านรหัสจากชื่อไฟล์) ---
             if (currentSubmitMode === "photo_only") {
-                const selectEl = document.getElementById("selectStudentForPhoto");
-                const selectedIdx = parseInt(selectEl.value);
-                
-                if (isNaN(selectedIdx)) {
-                    Swal.fire("แจ้งเตือน", "กรุณาเลือกรหัสนิสิต", "warning");
+                if (!fileInput || fileInput.files.length === 0) {
+                    Swal.fire("แจ้งเตือน", "กรุณาเลือกไฟล์รูปภาพ", "warning");
                     return;
                 }
+
+                const file = fileInput.files[0];
+                const fileNameFull = file.name; 
                 
-                const student = ALL_DATA.studentProfiles[selectedIdx];
+                // ตัดนามสกุลไฟล์ออก (.jpg, .png)
+                const nameWithoutExt = fileNameFull.split('.')[0]; 
+                // ตัดด้วย _ (Underscore) เผื่อไฟล์ชื่อ 64460046_64460046.jpg ให้เหลือแค่ 64460046
+                const studentIdFromFile = nameWithoutExt.split('_')[0].trim(); 
+
+                // 🔍 ค้นหารหัสนิสิตในตารางที่มีอยู่
+                const studentList = ALL_DATA.studentProfiles || [];
+                const studentIndex = studentList.findIndex(s => String(s["รหัสนิสิต"]).trim() === String(studentIdFromFile));
+
+                if (studentIndex === -1) {
+                    Swal.fire({
+                        title: "ไม่พบข้อมูลนิสิต!",
+                        html: `ระบบอ่านรหัสจากชื่อไฟล์ได้ <b>${studentIdFromFile}</b><br>แต่ไม่มีรหัสนี้ในระบบ กรุณาเพิ่มรายชื่อนิสิตก่อนอัปโหลดรูป`,
+                        icon: "error"
+                    });
+                    return; // หยุดการทำงานถ้าไม่เจอรายชื่อ
+                }
+
+                // ดึงข้อมูลเดิมมาเตรียมอัปเดตบรรทัดนั้น
+                const student = studentList[studentIndex];
                 rowData["รหัสนิสิต"] = student["รหัสนิสิต"];
                 rowData["ชื่อ-สกุล"] = student["ชื่อ-สกุล"];
-                rowData["ลิงก์รูปภาพ"] = student["ลิงก์รูปภาพ"]; // เก็บของเก่าไว้ก่อน เดี๋ยวสคริปต์หลังบ้านแทนที่ให้
+                rowData["ลิงก์รูปภาพ"] = student["ลิงก์รูปภาพ"]; 
                 
-                payload.action = "updateAdminRecord"; // เพิ่มรูป = เป็นการอัปเดตบรรทัดของนิสิตคนนั้น
-                payload.rowNum = selectedIdx + 2;
+                payload.action = "updateAdminRecord"; 
+                payload.rowNum = studentIndex + 2;
 
-                if (fileInput && fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    const base64Str = await convertFileToBase64(file);
-                    const fileExtension = file.name.split('.').pop();
-                    fileData = {
-                        base64: base64Str.split(',')[1],
-                        mimeType: file.type,
-                        fileName: `${student["รหัสนิสิต"]}.${fileExtension}` // ดึงรหัสนิสิตมาตั้งชื่อไฟล์
-                    };
-                }
+                const base64Str = await convertFileToBase64(file);
+                fileData = {
+                    base64: base64Str.split(',')[1],
+                    mimeType: file.type,
+                    fileName: fileNameFull
+                };
             } 
             // --- 2. กรณี: เพิ่มข้อมูลรายชื่ออย่างเดียว ---
             else if (currentSubmitMode === "info_only") {
@@ -690,7 +697,7 @@
 
             Swal.fire({
                 title: 'กำลังบันทึกข้อมูล...',
-                text: fileData ? `กำลังตั้งชื่อไฟล์ภาพเป็น: ${fileData.fileName}` : 'กำลังบันทึกข้อมูลลงฐานข้อมูล',
+                text: fileData ? `กำลังอัปโหลดรูปภาพรหัส: ${rowData["รหัสนิสิต"]}` : 'กำลังบันทึกข้อมูล',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -704,8 +711,8 @@
 
                 if (result.result === "success") {
                     closeModal();
-                    Swal.fire("สำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
-                    loadAllData();
+                    Swal.fire("สำเร็จ", "อัปโหลดและจับคู่รูปภาพเรียบร้อยแล้ว", "success");
+                    loadAllData(); // โหลดตารางใหม่
                 } else {
                     Swal.fire("ผิดพลาด", result.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
                 }
