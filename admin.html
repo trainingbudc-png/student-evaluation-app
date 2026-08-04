@@ -176,6 +176,17 @@
             provinces: { title: "ข้อมูลจังหวัด", sheet: "Province_Master", fields: ["ชื่อจังหวัด"] }
         };
 
+        function showLoadingPopup(titleText = "กำลังโหลดข้อมูล...", subText = "กรุณารอสักครู่ ระบบกำลังดึงข้อมูลฐานข้อมูล") {
+            Swal.fire({
+                title: titleText,
+                text: subText,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+        }
+
         window.addEventListener("DOMContentLoaded", () => {
             if (sessionStorage.getItem("adminAuth") === "true") {
                 document.getElementById("loginModal").classList.add("hidden");
@@ -190,11 +201,7 @@
             const inputPass = document.getElementById("adminPasswordInput").value.trim();
             if (!inputPass) return;
 
-            Swal.fire({
-                title: 'กำลังตรวจสอบรหัสผ่าน...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            showLoadingPopup("กำลังตรวจสอบรหัสผ่าน...", "กรุณารอสักครู่");
 
             try {
                 const res = await fetch(`${API_URL}?action=verifyAdminPassword&password=${encodeURIComponent(inputPass)}`);
@@ -227,6 +234,8 @@
 
         async function loadAllData() {
             renderLoading();
+            showLoadingPopup("กำลังโหลดฐานข้อมูล...", "ระบบกำลังดึงข้อมูลทั้งหมดจาก Google Sheets");
+
             try {
                 const response = await fetch(`${API_URL}?action=getAdminAllData`);
                 const data = await response.json();
@@ -236,6 +245,8 @@
             } catch (err) {
                 console.error(err);
                 Swal.fire("ข้อผิดพลาด", "ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้", "error");
+            } finally {
+                Swal.close();
             }
         }
 
@@ -608,7 +619,6 @@
                         ctx.drawImage(img, 0, 0, width, height);
 
                         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        // แก้ไข: ดักจับช่องว่างที่อาจเกิดขึ้นและเปลี่ยนเป็นเครื่องหมาย +
                         const base64Str = dataUrl.split(',')[1].replace(/ /g, '+'); 
                         resolve({
                             base64: base64Str,
@@ -633,12 +643,7 @@
 
             if (fileInput && fileInput.files.length > 0) {
                 try {
-                    Swal.fire({
-                        title: 'กำลังประมวลผลรูปภาพ...',
-                        text: 'ระบบกำลังย่อขนาดรูปภาพเพื่อความรวดเร็ว...',
-                        allowOutsideClick: false,
-                        didOpen: () => { Swal.showLoading(); }
-                    });
+                    showLoadingPopup('กำลังประมวลผลรูปภาพ...', 'ระบบกำลังย่อขนาดรูปภาพเพื่อความรวดเร็ว...');
                     compressedFile = await compressAndConvertToBase64(fileInput.files[0]);
                 } catch (err) {
                     console.error("Image processing error:", err);
@@ -714,20 +719,15 @@
                 }
             }
 
-            Swal.fire({
-                title: 'กำลังบันทึกข้อมูล...',
-                text: payload.fileData ? `กำลังอัปโหลดรูปภาพรหัส: ${payload["รหัสนิสิต"] || ""}` : 'กำลังบันทึกข้อมูลเข้าสู่ระบบ',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            showLoadingPopup(
+                'กำลังบันทึกข้อมูล...',
+                payload.fileData ? `กำลังอัปโหลดรูปภาพรหัส: ${payload["รหัสนิสิต"] || ""}` : 'กำลังบันทึกข้อมูลเข้าสู่ระบบ'
+            );
 
             try {
-                // แก้ไข: เพิ่ม Headers ให้ Fetch รับส่งเป็น text/plain เพื่อป้องกันสัญลักษณ์ + ใน Base64 โดนแปลง
                 const res = await fetch(API_URL, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "text/plain;charset=utf-8"
-                    },
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify(payload)
                 });
                 
@@ -764,12 +764,12 @@
             });
 
             if (res.isConfirmed) {
-                Swal.showLoading();
+                showLoadingPopup("กำลังลบข้อมูล...", "กรุณารอสักครู่");
                 try {
                     const response = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${sheetName}&rowNum=${rowNum}`);
                     const result = await response.json();
                     if (result.result === "success") {
-                        Swal.fire("ลบสำเร็จ", "", "success");
+                        Swal.fire("ลบสำเร็จ", "ลบข้อมูลเรียบร้อยแล้ว", "success");
                         loadAllData();
                     } else {
                         Swal.fire("ผิดพลาด", result.message || "ลบไม่สำเร็จ", "error");
