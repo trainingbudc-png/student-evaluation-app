@@ -45,8 +45,10 @@
 
     // 1. เริ่มต้น LIFF และจัดการ Login
     window.onload = function() {
+        alert("1. หน้าเว็บกำลังโหลด LIFF...");
         liff.init({ liffId: LIFF_ID }).then(() => {
-            // ถ้าเปิดในแอป LINE หรือ ล็อกอินค้างไว้อยู่แล้ว ให้ทำงานทันที
+            alert("2. LIFF โหลดสำเร็จ! สถานะล็อกอินตอนนี้คือ: " + liff.isLoggedIn());
+            // ถ้าเปิดในแอป LINE หรือ ล็อกอินค้างไว้อยู่แล้ว ให้ดึงข้อมูลทันที
             if (liff.isLoggedIn()) {
                 processLogin();
             }
@@ -58,9 +60,10 @@
     // 2. เมื่อกดปุ่มเข้าสู่ระบบด้วย LINE
     function loginWithLine() {
         if (!liff.isLoggedIn()) {
-            // 🟢 แก้ไข: ลบ redirectUri ออกแล้วใช้ liff.login() ปกติ เพื่อไม่ให้ติด 400 Bad Request
+            alert("3. ระบบกำลังจะเด้งไปล็อกอินหน้า LINE...");
             liff.login(); 
         } else {
+            alert("3. ล็อกอินค้างไว้อยู่แล้ว กำลังดึงข้อมูล...");
             processLogin();
         }
     }
@@ -71,6 +74,7 @@
 
         try {
             const profile = await liff.getProfile();
+            alert("4. ได้ข้อมูล LINE แล้ว! UID คือ: " + profile.userId);
 
             const response = await fetch(SCRIPT_URL, {
                 method: "POST",
@@ -82,7 +86,7 @@
             });
             
             const rawText = await response.text();
-            alert("ผลลัพธ์จากระบบ:\n" + rawText); // Pop-up แสดงข้อมูลจริง
+            alert("5. ผลลัพธ์จากเซิร์ฟเวอร์:\n" + rawText); // Pop-up แสดงข้อมูลจริง
 
             const result = JSON.parse(rawText);
             const userData = result.userData || result.user || result.data;
@@ -90,7 +94,7 @@
             if (userData) {
                 localStorage.setItem("assessorData", JSON.stringify(userData));
                 sessionStorage.setItem("assessorData", JSON.stringify(userData));
-                alert("ล็อกอินสำเร็จ! กำลังไปหน้าแบบประเมิน...");
+                alert("6. ล็อกอินสำเร็จ! กำลังไปหน้าแบบประเมิน...");
                 window.location.href = "teacher.html"; 
             } else {
                 alert("ไม่พบบัญชี LINE นี้ในระบบ กรุณาเข้าสู่ระบบด้วย Email เพื่อผูกบัญชีก่อนครับ");
