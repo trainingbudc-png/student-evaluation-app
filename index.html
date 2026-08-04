@@ -3,42 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เข้าสู่ระบบแบบประเมิน</title>
+    <title>เข้าสู่ระบบแบบประเมิน - สำหรับอาจารย์</title>
 
     <link rel="icon" type="image/png" href="logo.png">
 
+    <!-- Tailwind CSS & Google Font (Prompt) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 สำหรับแจ้งเตือนและ Loading Popup -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .btn-line { background-color: #06C755; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
-        .btn-email { background-color: white; color: #3b82f6; width: 100%; padding: 12px; border: 1px solid #3b82f6; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        .modal { display: none; margin-top: 20px; text-align: left; }
-        .input-group { margin-bottom: 15px; }
-        .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .btn-submit { background-color: #1d4ed8; color: white; width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
-    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
+<body class="bg-gradient-to-br from-slate-100 via-blue-50/50 to-indigo-50 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
 
-<div class="login-container">
-    <h2 style="color: #1d4ed8;">เข้าสู่ระบบแบบประเมิน</h2>
-    <p style="color: gray; font-size: 14px;">สำหรับอาจารย์ผู้ประเมิน</p>
-    <br>
-
-    <button class="btn-line" onclick="loginWithLine()">เข้าสู่ระบบด้วย LINE</button>
-    <button class="btn-email" onclick="toggleEmailModal()">เข้าสู่ระบบด้วย Email / เบอร์โทร</button>
-
-    <div class="modal" id="emailModal">
-        <div class="input-group">
-            <label>อีเมล (Username)</label>
-            <input type="email" id="inputEmail" placeholder="อีเมลของคุณ">
+<div class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-200/60 border border-white p-8 md:p-10 transition-all">
+    
+    <!-- Header / Logo -->
+    <div class="text-center mb-8">
+        <div class="inline-flex bg-blue-600 text-white p-4 rounded-2xl shadow-lg shadow-blue-500/30 mb-4 text-3xl">
+            🩺
         </div>
-        <div class="input-group">
-            <label>เบอร์โทรศัพท์ (Password)</label>
-            <input type="text" id="inputPhone" placeholder="เบอร์โทรศัพท์ของคุณ">
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">เข้าสู่ระบบแบบประเมิน</h1>
+        <p class="text-sm text-slate-500 mt-1.5 font-light">สำหรับอาจารย์ผู้ประเมินการปฏิบัติงานนิสิตแพทย์</p>
+    </div>
+
+    <!-- Login Buttons -->
+    <div class="space-y-3.5">
+        <button onclick="loginWithLine()" class="w-full bg-[#06C755] hover:bg-[#05b34c] text-white font-semibold py-3.5 px-5 rounded-2xl shadow-md shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2.5 text-base cursor-pointer">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.412-.105-.534-.283l-2.004-2.928v2.555c0 .344-.281.629-.628.629-.348 0-.63-.285-.63-.629V8.108c0-.27.173-.51.43-.595.066-.023.134-.033.201-.033.211 0 .412.105.534.283l2.004 2.928V8.108c0-.345.281-.63.628-.63.348 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.626-.285-.626-.629V8.108c0-.345.281-.63.626-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .629.285.629.63v4.141h1.758c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08-.085.643-.388 2.508-.424 3.04-.053.802.37.787.776.511.406-.277 4.382-2.58 5.982-4.412 2.809-1.921 6.535-5.38 6.535-10.417"/>
+            </svg>
+            เข้าสู่ระบบด้วย LINE
+        </button>
+
+        <button onclick="toggleEmailModal()" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium py-3.5 px-5 rounded-2xl border border-slate-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-base cursor-pointer">
+            📧 เข้าสู่ระบบด้วย Email / เบอร์โทร
+        </button>
+    </div>
+
+    <!-- Form Modal (เปิด-ปิด แบบพับเก็บ) -->
+    <div id="emailModal" class="hidden mt-6 pt-6 border-t border-slate-100 transition-all">
+        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+            🔑 กรอกข้อมูลเข้าสู่ระบบ
+        </h3>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">อีเมล (Username)</label>
+                <input type="email" id="inputEmail" placeholder="example@email.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 font-medium">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">เบอร์โทรศัพท์ (Password)</label>
+                <input type="tel" id="inputPhone" placeholder="08xxxxxxxx" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-800 font-medium">
+            </div>
+            <button onclick="loginWithEmail()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3.5 px-5 rounded-xl shadow-md shadow-blue-500/20 transition-all text-sm cursor-pointer mt-2">
+                ยืนยันเข้าสู่ระบบ
+            </button>
         </div>
-        <button class="btn-submit" onclick="loginWithEmail()">เข้าสู่ระบบ</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 text-center text-xs text-slate-400 font-light">
+        คณะแพทยศาสตร์ • ระบบประเมินออนไลน์
     </div>
 </div>
 
@@ -46,28 +87,49 @@
     const LIFF_ID = "2010763201-zDYpgg5r"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
 
+    // ฟังก์ชันสำหรับเปิด Popup หมุนรอแบบสวยงาม
+    function showLoadingPopup(titleText = "กำลังโหลดข้อมูล...") {
+        Swal.fire({
+            title: titleText,
+            text: 'กรุณารอสักครู่ ระบบกำลังประมวลผล',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
     // 1. เริ่มต้น LIFF และจัดการ Login/Logout
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const isLogout = urlParams.get('logout');
 
+        // แสดงป็อปอัพหมุนรอขณะโหลด LIFF
+        showLoadingPopup("กำลังเชื่อมต่อระบบ LINE...");
+
         liff.init({ liffId: LIFF_ID }).then(() => {
-            // ถ้ามาจากการกดปุ่มออกจากระบบ ให้ลบเซสชัน LINE ออกทันที
+            // ถ้ามาจากการกดปุ่มออกจากระบบ
             if (isLogout === 'true') {
                 if (liff.isLoggedIn()) {
                     liff.logout();
                 }
-                // ล้างพารามิเตอร์ ?logout=true บน URL
+                // ล้างพารามิเตอร์ ?logout=true
                 window.history.replaceState({}, document.title, window.location.pathname);
-                return; // หยุดไม่ให้เข้าสู่ระบบอัตโนมัติ
+                Swal.close(); // ปิดป็อปอัพ
+                return;
             }
 
-            // เข้าสู่ระบบปกติหากไม่มีการสั่ง Logout
+            // ถ้ามีการล็อกอิน LINE ค้างไว้อยู่แล้ว
             if (liff.isLoggedIn()) {
                 processLogin();
+            } else {
+                Swal.close(); // ปิดป็อปอัพเพื่อพร้อมรับการกดปุ่ม
             }
         }).catch(err => {
             console.error("LIFF Init Error: ", err);
+            Swal.close();
         });
     };
 
@@ -82,7 +144,7 @@
 
     // 3. ฟังก์ชันดึงข้อมูลผู้ใช้และส่งไป Google Apps Script
     async function processLogin() {
-        document.querySelector('.btn-line').innerText = "กำลังเข้าสู่ระบบ...";
+        showLoadingPopup("กำลังตรวจสอบสิทธิ์ผ่าน LINE...");
 
         try {
             const profile = await liff.getProfile();
@@ -103,34 +165,61 @@
             if (userData) {
                 localStorage.setItem("assessorData", JSON.stringify(userData));
                 sessionStorage.setItem("assessorData", JSON.stringify(userData));
-                // เด้งไปหน้าแบบประเมินทันที
-                window.location.href = "teacher.html"; 
+                
+                // แจ้งเตือนสำเร็จสั้นๆ ก่อนเปลี่ยนหน้า
+                Swal.fire({
+                    icon: 'success',
+                    title: 'เข้าสู่ระบบสำเร็จ',
+                    text: 'กำลังนำท่านสู่หน้าประเมิน...',
+                    timer: 1000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = "teacher.html"; 
+                });
             } else {
-                alert("ไม่พบบัญชี LINE นี้ในระบบ กรุณาเข้าสู่ระบบด้วย Email เพื่อผูกบัญชีก่อนครับ");
-                toggleEmailModal();
+                Swal.fire({
+                    icon: 'info',
+                    title: 'ไม่พบบัญชี LINE ในระบบ',
+                    text: 'กรุณาเข้าสู่ระบบด้วย Email / เบอร์โทร เพื่อผูกบัญชีก่อนครับ',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#1d4ed8'
+                });
+                toggleEmailModal(true);
             }
         } catch (error) {
-            alert("เกิดข้อผิดพลาด: " + error.message);
-        } finally {
-            document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: error.message,
+                confirmButtonColor: '#1d4ed8'
+            });
         }
     }
 
-    function toggleEmailModal() {
+    function toggleEmailModal(forceOpen = false) {
         const modal = document.getElementById("emailModal");
-        modal.style.display = modal.style.display === "block" ? "none" : "block";
+        if (forceOpen) {
+            modal.classList.remove("hidden");
+        } else {
+            modal.classList.toggle("hidden");
+        }
     }
 
     async function loginWithEmail() {
-        const email = document.getElementById("inputEmail").value;
-        const phone = document.getElementById("inputPhone").value;
+        const email = document.getElementById("inputEmail").value.trim();
+        const phone = document.getElementById("inputPhone").value.trim();
 
         if (!email || !phone) {
-            alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+            Swal.fire({
+                icon: 'warning',
+                title: 'ข้อมูลไม่ครบถ้วน',
+                text: 'กรุณากรอกอีเมลและเบอร์โทรศัพท์ให้ครบถ้วนครับ',
+                confirmButtonColor: '#1d4ed8'
+            });
             return;
         }
 
-        document.querySelector('.btn-submit').innerText = "กำลังตรวจสอบ...";
+        showLoadingPopup("กำลังตรวจสอบบัญชีผู้ใช้...");
 
         try {
             let uid = "";
@@ -155,14 +244,31 @@
             if ((result.status === "success" || result.result === "success") && userData) {
                 localStorage.setItem("assessorData", JSON.stringify(userData));
                 sessionStorage.setItem("assessorData", JSON.stringify(userData));
-                window.location.href = "teacher.html";
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'เข้าสู่ระบบสำเร็จ',
+                    text: 'กำลังนำท่านสู่หน้าประเมิน...',
+                    timer: 1000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = "teacher.html";
+                });
             } else {
-                alert("ระบบแจ้งว่า: " + (result.message || "อีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง!"));
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เข้าสู่ระบบไม่สำเร็จ',
+                    text: result.message || 'อีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง!',
+                    confirmButtonColor: '#1d4ed8'
+                });
             }
         } catch (error) {
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message);
-        } finally {
-            document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
+            Swal.fire({
+                icon: 'error',
+                title: 'การเชื่อมต่อขัดข้อง',
+                text: error.message,
+                confirmButtonColor: '#1d4ed8'
+            });
         }
     }
 </script>
