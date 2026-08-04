@@ -58,8 +58,8 @@
     // 2. เมื่อกดปุ่มเข้าสู่ระบบด้วย LINE
     function loginWithLine() {
         if (!liff.isLoggedIn()) {
-            // 🟢 ล็อค redirectUri ให้ตรงกับหน้าปัจจุบัน ป้องกันการเด้งวนลูป
-            liff.login({ redirectUri: window.location.href }); 
+            // 🟢 แก้ไข: ลบ redirectUri ออกแล้วใช้ liff.login() ปกติ เพื่อไม่ให้ติด 400 Bad Request
+            liff.login(); 
         } else {
             processLogin();
         }
