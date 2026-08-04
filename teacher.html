@@ -147,7 +147,7 @@
     <div id="deptBadge" class="hidden bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm border border-emerald-200">
         ภาควิชา: <span id="displayDept">กำลังโหลด...</span>
     </div>
-    <button onclick="logout()" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all">
+    <button onclick="logout()" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all cursor-pointer">
         🚪 ออกจากระบบ
     </button>
 </div>
@@ -256,16 +256,29 @@
     let activeTopics = [];
     let studentImgMap = {}; 
 
+    // ฟังก์ชันสำหรับเปิด Popup หมุนรอแบบสวยงาม
+    function showLoadingPopup(titleText = "กำลังโหลดข้อมูล...", subText = "กรุณารอสักครู่ ระบบกำลังประมวลผล") {
+        Swal.fire({
+            title: titleText,
+            text: subText,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
     window.addEventListener("DOMContentLoaded", checkLoginStatus);
 
     function logout() {
         localStorage.removeItem('assessorData');
         sessionStorage.removeItem('assessorData');
-        // ส่ง query param ?logout=true เพื่อบอก index.html ให้ logout LINE ออก
         window.location.href = 'index.html?logout=true';
     }
 
-    function checkLoginStatus() {
+    async function checkLoginStatus() {
         const storedData = localStorage.getItem("assessorData");
         if (!storedData) { window.location.href = "index.html"; return; }
 
@@ -277,12 +290,22 @@
         document.getElementById('displayDept').innerText = loginData.department || 'ไม่ระบุ';
         document.getElementById('deptBadge').classList.remove('hidden');
 
-        loadSubjects();
-        loadCriteria();
-        loadStudentProfiles();
+        // แสดง Popup โหลดข้อมูลเริ่มต้นระบบ
+        showLoadingPopup("กำลังเตรียมความพร้อมระบบ...", "กำลังดึงข้อมูลรายวิชาและเกณฑ์ประเมิน");
+
+        try {
+            await Promise.all([
+                loadSubjects(),
+                loadCriteria(),
+                loadStudentProfiles()
+            ]);
+        } catch (error) {
+            console.error("Initial Load Error:", error);
+        } finally {
+            Swal.close(); // ปิดป็อปอัพเมื่อโหลดข้อมูลเริ่มต้นเสร็จสิ้น
+        }
     }
 
-    // 💡 ฟังก์ชันแปลงวันที่รูปแบบไทย/พ.ศ. ให้เป็น Date Object สากล (ค.ศ.)
     function parseThaiDate(dateInput) {
         if (!dateInput) return null;
         if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
@@ -299,7 +322,6 @@
             "กรกฎาคม": 6, "สิงหาคม": 7, "กันยายน": 8, "ตุลาคม": 9, "พฤศจิกายน": 10, "ธันวาคม": 11
         };
 
-        // แบบ text เช่น "3 ส.ค. 2568"
         let parts = str.split(/\s+/);
         if (parts.length === 3) {
             let day = parseInt(parts[0], 10);
@@ -311,7 +333,6 @@
             }
         }
 
-        // แบบตัวเลขแยกด้วย slash เช่น "03/08/2568"
         if (str.includes('/')) {
             let p = str.split('/');
             if (p.length === 3) {
@@ -401,7 +422,6 @@
 
     async function loadCriteria() {
         try {
-            document.getElementById("criteriaContainer").innerHTML = `<p style="text-align: center; color: #64748b; padding: 24px;" class="text-sm font-light animate-pulse">🔄 กำลังโหลดเกณฑ์ประเมินจากฐานข้อมูล...</p>`;
             const response = await fetch(API_URL + "?action=getFormCriteria&t=" + new Date().getTime());
             let data = await response.json();
             const container = document.getElementById("criteriaContainer");
@@ -487,7 +507,8 @@
             return;
         }
 
-        container.innerHTML = `<div style="color: #1d4ed8; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-medium animate-pulse">⏳ กำลังโหลดรายชื่อนิสิต...</div>`;
+        // 🌟 แสดง Popup โหลดข้อมูลนิสิตทันทีเมื่อเลือกวิชา
+        showLoadingPopup("กำลังดึงรายชื่อนิสิต...", "ระบบกำลังดึงข้อมูลรายชื่อนิสิตแพทย์ในวิชานี้");
 
         try {
             const response = await fetch(API_URL + "?action=getStudentsList&t=" + new Date().getTime());
@@ -505,7 +526,6 @@
                     const sIdTrim = String(s.studentId).trim();
                     const imgUrl = studentImgMap[sIdTrim] || "";
 
-                    // 🎯 แปลงวันที่ด้วยฟังก์ชันใหม่
                     let startObj = parseThaiDate(s.startDate);
                     let endObj = parseThaiDate(s.endDate);
                     
@@ -519,7 +539,7 @@
                     
                     if (endObj) {
                         let expireDate = new Date(endObj.getTime());
-                        expireDate.setDate(expireDate.getDate() + 14); // ครบกำหนด 14 วันหลังวันสิ้นสุด
+                        expireDate.setDate(expireDate.getDate() + 14);
                         expireDate.setHours(23, 59, 59, 999);
                         
                         if (now > expireDate) {
@@ -613,6 +633,8 @@
             }
         } catch (e) { 
             container.innerHTML = `<div style="color: #ef4444; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-medium">⚠️ เกิดข้อผิดพลาดในการโหลดรายชื่อ</div>`;
+        } finally {
+            Swal.close(); // ปิด Popup หมุนรอเมื่อดึงรายชื่อเสร็จสิ้น
         }
     }
 
@@ -641,7 +663,7 @@
             icon: 'question', showCancelButton: true, confirmButtonText: 'ใช่, บันทึกเลย', cancelButtonText: 'ตรวจสอบอีกครั้ง'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังประมวลผลข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                showLoadingPopup("กำลังบันทึกข้อมูล...", "ระบบกำลังส่งผลประเมินเข้าสู่ฐานข้อมูล");
                 
                 const payload = {
                     action: "submitEvaluation",
