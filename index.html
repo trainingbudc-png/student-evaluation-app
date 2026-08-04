@@ -7,7 +7,6 @@
     <!-- นำเข้า LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* ตกแต่งปุ่มและหน้าจอแบบคร่าวๆ ตามแบบของคุณ */
         body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .login-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
         .btn-line { background-color: #06C755; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
@@ -31,7 +30,7 @@
     <!-- ปุ่มล็อกอิน Email -->
     <button class="btn-email" onclick="toggleEmailModal()">เข้าสู่ระบบด้วย Email / เบอร์โทร</button>
 
-    <!-- ฟอร์มกรอก Email/Phone (ซ่อนไว้ตอนแรก) -->
+    <!-- ฟอร์มกรอก Email/Phone -->
     <div class="modal" id="emailModal">
         <div class="input-group">
             <label>อีเมล (Username)</label>
@@ -47,22 +46,21 @@
 
 <!-- สคริปต์ควบคุมการทำงาน -->
 <script>
-    const LIFF_ID = "2010763201-zDYpgg5r"; // เปลี่ยนเป็น LIFF ID ของคุณ
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; // เอาลิงก์ Web App ที่ Deploy ใหม่มาใส่ที่นี่
-    let userLineUID = ""; // ตัวแปรเก็บ UID
+    const LIFF_ID = "2010763201-zDYpgg5r"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
+    let userLineUID = ""; 
 
-    // 1. เริ่มต้น LIFF เมื่อเปิดหน้าเว็บ
     window.onload = function() {
         liff.init({ liffId: LIFF_ID }).then(() => {
             if (liff.isLoggedIn()) {
                 liff.getProfile().then(profile => {
-                    userLineUID = profile.userId; // เก็บ UID ไว้ใช้
+                    userLineUID = profile.userId; 
                 });
             }
         }).catch(err => console.error("LIFF Init Error: ", err));
     };
 
-    // 2. ฟังก์ชันเมื่อกด "เข้าสู่ระบบด้วย LINE"
+    // 🟢 ฟังก์ชันล็อกอิน LINE ฉบับดักจับบั๊ก (ปิดการเด้งไปหน้าอื่นชั่วคราว)
     async function loginWithLine() {
         if (!liff.isLoggedIn()) {
             liff.login(); 
@@ -81,39 +79,40 @@
                     uid: profile.userId
                 })
             });
-            const result = await response.json();
+            
+            const rawText = await response.text();
+            
+            // 🟢 [DEBUG 1] แสดงข้อมูลจริงที่ได้รับกลับมาจาก Apps Script
+            alert("1. ผลลัพธ์จากเซิร์ฟเวอร์:\n" + rawText);
 
-            // 🟢 เช็กการสำเร็จ รองรับทั้ง status และ result
-            const isSuccess = (result.status === "success" || result.result === "success");
-            // 🟢 ดึงข้อมูลอาจารย์ รองรับทุกชื่อตัวแปรที่หลังบ้านอาจส่งมา (userData, user, data)
+            const result = JSON.parse(rawText);
             const userData = result.userData || result.user || result.data;
 
-            if (isSuccess && userData) {
-                // บันทึกข้อมูลลง LocalStorage
+            if (userData) {
+                // บันทึกทั้งสองแบบเพื่อกันเหนียว
                 localStorage.setItem("assessorData", JSON.stringify(userData));
-                // พาไปหน้าแบบประเมิน
-                window.location.href = "teacher.html"; 
-            } else if (isSuccess && !userData) {
-                alert("พบข้อผิดพลาด: ระบบตรวจสอบผ่าน แต่ไม่พบข้อมูลอาจารย์ส่งกลับมาจาก Google Apps Script");
-                document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
+                sessionStorage.setItem("assessorData", JSON.stringify(userData));
+
+                // 🟢 [DEBUG 2] เช็กว่าเครื่องเซฟสำเร็จไหม
+                alert("2. บันทึกสำเร็จ! ข้อมูลในเครื่องคือ:\n" + localStorage.getItem("assessorData"));
+
+                // 🔴 ปิดการย้ายหน้าไว้ เพื่อให้อ่าน Pop-up ทัน
+                // window.location.href = "teacher.html"; 
             } else {
-                alert("ระบบแจ้งว่า: " + (result.message || "ไม่พบบัญชีของคุณในระบบ กรุณาเข้าสู่ระบบครั้งแรกด้วย Email / เบอร์โทรศัพท์ เพื่อผูกบัญชี LINE"));
-                toggleEmailModal(); 
-                document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
+                alert("3. ล็อกอินผ่าน แต่หาตัวแปรข้อมูลอาจารย์ไม่เจอ");
             }
         } catch (error) {
             alert("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message);
+        } finally {
             document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
         }
     }
 
-    // 3. ฟังก์ชันเปิด/ปิด ฟอร์ม Email
     function toggleEmailModal() {
         const modal = document.getElementById("emailModal");
         modal.style.display = modal.style.display === "block" ? "none" : "block";
     }
 
-    // 4. ฟังก์ชันเมื่อกดปุ่มเข้าสู่ระบบ (Email)
     async function loginWithEmail() {
         const email = document.getElementById("inputEmail").value;
         const phone = document.getElementById("inputPhone").value;
@@ -143,16 +142,14 @@
 
             if (isSuccess && userData) {
                 localStorage.setItem("assessorData", JSON.stringify(userData));
+                sessionStorage.setItem("assessorData", JSON.stringify(userData));
                 window.location.href = "teacher.html";
-            } else if (isSuccess && !userData) {
-                alert("พบข้อผิดพลาด: ระบบตรวจสอบผ่าน แต่ไม่พบข้อมูลอาจารย์ส่งกลับมาจาก Google Apps Script");
-                document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
             } else {
                 alert("ระบบแจ้งว่า: " + (result.message || "อีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง!"));
-                document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
             }
         } catch (error) {
             alert("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message);
+        } finally {
             document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
         }
     }
