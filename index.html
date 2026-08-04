@@ -79,6 +79,7 @@
         try {
             const response = await fetch(SCRIPT_URL, {
                 method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, // 🟢 เพิ่ม Headers แก้ปัญหา CORS และชนิดข้อมูล
                 body: JSON.stringify({
                     action: "loginLine",
                     uid: profile.userId
@@ -92,12 +93,13 @@
                 // ล็อกอินสำเร็จ พาไปหน้าแบบประเมิน (เปลี่ยนชื่อไฟล์ตามที่คุณตั้งไว้)
                 window.location.href = "teacher.html"; 
             } else {
-                alert("ไม่พบบัญชีของคุณในระบบ กรุณาเข้าสู่ระบบครั้งแรกด้วย Email / เบอร์โทรศัพท์ เพื่อผูกบัญชี LINE");
+                // 🟢 ดึงข้อความแจ้งเตือนจากระบบหลังบ้านมาแสดง
+                alert("ระบบแจ้งว่า: " + (result.message || "ไม่พบบัญชีของคุณในระบบ กรุณาเข้าสู่ระบบครั้งแรกด้วย Email / เบอร์โทรศัพท์ เพื่อผูกบัญชี LINE"));
                 toggleEmailModal(); // เปิดฟอร์มอีเมลให้อัตโนมัติ
                 document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
             }
         } catch (error) {
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message);
             document.querySelector('.btn-line').innerText = "เข้าสู่ระบบด้วย LINE";
         }
     }
@@ -123,6 +125,7 @@
         try {
             const response = await fetch(SCRIPT_URL, {
                 method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, // 🟢 เพิ่ม Headers ตรงนี้ด้วย
                 body: JSON.stringify({
                     action: "loginEmail",
                     email: email,
@@ -137,11 +140,12 @@
                 // พาไปหน้าแบบประเมิน
                 window.location.href = "teacher.html";
             } else {
-                alert("อีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง!");
+                // 🟢 ดึงข้อความแจ้งเตือนจากระบบหลังบ้านมาแสดง
+                alert("ระบบแจ้งว่า: " + (result.message || "อีเมลหรือเบอร์โทรศัพท์ไม่ถูกต้อง!"));
                 document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
             }
         } catch (error) {
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message);
             document.querySelector('.btn-submit').innerText = "เข้าสู่ระบบ";
         }
     }
