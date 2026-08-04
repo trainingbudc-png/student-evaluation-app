@@ -7,6 +7,7 @@
 
     <link rel="icon" type="image/png" href="logo.png">
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -21,7 +22,6 @@
         }
         .animate-fade-in { animation: fadeIn 0.4s ease forwards; }
 
-        /* สีกล่องสถานะตามโค้ดเดิม */
         .status-evaluated { 
             background-color: #ecfdf5 !important; 
             border-color: #a7f3d0 !important; 
@@ -64,7 +64,7 @@
             </div>
         </div>
 
-        <button onclick="checkEvaluationStatus()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center text-base tracking-wide">
+        <button onclick="checkEvaluationStatus()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center text-base tracking-wide cursor-pointer">
             ตรวจสอบสถานะการประเมิน
         </button>
     </div>
@@ -80,10 +80,21 @@
 </div>
 
 <script>
-    // 🔗 ลิงก์ Web App ประจำระบบของคุณ
     const API_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec";
 
+    function showLoadingPopup(titleText = "กำลังค้นหาข้อมูล...", subText = "กรุณารอสักครู่ ระบบกำลังประมวลผล") {
+        Swal.fire({
+            title: titleText,
+            text: subText,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
+        showLoadingPopup("กำลังเตรียมระบบ...", "ดึงคลังรายวิชาปฏิบัติงาน");
         try {
             const response = await fetch(`${API_URL}?action=getSubjects`);
             const data = await response.json();
@@ -94,7 +105,11 @@
                 opt.innerText = `${sub.code} - ${sub.name}`;
                 select.appendChild(opt);
             });
-        } catch (error) { alert("ล้มเหลวในการเชื่อมต่อคลังรายวิชา"); }
+        } catch (error) { 
+            Swal.fire({ icon: 'error', title: 'การเชื่อมต่อล้มเหลว', text: 'ไม่สามารถดึงข้อมูลคลังรายวิชาได้' }); 
+        } finally {
+            Swal.close();
+        }
     });
 
     async function checkEvaluationStatus() {
@@ -105,41 +120,31 @@
         const scoreZone = document.getElementById('scoreZone');
 
         if (studentId.length !== 8) {
-            alert('กรุณากรอกรหัสนิสิตให้ถูกต้องครบ 8 หลักก่อนครับ');
+            Swal.fire({ icon: 'warning', title: 'รหัสนิสิตไม่ถูกต้อง', text: 'กรุณากรอกรหัสนิสิตให้ถูกต้องครบ 8 หลักก่อนครับ' });
             return;
         }
         if (!subjectCode) {
-            alert('กรุณาเลือกรายวิชาที่ต้องการตรวจสอบครับ');
+            Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกรายวิชา', text: 'กรุณาเลือกรายวิชาที่ต้องการตรวจสอบครับ' });
             return;
         }
 
-        resultBox.style.display = 'block';
-        resultBox.classList.remove('status-evaluated', 'status-not-evaluated');
-        
-        resultBox.style.backgroundColor = '#f8fafc';
-        resultBox.style.borderColor = '#e2e8f0';
-        resultBox.style.color = '#475569';
-        
-        statusTitle.innerText = '⏳ กำลังค้นหาข้อมูลการประเมิน...';
-        scoreZone.style.display = 'none';
+        resultBox.style.display = 'none';
+        showLoadingPopup("กำลังสืบค้นข้อมูล...", `รหัสนิสิต: ${studentId}`);
 
         try {
             const response = await fetch(`${API_URL}?action=checkStatus&studentId=${studentId}&subjectCode=${subjectCode}`);
             const data = await response.json();
 
-            resultBox.style.backgroundColor = '';
-            resultBox.style.borderColor = '';
-            resultBox.style.color = '';
+            Swal.close();
+            resultBox.style.display = 'block';
+            resultBox.classList.remove('status-evaluated', 'status-not-evaluated');
 
             if (data.status === "ได้รับการประเมินแล้ว") {
                 resultBox.classList.add('status-evaluated');
                 statusTitle.innerText = '✅ อาจารย์บันทึกผลการประเมินเรียบร้อยแล้ว';
                 
-                // ใส่ข้อมูลลงในตัวแปรซ่อนตามปกติเพื่อไม่ให้สคริปต์ Error
                 document.getElementById('totalScoreText').innerText = data.totalScore;
                 document.getElementById('gradeText').innerText = data.grade;
-                
-                // ล็อคให้ซ่อนกล่องคะแนนไว้เสมอตามคำขอ
                 scoreZone.style.display = 'none'; 
             } else {
                 resultBox.classList.add('status-not-evaluated');
@@ -147,12 +152,11 @@
                 scoreZone.style.display = 'none';
             }
         } catch (error) {
-            resultBox.style.backgroundColor = '';
-            resultBox.style.borderColor = '';
-            resultBox.style.color = '';
-            
+            Swal.close();
+            resultBox.style.display = 'block';
+            resultBox.classList.remove('status-evaluated');
             resultBox.classList.add('status-not-evaluated');
-            statusTitle.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่';
+            statusTitle.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
             scoreZone.style.display = 'none';
         }
     }
