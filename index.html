@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เข้าสู่ระบบแบบประเมิน</title>
 
-        <link rel="icon" type="image/png" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
 
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
@@ -46,9 +46,23 @@
     const LIFF_ID = "2010763201-zDYpgg5r"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
 
-    // 1. เริ่มต้น LIFF และจัดการ Login อัตโนมัติ
+    // 1. เริ่มต้น LIFF และจัดการ Login/Logout
     window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isLogout = urlParams.get('logout');
+
         liff.init({ liffId: LIFF_ID }).then(() => {
+            // ถ้ามาจากการกดปุ่มออกจากระบบ ให้ลบเซสชัน LINE ออกทันที
+            if (isLogout === 'true') {
+                if (liff.isLoggedIn()) {
+                    liff.logout();
+                }
+                // ล้างพารามิเตอร์ ?logout=true บน URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return; // หยุดไม่ให้เข้าสู่ระบบอัตโนมัติ
+            }
+
+            // เข้าสู่ระบบปกติหากไม่มีการสั่ง Logout
             if (liff.isLoggedIn()) {
                 processLogin();
             }

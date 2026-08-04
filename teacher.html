@@ -147,7 +147,7 @@
     <div id="deptBadge" class="hidden bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm border border-emerald-200">
         ภาควิชา: <span id="displayDept">กำลังโหลด...</span>
     </div>
-    <button onclick="localStorage.removeItem('assessorData'); window.location.href='index.html'" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all">
+    <button onclick="logout()" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all">
         🚪 ออกจากระบบ
     </button>
 </div>
@@ -257,6 +257,13 @@
     let studentImgMap = {}; 
 
     window.addEventListener("DOMContentLoaded", checkLoginStatus);
+
+    function logout() {
+        localStorage.removeItem('assessorData');
+        sessionStorage.removeItem('assessorData');
+        // ส่ง query param ?logout=true เพื่อบอก index.html ให้ logout LINE ออก
+        window.location.href = 'index.html?logout=true';
+    }
 
     function checkLoginStatus() {
         const storedData = localStorage.getItem("assessorData");
