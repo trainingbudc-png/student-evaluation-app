@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เข้าสู่ระบบแบบประเมิน</title>
+
+        <link rel="icon" type="image/png" href="logo.png">
+
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -43,27 +46,22 @@
     const LIFF_ID = "2010763201-zDYpgg5r"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzztzVKjo66T95WJHOIir1QRR5JmPgnJv83ZLNM3dWtqZNnT_pDx4Ktu6O1-6-hm9Cy1w/exec"; 
 
-    // 1. เริ่มต้น LIFF และจัดการ Login
+    // 1. เริ่มต้น LIFF และจัดการ Login อัตโนมัติ
     window.onload = function() {
-        alert("1. หน้าเว็บกำลังโหลด LIFF...");
         liff.init({ liffId: LIFF_ID }).then(() => {
-            alert("2. LIFF โหลดสำเร็จ! สถานะล็อกอินตอนนี้คือ: " + liff.isLoggedIn());
-            // ถ้าเปิดในแอป LINE หรือ ล็อกอินค้างไว้อยู่แล้ว ให้ดึงข้อมูลทันที
             if (liff.isLoggedIn()) {
                 processLogin();
             }
         }).catch(err => {
-            alert("LIFF Init Error: " + err.message);
+            console.error("LIFF Init Error: ", err);
         });
     };
 
     // 2. เมื่อกดปุ่มเข้าสู่ระบบด้วย LINE
     function loginWithLine() {
         if (!liff.isLoggedIn()) {
-            alert("3. ระบบกำลังจะเด้งไปล็อกอินหน้า LINE...");
             liff.login(); 
         } else {
-            alert("3. ล็อกอินค้างไว้อยู่แล้ว กำลังดึงข้อมูล...");
             processLogin();
         }
     }
@@ -74,7 +72,6 @@
 
         try {
             const profile = await liff.getProfile();
-            alert("4. ได้ข้อมูล LINE แล้ว! UID คือ: " + profile.userId);
 
             const response = await fetch(SCRIPT_URL, {
                 method: "POST",
@@ -86,15 +83,13 @@
             });
             
             const rawText = await response.text();
-            alert("5. ผลลัพธ์จากเซิร์ฟเวอร์:\n" + rawText); // Pop-up แสดงข้อมูลจริง
-
             const result = JSON.parse(rawText);
             const userData = result.userData || result.user || result.data;
 
             if (userData) {
                 localStorage.setItem("assessorData", JSON.stringify(userData));
                 sessionStorage.setItem("assessorData", JSON.stringify(userData));
-                alert("6. ล็อกอินสำเร็จ! กำลังไปหน้าแบบประเมิน...");
+                // เด้งไปหน้าแบบประเมินทันที
                 window.location.href = "teacher.html"; 
             } else {
                 alert("ไม่พบบัญชี LINE นี้ในระบบ กรุณาเข้าสู่ระบบด้วย Email เพื่อผูกบัญชีก่อนครับ");
