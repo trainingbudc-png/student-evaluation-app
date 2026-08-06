@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <!-- Sidebar (เพิ่ม Event เมาส์ชี้เพื่อหยุด/นับเวลาถอยหลังการพับเก็บ) -->
+    <!-- Sidebar (มีระบบนับเวลาพับเก็บอัตโนมัติ) -->
     <aside id="sidebar" 
            onmouseenter="if(sidebarTimer) clearTimeout(sidebarTimer)" 
            onmouseleave="if(this.classList.contains('w-80')) startSidebarTimer()" 
@@ -165,7 +165,6 @@
         let editingRowIndex = null;
         let currentSubmitMode = "all";
         
-        // ตัวแปรจับเวลาพับเก็บ Sidebar อัตโนมัติ
         let sidebarTimer = null;
 
         const schemas = {
@@ -196,7 +195,7 @@
             const sidebar = document.getElementById("sidebar");
             sidebar.classList.remove("w-0");
             sidebar.classList.add("w-80");
-            startSidebarTimer(); // เริ่มนับเวลาถอยหลังเพื่อพับเก็บอัตโนมัติ
+            startSidebarTimer();
         }
 
         function closeSidebar() {
@@ -208,7 +207,6 @@
 
         function startSidebarTimer() {
             if (sidebarTimer) clearTimeout(sidebarTimer);
-            // ตั้งเวลาพับเก็บอัตโนมัติเมื่อครบ 3.5 วินาที
             sidebarTimer = setTimeout(() => {
                 closeSidebar();
             }, 3500);
@@ -289,7 +287,7 @@
         }
 
         function switchTab(tabKey) {
-            closeSidebar(); // พับเก็บเมนูทันทีเมื่อเลือกแถบรายการ
+            closeSidebar(); 
             currentActiveTab = tabKey;
             editingRowIndex = null;
             
@@ -474,7 +472,9 @@
                     </div>`;
             }
 
-            if (f === "รหัสวิชา") {
+            // ถ้าเป็นหน้า "รายชื่อวิชาเรียน" (subjects) ช่องรหัสวิชาจะเป็นช่องพิมพ์ข้อความปกติ
+            // แต่ถ้าเป็นหน้าอื่น (เช่น ตารางเรียนนิสิต) จะยังเป็น Dropdown ให้เลือกรหัสวิชา
+            if (f === "รหัสวิชา" && currentActiveTab !== "subjects") {
                 const list = ALL_DATA.subjects || [];
                 let optHTML = list.map(item => {
                     let code = typeof item === 'object' ? (item["รหัสวิชา"] || item.code || "") : item;
