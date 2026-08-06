@@ -194,7 +194,6 @@
             <input type="hidden" id="selectedStudentName">
         </div>
 
-        <!-- ข้อมูลเวลาปฏิบัติงานแบบไม่มีหมายเหตุ -->
         <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
             <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -204,14 +203,14 @@
             <div class="space-y-4 pl-2">
                 <!-- มาครบ -->
                 <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-slate-50 rounded-lg transition-colors border border-transparent">
-                    <input type="checkbox" id="attend-full" value="มาครบ" class="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-500" onchange="toggleAttendanceInputs()" checked>
+                    <input type="checkbox" id="attend-full" value="มาครบ" class="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-500" onchange="toggleAttendance('full')" checked>
                     <span class="font-medium text-slate-700">🟢 มาครบ (100%)</span>
                 </label>
 
                 <!-- ป่วย -->
                 <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
                     <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
-                        <input type="checkbox" id="attend-sick" value="ป่วย" class="w-5 h-5 text-amber-500 rounded focus:ring-amber-500" onchange="toggleAttendanceInputs()">
+                        <input type="checkbox" id="attend-sick" value="ป่วย" class="w-5 h-5 text-amber-500 rounded focus:ring-amber-500" onchange="toggleAttendance('other')">
                         <span class="font-medium text-slate-700">🟡 ป่วย</span>
                     </label>
                     <div class="flex items-center gap-3">
@@ -224,7 +223,7 @@
                 <!-- ลากิจ -->
                 <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
                     <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
-                        <input type="checkbox" id="attend-leave" value="ลากิจ" class="w-5 h-5 text-orange-500 rounded focus:ring-orange-500" onchange="toggleAttendanceInputs()">
+                        <input type="checkbox" id="attend-leave" value="ลากิจ" class="w-5 h-5 text-orange-500 rounded focus:ring-orange-500" onchange="toggleAttendance('other')">
                         <span class="font-medium text-slate-700">🟠 ลากิจ</span>
                     </label>
                     <div class="flex items-center gap-3">
@@ -237,7 +236,7 @@
                 <!-- ขาด -->
                 <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
                     <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
-                        <input type="checkbox" id="attend-absent" value="ขาด" class="w-5 h-5 text-rose-500 rounded focus:ring-rose-500" onchange="toggleAttendanceInputs()">
+                        <input type="checkbox" id="attend-absent" value="ขาด" class="w-5 h-5 text-rose-500 rounded focus:ring-rose-500" onchange="toggleAttendance('other')">
                         <span class="font-medium text-slate-700">🔴 ขาด</span>
                     </label>
                     <div class="flex items-center gap-3">
@@ -368,45 +367,47 @@
         return null;
     }
 
-    // ฟังก์ชันจัดการช่องกรอกข้อมูลเมื่อติ๊ก Checkbox แบบไม่มีช่องหมายเหตุ
-    function toggleAttendanceInputs() {
-        const isFull = document.getElementById('attend-full').checked;
+    // ฟังก์ชันจัดการช่องกรอกข้อมูลเมื่อติ๊ก Checkbox แบบใหม่
+    function toggleAttendance(source) {
+        const fullCb = document.getElementById('attend-full');
         
-        // ถ้าติ๊ก "มาครบ" ให้เคลียร์และปิดช่องจำนวนวันอื่นๆ
-        if (isFull) {
-            ['sick', 'leave', 'absent'].forEach(type => {
-                const cb = document.getElementById(`attend-${type}`);
-                if(cb.checked) {
+        if (source === 'full') {
+            // ถ้าผู้ใช้มาคลิกที่ช่อง "มาครบ" และให้มีสถานะเป็น "ติ๊กถูก"
+            if (fullCb.checked) {
+                // ให้ไปปิดช่องอื่นๆ ทั้งหมด
+                ['sick', 'leave', 'absent'].forEach(type => {
+                    const cb = document.getElementById(`attend-${type}`);
                     cb.checked = false;
                     const daysInput = document.getElementById(`${type}-days`);
                     daysInput.disabled = true;
                     daysInput.value = '';
-                    daysInput.classList.remove('border-red-500'); 
+                    daysInput.classList.remove('border-red-500');
+                });
+            }
+        } else {
+            // ถ้าผู้ใช้คลิกช่องอื่นๆ (ป่วย, ลากิจ, ขาด)
+            let anyOtherChecked = false;
+            ['sick', 'leave', 'absent'].forEach(type => {
+                const cb = document.getElementById(`attend-${type}`);
+                const daysInput = document.getElementById(`${type}-days`);
+                
+                // เปิด/ปิดช่องกรอกวันตามสถานะติ๊ก
+                daysInput.disabled = !cb.checked;
+                if (!cb.checked) {
+                    daysInput.value = '';
+                    daysInput.classList.remove('border-red-500');
+                } else {
+                    anyOtherChecked = true;
                 }
             });
-        }
-
-        let anyOtherChecked = false;
-        
-        ['sick', 'leave', 'absent'].forEach(type => {
-            const isChecked = document.getElementById(`attend-${type}`).checked;
-            const daysInput = document.getElementById(`${type}-days`);
             
-            daysInput.disabled = !isChecked;
-            
-            if (!isChecked) {
-                daysInput.value = '';
-                daysInput.classList.remove('border-red-500');
+            // ถ้ามีการติ๊ก ป่วย, ลากิจ, ขาด อย่างน้อย 1 ช่อง ให้ไปเอาติ๊ก "มาครบ" ออก
+            if (anyOtherChecked) {
+                fullCb.checked = false;
             } else {
-                anyOtherChecked = true;
+                // ถ้าเอาติ๊กช่องอื่นออกหมดแล้ว ให้กลับมาติ๊ก "มาครบ" อัตโนมัติ
+                fullCb.checked = true;
             }
-        });
-
-        // ถ้ามีการติ๊กช่องอื่น ให้เอาติ๊กมาครบออก
-        if (anyOtherChecked) {
-            document.getElementById('attend-full').checked = false;
-        } else {
-            document.getElementById('attend-full').checked = true;
         }
     }
 
@@ -763,7 +764,7 @@
                         document.getElementById("comment").value = "";
                         
                         document.getElementById('attend-full').checked = true;
-                        toggleAttendanceInputs();
+                        toggleAttendance('full');
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
                     } else { 
                         Swal.fire("ล้มเหลว", resData.message || "เกิดข้อผิดพลาดจากระบบฐานข้อมูล", "error"); 
