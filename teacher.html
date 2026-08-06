@@ -194,14 +194,14 @@
             <input type="hidden" id="selectedStudentName">
         </div>
 
-        <!-- ข้อมูลเวลาปฏิบัติงานแบบใหม่ -->
+        <!-- ข้อมูลเวลาปฏิบัติงานแบบไม่มีหมายเหตุ -->
         <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
             <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 ข้อมูลเวลาปฏิบัติงาน <span class="text-rose-500">*</span>
             </h3>
             
-            <div class="space-y-3 pl-2">
+            <div class="space-y-4 pl-2">
                 <!-- มาครบ -->
                 <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-slate-50 rounded-lg transition-colors border border-transparent">
                     <input type="checkbox" id="attend-full" value="มาครบ" class="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-500" onchange="toggleAttendanceInputs()" checked>
@@ -209,41 +209,41 @@
                 </label>
 
                 <!-- ป่วย -->
-                <div class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
-                    <label class="flex items-center gap-3 cursor-pointer min-w-[80px]">
+                <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
+                    <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
                         <input type="checkbox" id="attend-sick" value="ป่วย" class="w-5 h-5 text-amber-500 rounded focus:ring-amber-500" onchange="toggleAttendanceInputs()">
                         <span class="font-medium text-slate-700">🟡 ป่วย</span>
                     </label>
-                    <input type="text" id="sick-note" placeholder="ระบุหมายเหตุ (ถ้ามี)..." class="flex-grow border border-slate-300 px-3 py-2 rounded-lg text-sm disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="sick-days" placeholder="0" step="0.5" min="0.5" class="w-20 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
-                        <span class="text-sm text-slate-600">วัน</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-slate-500 font-medium">จำนวน :</span>
+                        <input type="number" id="sick-days" placeholder="0" step="0.5" min="0.5" class="w-24 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
+                        <span class="text-sm text-slate-500 font-medium">วัน</span>
                     </div>
                 </div>
 
                 <!-- ลากิจ -->
-                <div class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
-                    <label class="flex items-center gap-3 cursor-pointer min-w-[80px]">
+                <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
+                    <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
                         <input type="checkbox" id="attend-leave" value="ลากิจ" class="w-5 h-5 text-orange-500 rounded focus:ring-orange-500" onchange="toggleAttendanceInputs()">
                         <span class="font-medium text-slate-700">🟠 ลากิจ</span>
                     </label>
-                    <input type="text" id="leave-note" placeholder="ระบุหมายเหตุ (ถ้ามี)..." class="flex-grow border border-slate-300 px-3 py-2 rounded-lg text-sm disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="leave-days" placeholder="0" step="0.5" min="0.5" class="w-20 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
-                        <span class="text-sm text-slate-600">วัน</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-slate-500 font-medium">จำนวน :</span>
+                        <input type="number" id="leave-days" placeholder="0" step="0.5" min="0.5" class="w-24 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
+                        <span class="text-sm text-slate-500 font-medium">วัน</span>
                     </div>
                 </div>
 
                 <!-- ขาด -->
-                <div class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
-                    <label class="flex items-center gap-3 cursor-pointer min-w-[80px]">
+                <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
+                    <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
                         <input type="checkbox" id="attend-absent" value="ขาด" class="w-5 h-5 text-rose-500 rounded focus:ring-rose-500" onchange="toggleAttendanceInputs()">
                         <span class="font-medium text-slate-700">🔴 ขาด</span>
                     </label>
-                    <input type="text" id="absent-note" placeholder="ระบุสาเหตุที่ขาด..." class="flex-grow border border-slate-300 px-3 py-2 rounded-lg text-sm disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="absent-days" placeholder="0" step="0.5" min="0.5" class="w-20 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
-                        <span class="text-sm text-slate-600">วัน</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-slate-500 font-medium">จำนวน :</span>
+                        <input type="number" id="absent-days" placeholder="0" step="0.5" min="0.5" class="w-24 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
+                        <span class="text-sm text-slate-500 font-medium">วัน</span>
                     </div>
                 </div>
             </div>
@@ -368,24 +368,20 @@
         return null;
     }
 
-    // ฟังก์ชันจัดการช่องกรอกข้อมูลเมื่อติ๊ก Checkbox
+    // ฟังก์ชันจัดการช่องกรอกข้อมูลเมื่อติ๊ก Checkbox แบบไม่มีช่องหมายเหตุ
     function toggleAttendanceInputs() {
         const isFull = document.getElementById('attend-full').checked;
         
-        // ถ้าติ๊ก "มาครบ" ให้เคลียร์และปิดช่องอื่นๆ
+        // ถ้าติ๊ก "มาครบ" ให้เคลียร์และปิดช่องจำนวนวันอื่นๆ
         if (isFull) {
             ['sick', 'leave', 'absent'].forEach(type => {
                 const cb = document.getElementById(`attend-${type}`);
                 if(cb.checked) {
                     cb.checked = false;
-                    const noteInput = document.getElementById(`${type}-note`);
                     const daysInput = document.getElementById(`${type}-days`);
-                    noteInput.disabled = true;
                     daysInput.disabled = true;
-                    noteInput.value = '';
                     daysInput.value = '';
-                    noteInput.classList.remove('border-red-500'); 
-                    daysInput.classList.remove('border-red-500');
+                    daysInput.classList.remove('border-red-500'); 
                 }
             });
         }
@@ -394,16 +390,12 @@
         
         ['sick', 'leave', 'absent'].forEach(type => {
             const isChecked = document.getElementById(`attend-${type}`).checked;
-            const noteInput = document.getElementById(`${type}-note`);
             const daysInput = document.getElementById(`${type}-days`);
             
-            noteInput.disabled = !isChecked;
             daysInput.disabled = !isChecked;
             
             if (!isChecked) {
-                noteInput.value = '';
                 daysInput.value = '';
-                noteInput.classList.remove('border-red-500');
                 daysInput.classList.remove('border-red-500');
             } else {
                 anyOtherChecked = true;
@@ -683,7 +675,6 @@
             return;
         }
 
-        // รวบรวมข้อมูลสถานะการเข้างานแบบใหม่
         let attendanceStatusArr = [];
         let combinedNotesArr = [];
         let totalAbsentDays = 0;
@@ -703,13 +694,9 @@
             if (document.getElementById(`attend-${type.id}`).checked) {
                 attendanceStatusArr.push(type.label);
                 
-                let noteInput = document.getElementById(`${type.id}-note`);
                 let daysInput = document.getElementById(`${type.id}-days`);
-                
-                let note = noteInput.value.trim();
                 let days = parseFloat(daysInput.value);
 
-                // เช็คว่าถ้าเลือก ต้องใส่จำนวนวันเสมอ
                 if (isNaN(days) || days <= 0) {
                     missingDaysError = true;
                     daysInput.classList.add('border-red-500');
@@ -719,8 +706,7 @@
 
                 totalAbsentDays += (isNaN(days) ? 0 : days);
                 
-                let noteText = `${type.label}: `;
-                noteText += note ? note : "-";
+                let noteText = `${type.label}`;
                 if (!isNaN(days) && days > 0) noteText += ` (${days} วัน)`;
                 
                 combinedNotesArr.push(noteText);
@@ -776,7 +762,6 @@
                         loadStudents(); 
                         document.getElementById("comment").value = "";
                         
-                        // รีเซ็ตฟอร์มกลับค่าเริ่มต้น
                         document.getElementById('attend-full').checked = true;
                         toggleAttendanceInputs();
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
