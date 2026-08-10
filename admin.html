@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบควบคุมแอดมินหลัก - 10 เมนูจัดการฐานข้อมูล</title>
+    <title>ระบบควบคุมแอดมินหลัก - 11 เมนูจัดการฐานข้อมูล</title>
 
     <link rel="icon" type="image/png" href="logo.png">
 
@@ -84,6 +84,8 @@
                     <button onclick="switchTab('positions')" id="btn-positions" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🎖️ ข้อมูลตำแหน่งอาจารย์</button>
                     <button onclick="switchTab('institutes')" id="btn-institutes" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏥 ข้อมูลสถาบัน / รพ.</button>
                     <button onclick="switchTab('provinces')" id="btn-provinces" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🗺️ ข้อมูลจังหวัด</button>
+                    <!-- เพิ่มเมนูข้อมูลแบบประเมินต่อท้ายด้านล่าง -->
+                    <button onclick="switchTab('formMaster')" id="btn-formMaster" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📝 ข้อมูลแบบประเมิน</button>
                 </div>
             </div>
         </nav>
@@ -178,7 +180,8 @@
             specialties: { title: "ข้อมูลสาขาวิชา", sheet: "Specialty_Master", fields: ["ชื่อสาขาวิชา"] },
             positions: { title: "ข้อมูลตำแหน่งอาจารย์", sheet: "Position_Master", fields: ["ชื่อตำแหน่ง"] },
             institutes: { title: "ข้อมูลสถาบัน / รพ.", sheet: "Institute_Master", fields: ["ชื่อสถาบัน"] },
-            provinces: { title: "ข้อมูลจังหวัด", sheet: "Province_Master", fields: ["ชื่อจังหวัด"] }
+            provinces: { title: "ข้อมูลจังหวัด", sheet: "Province_Master", fields: ["ชื่อจังหวัด"] },
+            formMaster: { title: "ข้อมูลแบบประเมิน", sheet: "Form_Master", fields: ["Form_Name"] }
         };
 
         // --- ระบบเปิด/ปิด และพับเก็บ Sidebar อัตโนมัติ ---
@@ -346,6 +349,7 @@
                 if(f === "studentId") displayField = "รหัสนิสิต";
                 if(f === "fullName") displayField = "ชื่อ-สกุล";
                 if(f === "hospital") displayField = "สถาบัน";
+                if(f === "Form_Name") displayField = "ชื่อแบบประเมิน";
                 headHTML += `<th class="px-6 py-4 whitespace-nowrap">${displayField}</th>`;
             });
             headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
@@ -425,6 +429,24 @@
                     </div>`;
             }
 
+            // ถ้าเป็นช่อง "หัวข้อการประเมิน" ให้เปลี่ยนเป็น Dropdown เลือกรายการแบบประเมินจาก Form_Master
+            if ((f === "หัวข้อการประเมิน" || f === "Form_Type") && currentActiveTab !== "formMaster") {
+                const list = ALL_DATA.formMaster || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["Form_Name"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white" required>
+                            <option value="">-- เลือกหัวข้อแบบประเมิน --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
             if (f === "ภายใน/ภายนอก") {
                 const options = ["ภายใน", "ภายนอก"];
                 let optHTML = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join("");
@@ -472,8 +494,6 @@
                     </div>`;
             }
 
-            // ถ้าเป็นหน้า "รายชื่อวิชาเรียน" (subjects) ช่องรหัสวิชาจะเป็นช่องพิมพ์ข้อความปกติ
-            // แต่ถ้าเป็นหน้าอื่น (เช่น ตารางเรียนนิสิต) จะยังเป็น Dropdown ให้เลือกรหัสวิชา
             if (f === "รหัสวิชา" && currentActiveTab !== "subjects") {
                 const list = ALL_DATA.subjects || [];
                 let optHTML = list.map(item => {
