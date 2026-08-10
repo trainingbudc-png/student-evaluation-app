@@ -171,6 +171,33 @@
             <input type="text" id="teacherName" readonly class="w-full px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-xl text-base outline-none text-slate-600 font-bold shadow-sm cursor-not-allowed">
         </div>
 
+        <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                เลือกหัวข้อการประเมิน (Topic / Bedside) <span class="text-rose-500">*</span>
+            </h3>
+            <div class="relative">
+                <select id="evalTopic" required onchange="filterCriteria()" class="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-800 font-medium shadow-sm appearance-none cursor-pointer pr-10">
+                    <option value="">-- กรุณาเลือกหัวข้อประเมิน --</option>
+                    <optgroup label="กลุ่ม Topic">
+                        <option value="Topic: Proptosis and periorbital infection">Topic: Proptosis and periorbital infection</option>
+                        <option value="Topic: Lens and lens induced ocular">Topic: Lens and lens induced ocular</option>
+                        <option value="Topic: Ptosis">Topic: Ptosis</option>
+                        <option value="Topic: Epiphora">Topic: Epiphora</option>
+                    </optgroup>
+                    <optgroup label="กลุ่ม Bedside">
+                        <option value="Bedside: Blurred vision">Bedside: Blurred vision</option>
+                        <option value="Bedside: Red eye 1">Bedside: Red eye 1</option>
+                        <option value="Bedside: Red eye 2">Bedside: Red eye 2</option>
+                        <option value="Bedside: Red eye">Bedside: Red eye</option>
+                    </optgroup>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+        </div>
+
         <div>
             <label for="subjectCode" class="block text-sm font-semibold text-slate-700 mb-2">📚 เลือกรายวิชาปฏิบัติงาน (กรองตามภาควิชาของคุณ)</label>
             <div class="relative">
@@ -248,34 +275,6 @@
             </div>
         </div>
 
-        <!-- เพิ่มช่อง Dropdown เลือกหัวข้อโรค -->
-        <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
-            <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                เลือกหัวข้อการประเมิน (Topic / Bedside) <span class="text-rose-500">*</span>
-            </h3>
-            <div class="relative">
-                <select id="evalTopic" required onchange="filterCriteria()" class="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-800 font-medium shadow-sm appearance-none cursor-pointer pr-10">
-                    <option value="">-- กรุณาเลือกหัวข้อประเมิน --</option>
-                    <optgroup label="กลุ่ม Topic">
-                        <option value="Topic: Proptosis and periorbital infection">Topic: Proptosis and periorbital infection</option>
-                        <option value="Topic: Lens and lens induced ocular">Topic: Lens and lens induced ocular</option>
-                        <option value="Topic: Ptosis">Topic: Ptosis</option>
-                        <option value="Topic: Epiphora">Topic: Epiphora</option>
-                    </optgroup>
-                    <optgroup label="กลุ่ม Bedside">
-                        <option value="Bedside: Blurred vision">Bedside: Blurred vision</option>
-                        <option value="Bedside: Red eye 1">Bedside: Red eye 1</option>
-                        <option value="Bedside: Red eye 2">Bedside: Red eye 2</option>
-                        <option value="Bedside: Red eye">Bedside: Red eye</option>
-                    </optgroup>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-            </div>
-        </div>
-
         <div id="criteriaContainer" class="pt-2">
             <!-- ตารางจะถูกสร้างและนำมาแสดงที่นี่โดย Javascript -->
         </div>
@@ -298,7 +297,7 @@
     let allStudents = [];
     let activeTopics = [];
     let studentImgMap = {}; 
-    let allCriteriaData = []; // เพิ่มตัวแปรเก็บข้อมูล Rubrics ทั้งหมดไว้สำหรับกรอง
+    let allCriteriaData = []; 
 
     function showLoadingPopup(titleText = "กำลังโหลดข้อมูล...", subText = "กรุณารอสักครู่ ระบบกำลังประมวลผล") {
         Swal.fire({
@@ -471,7 +470,6 @@
         } catch (error) { console.error("โหลดรายวิชาล้มเหลว:", error); }
     }
 
-    // ปรับปรุงฟังก์ชัน loadCriteria เพื่อไม่ให้โชว์ตารางจนกว่าจะเลือก Dropdown
     async function loadCriteria() {
         try {
             const response = await fetch(API_URL + "?action=getFormCriteria&t=" + new Date().getTime());
@@ -483,10 +481,7 @@
                 return;
             }
 
-            // เก็บข้อมูล Rubrics ทั้งหมดไว้ในตัวแปร Global 
             allCriteriaData = data; 
-            
-            // แสดงข้อความเริ่มต้นแทนที่ตาราง
             container.innerHTML = `<div style="color: #64748b; text-align: center; padding: 24px 0;" class="text-sm font-medium border-2 border-dashed border-slate-200 rounded-xl mt-6 bg-slate-50">👆 กรุณาเลือกหัวข้อการประเมินด้านบน เพื่อแสดงเกณฑ์การให้คะแนน</div>`;
 
         } catch (error) {
@@ -494,7 +489,6 @@
         }
     }
 
-    // เพิ่มฟังก์ชันใหม่สำหรับการกรอง Rubrics จาก Dropdown
     function filterCriteria() {
         const selectedTopic = document.getElementById("evalTopic").value;
         const container = document.getElementById("criteriaContainer");
@@ -504,7 +498,6 @@
             return;
         }
 
-        // กรองข้อมูลโดยใช้ key (โปรดตรวจสอบให้ตรงกับที่ Google Apps Script ส่งออกมา)
         let filteredData = allCriteriaData.filter(item => {
             return String(item.formType) === selectedTopic || String(item["หัวข้อประเมิน"]) === selectedTopic || String(item["Form_Type"]) === selectedTopic;
         });
@@ -514,7 +507,6 @@
             return;
         }
 
-        // เริ่มต้นเรนเดอร์ตารางสำหรับข้อมูลที่ผ่านการกรองมาแล้ว
         container.innerHTML = "";
         activeTopics = [];
         
@@ -724,7 +716,7 @@
 
         const studentId = document.getElementById("selectedStudentId").value;
         const studentName = document.getElementById("selectedStudentName").value;
-        const selectedTopic = document.getElementById("evalTopic").value; // ดึงค่าหัวข้อประเมิน
+        const selectedTopic = document.getElementById("evalTopic").value; 
 
         if (!studentId) {
             Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกนิสิต!', text: 'กรุณาคลิกที่รายชื่อนิสิตในกล่องตัวเลือกก่อนครับ' });
@@ -752,9 +744,6 @@
         ];
 
         types.forEach(type => {
-            if (document.getElementById(`attend-${type.id}`).checked) {
-                attendanceStatusArr.push(type.label);
-types.forEach(type => {
             if (document.getElementById(`attend-${type.id}`).checked) {
                 attendanceStatusArr.push(type.label);
                 
@@ -804,7 +793,7 @@ types.forEach(type => {
                     subjectCode: document.getElementById("subjectCode").value,
                     studentId: studentId,
                     studentName: studentName,
-                    evaluationTopic: selectedTopic, // ส่งข้อมูลหัวข้อโรคที่เลือกกลับไปที่ชีตด้วย
+                    evaluationTopic: selectedTopic, 
                     attendanceStatus: finalStatus, 
                     attendanceDays: totalAbsentDays > 0 ? totalAbsentDays : "",
                     attendanceReason: finalNotes,
@@ -813,7 +802,7 @@ types.forEach(type => {
 
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
-                    const selectedRadio = document.querySelector('input[name="q_' + qNum + '\"]:checked');
+                    const selectedRadio = document.querySelector('input[name="q_' + qNum + '"]:checked');
                     payload["score" + qNum] = selectedRadio ? selectedRadio.value : "0";
                 });
 
@@ -832,7 +821,6 @@ types.forEach(type => {
                         toggleAttendance('full');
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
                         
-                        // รีเซ็ต Dropdown และล้างตารางเกณฑ์ประเมิน
                         document.getElementById("evalTopic").value = ""; 
                         document.getElementById("criteriaContainer").innerHTML = `<div style="color: #64748b; text-align: center; padding: 24px 0;" class="text-sm font-medium border-2 border-dashed border-slate-200 rounded-xl mt-6 bg-slate-50">👆 กรุณาเลือกหัวข้อการประเมินด้านบน เพื่อแสดงเกณฑ์การให้คะแนน</div>`;
                     } else { 
