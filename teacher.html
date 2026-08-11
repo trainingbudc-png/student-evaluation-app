@@ -159,7 +159,7 @@
             📋
         </div>
         <h2 class="text-2xl font-bold text-slate-800 mb-2">แบบประเมินผลการปฏิบัติงานนิสิตแพทย์ ชั้นคลินิก</h2>
-        <p class="text-sm text-slate-500 font-light leading-relaxed max-w-xl mx-auto">สำหรับอาจารย์ผู้ประเมิน: กรุณาเลือกรายวิชาปฏิบัติงานและคลิกเลือกรายชื่อนิสิตแพทย์ เพื่อดำเนินการให้คะแนนตามเกณฑ์รูบริคส์</p>
+        <p class="text-sm text-slate-500 font-light leading-relaxed max-w-xl mx-auto">สำหรับอาจารย์ผู้ประเมิน: กรุณาเลือกรายวิชาปฏิบัติงานและคลิกเลือกรายชื่อนิสิตแพทย์ (สามารถเลือกได้หลายคน) เพื่อดำเนินการให้คะแนนตามเกณฑ์รูบริคส์</p>
     </div>
     
     <hr class="border-slate-100 my-6">
@@ -177,7 +177,6 @@
                 เลือกหัวข้อการประเมิน (Topic / Bedside) <span class="text-rose-500">*</span>
             </h3>
             <div class="relative">
-                <!-- 🌟 เปลี่ยนให้เป็นการดึงข้อมูลอัตโนมัติ -->
                 <select id="evalTopic" required onchange="filterCriteria()" class="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-800 font-medium shadow-sm appearance-none cursor-pointer pr-10">
                     <option value="">-- กรุณาเลือกหัวข้อประเมิน --</option>
                 </select>
@@ -200,14 +199,12 @@
         </div>
 
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">🎓 เลือกรายชื่อนิสิตแพทย์ (คลิกเลือกหนึ่งรายชื่อ)</label>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">🎓 เลือกรายชื่อนิสิตแพทย์ (สามารถคลิกเลือกได้หลายคน)</label>
             <div id="studentListContainer" class="student-list-container">
                 <div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-light">
                     -- กรุณาเลือกวิชาก่อนเพื่อแสดงรายชื่อนิสิต --
                 </div>
             </div>
-            <input type="hidden" id="selectedStudentId">
-            <input type="hidden" id="selectedStudentName">
         </div>
 
         <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
@@ -473,7 +470,6 @@
             allCriteriaData = data; 
             container.innerHTML = `<div style="color: #64748b; text-align: center; padding: 24px 0;" class="text-sm font-medium border-2 border-dashed border-slate-200 rounded-xl mt-6 bg-slate-50">👆 กรุณาเลือกหัวข้อการประเมินด้านบน เพื่อแสดงเกณฑ์การให้คะแนน</div>`;
 
-            // 🌟 เรียกใช้ฟังก์ชันเพื่อสร้าง Dropdown อัตโนมัติ
             buildTopicDropdown();
 
         } catch (error) {
@@ -481,21 +477,17 @@
         }
     }
 
-    // 🌟 ฟังก์ชันใหม่สำหรับสร้างตัวเลือกหัวข้อประเมินอัตโนมัติ
     function buildTopicDropdown() {
         const select = document.getElementById("evalTopic");
         
-        // ดึงชื่อหัวข้อประเมินที่ไม่ซ้ำกันออกมาจาก allCriteriaData
         const uniqueTopics = [...new Set(allCriteriaData.map(item => item.formType || item["หัวข้อประเมิน"] || item["Form_Type"]))].filter(Boolean);
 
-        // เตรียมกลุ่มสำหรับจัดหมวดหมู่
         const groups = {
             "กลุ่ม Topic": [],
             "กลุ่ม Bedside": [],
             "กลุ่มอื่นๆ (ประเมินทั่วไป)": []
         };
 
-        // คัดแยกหัวข้อเข้ากลุ่มตามชื่อที่ขึ้นต้น
         uniqueTopics.forEach(topic => {
             const t = String(topic).trim();
             if (t.toLowerCase().startsWith("topic:")) {
@@ -507,7 +499,6 @@
             }
         });
 
-        // นำข้อมูลที่จัดกลุ่มแล้วไปสร้างเป็น <option> ใส่ใน Dropdown
         for (const [groupLabel, topics] of Object.entries(groups)) {
             if (topics.length > 0) {
                 const optgroup = document.createElement("optgroup");
@@ -607,9 +598,6 @@
         const teacherName = document.getElementById("teacherName").value.trim(); 
         const container = document.getElementById("studentListContainer");
         
-        document.getElementById("selectedStudentId").value = "";
-        document.getElementById("selectedStudentName").value = "";
-        
         if (!subCode) {
             container.innerHTML = `<div style="color: #64748b; text-align: center; width: 100%; grid-column: 1 / -1; padding: 24px 0;" class="text-sm font-light">-- กรุณาเลือกวิชาก่อนเพื่อแสดงรายชื่อนิสิต --</div>`;
             return;
@@ -670,9 +658,6 @@
                             <div style="font-size:11px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
                         `;
                         div.onclick = () => {
-                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-                            document.getElementById("selectedStudentId").value = "";
-                            document.getElementById("selectedStudentName").value = "";
                             Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'นิสิตคนนี้ได้รับการประเมินไปแล้วโดยอาจารย์' });
                         };
                     } else if (isTimeExpired) {
@@ -691,9 +676,6 @@
                             <div style="font-size:11px; color:#ef4444; margin-top:4px; font-weight:bold;">❌ เกินเวลาประเมิน</div>
                         `;
                         div.onclick = () => {
-                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-                            document.getElementById("selectedStudentId").value = "";
-                            document.getElementById("selectedStudentName").value = "";
                             Swal.fire({ icon: 'error', title: 'หมดเขตประเมิน', text: 'นิสิตคนนี้เกินกำหนดเวลาการประเมินแล้ว (เกิน 14 วันจากวันสิ้นสุด)' });
                         };
                     } else if (isBeforeStart) {
@@ -712,13 +694,12 @@
                             <div style="font-size:11px; color:#f59e0b; margin-top:4px; font-weight:bold;">⏳ ยังไม่ถึงเวลา</div>
                         `;
                         div.onclick = () => {
-                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-                            document.getElementById("selectedStudentId").value = "";
-                            document.getElementById("selectedStudentName").value = "";
                             Swal.fire({ icon: 'warning', title: 'ยังไม่ถึงเวลาประเมิน', text: 'นิสิตคนนี้ยังไม่ถึงกำหนดวันเริ่มปฏิบัติงาน' });
                         };
                     } else {
                         div.className = "student-item";
+                        div.setAttribute('data-student-id', s.studentId);
+                        div.setAttribute('data-student-name', s.studentName);
                         div.innerHTML = `
                             ${imgUrl 
                                 ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm transition-all duration-200" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
@@ -729,10 +710,8 @@
                             <div class="student-name-text" style="font-weight:bold; margin-top:2px; color:#334155;">${s.studentName}</div>
                         `;
                         div.onclick = () => {
-                            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-                            div.classList.add('active');
-                            document.getElementById("selectedStudentId").value = s.studentId;
-                            document.getElementById("selectedStudentName").value = s.studentName;
+                            // เปลี่ยนเป็น toggle เพื่อให้เลือก/ยกเลิกได้หลายคน
+                            div.classList.toggle('active');
                         };
                     }
                     container.appendChild(div);
@@ -748,14 +727,21 @@
     document.getElementById("evalForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const studentId = document.getElementById("selectedStudentId").value;
-        const studentName = document.getElementById("selectedStudentName").value;
-        const selectedTopic = document.getElementById("evalTopic").value; 
-
-        if (!studentId) {
-            Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกนิสิต!', text: 'กรุณาคลิกที่รายชื่อนิสิตในกล่องตัวเลือกก่อนครับ' });
+        // ค้นหารายชื่อนิสิตทั้งหมดที่ถูกเลือก
+        const activeStudents = document.querySelectorAll('.student-item.active');
+        
+        if (activeStudents.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'ยังไม่ได้เลือกนิสิต!', text: 'กรุณาคลิกเลือกรายชื่อนิสิตอย่างน้อย 1 คนครับ' });
             return;
         }
+
+        // สร้าง Array ของนิสิตที่ถูกเลือก
+        const selectedStudents = Array.from(activeStudents).map(item => ({
+            id: item.getAttribute('data-student-id'),
+            name: item.getAttribute('data-student-name')
+        }));
+
+        const selectedTopic = document.getElementById("evalTopic").value; 
 
         if (!selectedTopic) {
             Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกหัวข้อการประเมิน (Topic / Bedside)' });
@@ -812,10 +798,11 @@
 
         const finalStatus = attendanceStatusArr.join(", ");
         const finalNotes = combinedNotesArr.join(" | ");
+        const namesList = selectedStudents.map(s => s.name).join(", ");
         
         Swal.fire({
-            title: `ยืนยันส่งผลประเมิน?\n${studentName}`,
-            text: `หัวข้อ: ${selectedTopic}`,
+            title: `ยืนยันส่งผลประเมิน?\nจำนวน ${selectedStudents.length} คน`,
+            text: `หัวข้อ: ${selectedTopic}\nรายชื่อ: ${namesList}`,
             icon: 'question', showCancelButton: true, confirmButtonText: 'ใช่, บันทึกเลย', cancelButtonText: 'ตรวจสอบอีกครั้ง'
         }).then(async (result) => {
             if (result.isConfirmed) {
@@ -825,8 +812,7 @@
                     action: "submitEvaluation",
                     teacherName: document.getElementById("teacherName").value,
                     subjectCode: document.getElementById("subjectCode").value,
-                    studentId: studentId,
-                    studentName: studentName,
+                    students: selectedStudents, // ส่งข้อมูลแบบ Array
                     evaluationTopic: selectedTopic, 
                     attendanceStatus: finalStatus, 
                     attendanceDays: totalAbsentDays > 0 ? totalAbsentDays : "",
@@ -847,7 +833,7 @@
                     const resData = await response.json();
                     
                     if (resData.result === "success") {
-                        await Swal.fire("สำเร็จ!", "บันทึกผลการประเมินนิสิตเรียบร้อยแล้ว", "success");
+                        await Swal.fire("สำเร็จ!", `บันทึกผลการประเมินนิสิต ${selectedStudents.length} รายการเรียบร้อยแล้ว`, "success");
                         loadStudents(); 
                         document.getElementById("comment").value = "";
                         
