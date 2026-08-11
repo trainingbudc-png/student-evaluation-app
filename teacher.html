@@ -186,6 +186,24 @@
             </div>
         </div>
 
+        <!-- 📌 ส่วนที่เพิ่มเข้ามา: เลือกบทบาทของนิสิต -->
+        <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-fuchsia-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                บทบาทของนิสิต <span class="text-rose-500">*</span>
+            </h3>
+            <div class="flex items-center gap-6 p-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="radio" name="studentRole" value="ผู้นำเสนอ" class="w-5 h-5 text-fuchsia-600 focus:ring-fuchsia-500" required>
+                    <span class="font-medium text-slate-700">ผู้นำเสนอ</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="radio" name="studentRole" value="ผู้ฟังบรรยาย" class="w-5 h-5 text-fuchsia-600 focus:ring-fuchsia-500" required>
+                    <span class="font-medium text-slate-700">ผู้ฟังบรรยาย</span>
+                </label>
+            </div>
+        </div>
+
         <div>
             <label for="subjectCode" class="block text-sm font-semibold text-slate-700 mb-2">📚 เลือกรายวิชาปฏิบัติงาน (กรองตามภาควิชาของคุณ)</label>
             <div class="relative">
@@ -571,7 +589,6 @@
                 `;
             }
 
-            // [แก้ไขแล้ว] ฝัง data-level="${item.level}" เข้าไปใน input radio เพื่อนำไปประมวลผลก่อน submit[cite: 7]
             tableHTML += `
                 <tr>
                     <td style="font-weight: 600;">
@@ -711,7 +728,6 @@
                             <div class="student-name-text" style="font-weight:bold; margin-top:2px; color:#334155;">${s.studentName}</div>
                         `;
                         div.onclick = () => {
-                            // เปลี่ยนเป็น toggle เพื่อให้เลือก/ยกเลิกได้หลายคน
                             div.classList.toggle('active');
                         };
                     }
@@ -728,7 +744,6 @@
     document.getElementById("evalForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        // ค้นหารายชื่อนิสิตทั้งหมดที่ถูกเลือก
         const activeStudents = document.querySelectorAll('.student-item.active');
         
         if (activeStudents.length === 0) {
@@ -736,16 +751,22 @@
             return;
         }
 
-        // สร้าง Array ของนิสิตที่ถูกเลือก
         const selectedStudents = Array.from(activeStudents).map(item => ({
             id: item.getAttribute('data-student-id'),
             name: item.getAttribute('data-student-name')
         }));
 
         const selectedTopic = document.getElementById("evalTopic").value; 
-
         if (!selectedTopic) {
             Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกหัวข้อการประเมิน (Topic / Bedside)' });
+            return;
+        }
+
+        // 📌 เช็คค่าที่ดึงมาจากกล่องเลือกบทบาท
+        const selectedRoleEl = document.querySelector('input[name="studentRole"]:checked');
+        const selectedRole = selectedRoleEl ? selectedRoleEl.value : "";
+        if (!selectedRole) {
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกบทบาทของนิสิต (ผู้นำเสนอ / ผู้ฟังบรรยาย)' });
             return;
         }
 
@@ -803,7 +824,7 @@
         
         Swal.fire({
             title: `ยืนยันส่งผลประเมิน?\nจำนวน ${selectedStudents.length} คน`,
-            text: `หัวข้อ: ${selectedTopic}\nรายชื่อ: ${namesList}`,
+            text: `หัวข้อ: ${selectedTopic}\nบทบาท: ${selectedRole}\nรายชื่อ: ${namesList}`,
             icon: 'question', showCancelButton: true, confirmButtonText: 'ใช่, บันทึกเลย', cancelButtonText: 'ตรวจสอบอีกครั้ง'
         }).then(async (result) => {
             if (result.isConfirmed) {
@@ -813,15 +834,15 @@
                     action: "submitEvaluation",
                     teacherName: document.getElementById("teacherName").value,
                     subjectCode: document.getElementById("subjectCode").value,
-                    students: selectedStudents, // ส่งข้อมูลแบบ Array
+                    students: selectedStudents,
                     evaluationTopic: selectedTopic, 
+                    studentRole: selectedRole, // 📌 ส่งข้อมูลบทบาทไปให้หลังบ้าน
                     attendanceStatus: finalStatus, 
                     attendanceDays: totalAbsentDays > 0 ? totalAbsentDays : "",
                     attendanceReason: finalNotes,
                     comment: document.getElementById("comment").value
                 };
 
-                // [แก้ไขแล้ว] สร้าง scoreDetails พร้อมกับส่งเข้า payload โดยตรง[cite: 7]
                 let dynamicScoreDetails = {};
 
                 activeTopics.forEach((topic, index) => {
@@ -835,7 +856,6 @@
                     dynamicScoreDetails[topic] = { level: levelText, score: scoreVal };
                 });
 
-                // นำคะแนนแบบ Dynamic จัดส่งเข้า payload ให้ Backend บันทึกลง Sheet ได้ถูกต้อง[cite: 7]
                 payload.scoreDetails = dynamicScoreDetails;
 
                 try {
