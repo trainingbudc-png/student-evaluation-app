@@ -177,25 +177,9 @@
                 เลือกหัวข้อการประเมิน (Topic / Bedside) <span class="text-rose-500">*</span>
             </h3>
             <div class="relative">
+                <!-- 🌟 เปลี่ยนให้เป็นการดึงข้อมูลอัตโนมัติ -->
                 <select id="evalTopic" required onchange="filterCriteria()" class="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 rounded-xl text-base focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-slate-800 font-medium shadow-sm appearance-none cursor-pointer pr-10">
                     <option value="">-- กรุณาเลือกหัวข้อประเมิน --</option>
-                    <optgroup label="กลุ่ม Topic">
-                        <option value="Topic: Proptosis and periorbital infection">Topic: Proptosis and periorbital infection</option>
-                        <option value="Topic: Lens and lens induced ocular">Topic: Lens and lens induced ocular</option>
-                        <option value="Topic: Ptosis">Topic: Ptosis</option>
-                        <option value="Topic: Epiphora">Topic: Epiphora</option>
-                    </optgroup>
-                    <optgroup label="กลุ่ม Bedside">
-                        <option value="Bedside: Blurred vision">Bedside: Blurred vision</option>
-                        <option value="Bedside: Red eye 1">Bedside: Red eye 1</option>
-                        <option value="Bedside: Red eye 2">Bedside: Red eye 2</option>
-                        <option value="Bedside: Red eye">Bedside: Red eye</option>
-                    </optgroup>
-                    <!-- 🌟 ส่วนที่เพิ่มใหม่: กลุ่มอื่นๆ -->
-                    <optgroup label="กลุ่มอื่นๆ (ประเมินทั่วไป)">
-                        <option value="Other: ประเมินการเรียนการสอนทั่วไป">Other: ประเมินการเรียนการสอนทั่วไป</option>
-                        <!-- คุณสามารถก๊อปปี้บรรทัดบนเพื่อเพิ่มหัวข้ออื่นๆ ได้เรื่อยๆ ครับ -->
-                    </optgroup>
                 </select>
                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -489,8 +473,53 @@
             allCriteriaData = data; 
             container.innerHTML = `<div style="color: #64748b; text-align: center; padding: 24px 0;" class="text-sm font-medium border-2 border-dashed border-slate-200 rounded-xl mt-6 bg-slate-50">👆 กรุณาเลือกหัวข้อการประเมินด้านบน เพื่อแสดงเกณฑ์การให้คะแนน</div>`;
 
+            // 🌟 เรียกใช้ฟังก์ชันเพื่อสร้าง Dropdown อัตโนมัติ
+            buildTopicDropdown();
+
         } catch (error) {
             document.getElementById("criteriaContainer").innerHTML = `<div class="error-box">⚠️ เกิดข้อผิดพลาดในการโหลดเกณฑ์ประเมิน</div>`;
+        }
+    }
+
+    // 🌟 ฟังก์ชันใหม่สำหรับสร้างตัวเลือกหัวข้อประเมินอัตโนมัติ
+    function buildTopicDropdown() {
+        const select = document.getElementById("evalTopic");
+        
+        // ดึงชื่อหัวข้อประเมินที่ไม่ซ้ำกันออกมาจาก allCriteriaData
+        const uniqueTopics = [...new Set(allCriteriaData.map(item => item.formType || item["หัวข้อประเมิน"] || item["Form_Type"]))].filter(Boolean);
+
+        // เตรียมกลุ่มสำหรับจัดหมวดหมู่
+        const groups = {
+            "กลุ่ม Topic": [],
+            "กลุ่ม Bedside": [],
+            "กลุ่มอื่นๆ (ประเมินทั่วไป)": []
+        };
+
+        // คัดแยกหัวข้อเข้ากลุ่มตามชื่อที่ขึ้นต้น
+        uniqueTopics.forEach(topic => {
+            const t = String(topic).trim();
+            if (t.toLowerCase().startsWith("topic:")) {
+                groups["กลุ่ม Topic"].push(t);
+            } else if (t.toLowerCase().startsWith("bedside:")) {
+                groups["กลุ่ม Bedside"].push(t);
+            } else {
+                groups["กลุ่มอื่นๆ (ประเมินทั่วไป)"].push(t);
+            }
+        });
+
+        // นำข้อมูลที่จัดกลุ่มแล้วไปสร้างเป็น <option> ใส่ใน Dropdown
+        for (const [groupLabel, topics] of Object.entries(groups)) {
+            if (topics.length > 0) {
+                const optgroup = document.createElement("optgroup");
+                optgroup.label = groupLabel;
+                topics.forEach(t => {
+                    const option = document.createElement("option");
+                    option.value = t;
+                    option.innerText = t;
+                    optgroup.appendChild(option);
+                });
+                select.appendChild(optgroup);
+            }
         }
     }
 
