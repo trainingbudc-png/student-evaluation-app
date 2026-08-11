@@ -173,7 +173,8 @@
             studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
             evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
             mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
-            formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
+            // แก้ไขตรงนี้: เพิ่ม Form_Type เข้ามาเป็นช่องสำหรับเลือกชื่อฟอร์ม
+            formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["Form_Type", "หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
             assessors: { title: "รายชื่ออาจารย์ผู้ประเมิน", sheet: "Assessor", fields: ["คำนำหน้า", "ชื่อ", "นามสกุล", "ตำแหน่ง", "email", "เบอร์โทร", "สถาบัน", "ภาควิชา"] },
             subjects: { title: "รายชื่อวิชาเรียน", sheet: "Subject", fields: ["รหัสวิชา", "ชื่อวิชา", "กลุ่มงาน", "สาขาวิชา"] },
             departments: { title: "ข้อมูลภาควิชา", sheet: "Department_Master", fields: ["ชื่อกลุ่ม_ภาควิชา"] },
@@ -349,7 +350,7 @@
                 if(f === "studentId") displayField = "รหัสนิสิต";
                 if(f === "fullName") displayField = "ชื่อ-สกุล";
                 if(f === "hospital") displayField = "สถาบัน";
-                if(f === "Form_Name") displayField = "ชื่อแบบประเมิน";
+                if(f === "Form_Type") displayField = "ชื่อแบบประเมิน"; // ปรับหัวตารางให้แสดงภาษาไทย
                 headHTML += `<th class="px-6 py-4 whitespace-nowrap">${displayField}</th>`;
             });
             headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
@@ -429,8 +430,8 @@
                     </div>`;
             }
 
-            // ถ้าเป็นช่อง "หัวข้อการประเมิน" ให้เปลี่ยนเป็น Dropdown เลือกรายการแบบประเมินจาก Form_Master
-            if ((f === "หัวข้อการประเมิน" || f === "Form_Type") && currentActiveTab !== "formMaster") {
+            // แก้ไข: ให้ฟิลด์ Form_Type เป็น Dropdown ดึงจากแบบประเมินเท่านั้น (เอาหัวข้อประเมินออกจากการเป็น Dropdown)
+            if (f === "Form_Type" && currentActiveTab !== "formMaster") {
                 const list = ALL_DATA.formMaster || [];
                 let optHTML = list.map(item => {
                     let itemVal = typeof item === 'object' ? (item["Form_Name"] || item[Object.keys(item)[0]] || "") : item;
@@ -439,7 +440,7 @@
                 }).join("");
                 return `
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ชื่อแบบประเมิน (Form Type)</label>
                         <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white" required>
                             <option value="">-- เลือกหัวข้อแบบประเมิน --</option>
                             ${optHTML}
