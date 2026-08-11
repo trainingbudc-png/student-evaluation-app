@@ -186,13 +186,13 @@
             </div>
         </div>
 
-        <!-- 📌 ส่วนที่เพิ่มเข้ามา: เลือกบทบาทของนิสิต -->
+        <!-- 📌 ส่วนที่ปรับแก้ไข: เลือกบทบาทของนิสิต พร้อมตัวเลือก ไม่ระบุ / N/A -->
         <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
             <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-fuchsia-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 บทบาทของนิสิต <span class="text-rose-500">*</span>
             </h3>
-            <div class="flex items-center gap-6 p-2">
+            <div class="flex items-center gap-6 p-2 flex-wrap">
                 <label class="flex items-center gap-3 cursor-pointer">
                     <input type="radio" name="studentRole" value="ผู้นำเสนอ" class="w-5 h-5 text-fuchsia-600 focus:ring-fuchsia-500" required>
                     <span class="font-medium text-slate-700">ผู้นำเสนอ</span>
@@ -200,6 +200,10 @@
                 <label class="flex items-center gap-3 cursor-pointer">
                     <input type="radio" name="studentRole" value="ผู้ฟังบรรยาย" class="w-5 h-5 text-fuchsia-600 focus:ring-fuchsia-500" required>
                     <span class="font-medium text-slate-700">ผู้ฟังบรรยาย</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="radio" name="studentRole" value="ไม่ระบุ / N/A" class="w-5 h-5 text-fuchsia-600 focus:ring-fuchsia-500" checked required>
+                    <span class="font-medium text-slate-700">ไม่ระบุ / N/A</span>
                 </label>
             </div>
         </div>
@@ -762,11 +766,10 @@
             return;
         }
 
-        // 📌 เช็คค่าที่ดึงมาจากกล่องเลือกบทบาท
         const selectedRoleEl = document.querySelector('input[name="studentRole"]:checked');
         const selectedRole = selectedRoleEl ? selectedRoleEl.value : "";
         if (!selectedRole) {
-            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกบทบาทของนิสิต (ผู้นำเสนอ / ผู้ฟังบรรยาย)' });
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกบทบาทของนิสิต (ผู้นำเสนอ / ผู้ฟังบรรยาย / ไม่ระบุ)' });
             return;
         }
 
@@ -836,7 +839,7 @@
                     subjectCode: document.getElementById("subjectCode").value,
                     students: selectedStudents,
                     evaluationTopic: selectedTopic, 
-                    studentRole: selectedRole, // 📌 ส่งข้อมูลบทบาทไปให้หลังบ้าน
+                    studentRole: selectedRole, 
                     attendanceStatus: finalStatus, 
                     attendanceDays: totalAbsentDays > 0 ? totalAbsentDays : "",
                     attendanceReason: finalNotes,
@@ -871,7 +874,11 @@
                         
                         document.getElementById('attend-full').checked = true;
                         toggleAttendance('full');
+                        
+                        // 📌 ส่วนที่ปรับแก้ไข: เคลียร์ Form แบบให้ N/A เป็นค่า Default
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+                        let defaultRoleObj = document.querySelector('input[name="studentRole"][value="ไม่ระบุ / N/A"]');
+                        if (defaultRoleObj) defaultRoleObj.checked = true;
                         
                         document.getElementById("evalTopic").value = ""; 
                         document.getElementById("criteriaContainer").innerHTML = `<div style="color: #64748b; text-align: center; padding: 24px 0;" class="text-sm font-medium border-2 border-dashed border-slate-200 rounded-xl mt-6 bg-slate-50">👆 กรุณาเลือกหัวข้อการประเมินด้านบน เพื่อแสดงเกณฑ์การให้คะแนน</div>`;
