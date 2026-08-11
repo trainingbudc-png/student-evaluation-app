@@ -571,6 +571,7 @@
                 `;
             }
 
+            // [แก้ไขแล้ว] ฝัง data-level="${item.level}" เข้าไปใน input radio เพื่อนำไปประมวลผลก่อน submit[cite: 7]
             tableHTML += `
                 <tr>
                     <td style="font-weight: 600;">
@@ -578,7 +579,7 @@
                         <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
                     </td>
                     <td style="font-size: 13px; line-height: 1.5;">${item.detail}</td>
-                    <td class="radio-cell"><input type="radio" name="q_${questionCounter}" value="${item.score}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required></td>
+                    <td class="radio-cell"><input type="radio" name="q_${questionCounter}" value="${item.score}" data-level="${item.level}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required></td>
                 </tr>
             `;
             
@@ -820,11 +821,22 @@
                     comment: document.getElementById("comment").value
                 };
 
+                // [แก้ไขแล้ว] สร้าง scoreDetails พร้อมกับส่งเข้า payload โดยตรง[cite: 7]
+                let dynamicScoreDetails = {};
+
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
                     const selectedRadio = document.querySelector('input[name="q_' + qNum + '"]:checked');
-                    payload["score" + qNum] = selectedRadio ? selectedRadio.value : "0";
+                    
+                    const scoreVal = selectedRadio ? Number(selectedRadio.value) : 0;
+                    const levelText = selectedRadio ? selectedRadio.getAttribute('data-level') : "-";
+                    
+                    payload["score" + qNum] = scoreVal;
+                    dynamicScoreDetails[topic] = { level: levelText, score: scoreVal };
                 });
+
+                // นำคะแนนแบบ Dynamic จัดส่งเข้า payload ให้ Backend บันทึกลง Sheet ได้ถูกต้อง[cite: 7]
+                payload.scoreDetails = dynamicScoreDetails;
 
                 try {
                     const response = await fetch(API_URL, { 
