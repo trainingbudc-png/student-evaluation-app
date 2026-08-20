@@ -186,7 +186,6 @@
             </div>
         </div>
 
-        <!-- 📌 ส่วนที่ปรับแก้ไข: เลือกบทบาทของนิสิต พร้อมตัวเลือก ไม่ระบุ / N/A -->
         <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
             <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-fuchsia-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -557,23 +556,46 @@
         container.innerHTML = "";
         activeTopics = [];
         
+        // -------------------------------------------------------------
+        // 🔥 ส่วนที่แก้ไขการจัดเรียง (Sorting) ให้ฉลาดขึ้น อ่านเลข 1, 1.1, 1.2 ได้เป๊ะๆ
+        // -------------------------------------------------------------
         filteredData.sort((a, b) => {
             let topicA = String(a.topic || "").trim();
             let topicB = String(b.topic || "").trim();
             
-            // 1. เปรียบเทียบชื่อหัวข้อแบบ Natural Sort (ให้ 1.1, 1.2, 1.10 เรียงลำดับถูกต้อง)
+            // 1. ดึงตัวเลขที่อยู่หน้าข้อความ (รองรับเลขแบบมีจุดทศนิยมหลายตำแหน่ง เช่น 1, 1.1, 1.1.2)
+            let getVersionParts = (str) => {
+                let match = str.match(/^(\d+(?:\.\d+)*)/);
+                return match ? match[1].split('.').map(Number) : null;
+            };
+
+            let partsA = getVersionParts(topicA);
+            let partsB = getVersionParts(topicB);
+
+            if (partsA && partsB) {
+                let len = Math.max(partsA.length, partsB.length);
+                for (let i = 0; i < len; i++) {
+                    // ถ้าตำแหน่งไหนไม่มี (เช่น 1 เทียบกับ 1.2 ตำแหน่งที่สองของ 1 จะไม่มี) ให้ถือเป็น -1 
+                    // เพื่อให้หัวข้อหลัก (1) มาก่อนหัวข้อย่อย (1.2)
+                    let numA = partsA[i] !== undefined ? partsA[i] : -1; 
+                    let numB = partsB[i] !== undefined ? partsB[i] : -1;
+                    if (numA !== numB) {
+                        return numA - numB;
+                    }
+                }
+            }
+            
+            // 2. ถ้าไม่มีตัวเลขนำหน้า หรือตัวเลขเหมือนกันเป๊ะ ให้เทียบตามตัวอักษรปกติ
             let topicCompare = topicA.localeCompare(topicB, 'th', { numeric: true });
             
-            // ถ้าเป็นคนละหัวข้อกัน ให้เรียงตามชื่อหัวข้อ
             if (topicCompare !== 0) {
                 return topicCompare;
             }
             
-            // 2. ถ้าเป็นหัวข้อเดียวกันเป๊ะๆ ให้เรียงตามคะแนนจากมากไปน้อย
+            // 3. ถ้าเป็นหัวข้อเดียวกันเป๊ะๆ ให้เรียงตามคะแนนจากมากไปน้อย
             let scoreA = parseFloat(a.score);
             let scoreB = parseFloat(b.score);
             
-            // ป้องกันกรณีคะแนนเป็นค่าว่างหรือไม่ใช่ตัวเลข
             let finalScoreA = isNaN(scoreA) ? -9999 : scoreA;
             let finalScoreB = isNaN(scoreB) ? -9999 : scoreB;
             
@@ -887,7 +909,6 @@
                         document.getElementById('attend-full').checked = true;
                         toggleAttendance('full');
                         
-                        // 📌 ส่วนที่ปรับแก้ไข: เคลียร์ Form แบบให้ N/A เป็นค่า Default
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
                         let defaultRoleObj = document.querySelector('input[name="studentRole"][value="ไม่ระบุ / N/A"]');
                         if (defaultRoleObj) defaultRoleObj.checked = true;
