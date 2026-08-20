@@ -558,14 +558,26 @@
         activeTopics = [];
         
         filteredData.sort((a, b) => {
-            let matchA = String(a.topic || "").match(/^\d+/);
-            let matchB = String(b.topic || "").match(/^\d+/);
-            let numA = matchA ? parseInt(matchA[0], 10) : 9999;
-            let numB = matchB ? parseInt(matchB[0], 10) : 9999;
-            if (numA !== numB) return numA - numB;
+            let topicA = String(a.topic || "").trim();
+            let topicB = String(b.topic || "").trim();
+            
+            // 1. เปรียบเทียบชื่อหัวข้อแบบ Natural Sort (ให้ 1.1, 1.2, 1.10 เรียงลำดับถูกต้อง)
+            let topicCompare = topicA.localeCompare(topicB, 'th', { numeric: true });
+            
+            // ถ้าเป็นคนละหัวข้อกัน ให้เรียงตามชื่อหัวข้อ
+            if (topicCompare !== 0) {
+                return topicCompare;
+            }
+            
+            // 2. ถ้าเป็นหัวข้อเดียวกันเป๊ะๆ ให้เรียงตามคะแนนจากมากไปน้อย
             let scoreA = parseFloat(a.score);
             let scoreB = parseFloat(b.score);
-            return (isNaN(scoreB) ? -9999 : scoreB) - (isNaN(scoreA) ? -9999 : scoreA);
+            
+            // ป้องกันกรณีคะแนนเป็นค่าว่างหรือไม่ใช่ตัวเลข
+            let finalScoreA = isNaN(scoreA) ? -9999 : scoreA;
+            let finalScoreB = isNaN(scoreB) ? -9999 : scoreB;
+            
+            return finalScoreB - finalScoreA;
         });
 
         let currentTopic = "";
