@@ -602,51 +602,74 @@
             return finalScoreB - finalScoreA;
         });
 
+        // ==========================================
+        // 🔥 ส่วนที่แก้ไขใหม่ เรื่องการซ่อนปุ่ม Radio สำหรับหัวข้อใหญ่
+        // ==========================================
         let currentTopic = "";
         let tableHTML = "";
-        let questionCounter = 1;
 
         filteredData.forEach(item => {
+            // 1. เช็กว่าแถวนี้เป็นแค่ "หัวข้อใหญ่" (ไม่มีคะแนน หรือ ข้อมูลว่างเปล่า) หรือไม่
+            const isJustHeader = !item.score || String(item.score).trim() === "" || String(item.score).trim().toUpperCase() === "N/A" || !item.detail;
+
             if (item.topic !== currentTopic) {
-                if (currentTopic !== "") {
+                // ถ้ามีตารางของหัวข้อก่อนหน้าค้างอยู่ ให้ปิดแท็กตารางแล้วแสดงผล
+                if (currentTopic !== "" && tableHTML !== "") {
                     tableHTML += `</tbody></table>`;
                     container.innerHTML += tableHTML;
                 }
                 currentTopic = item.topic;
+                
+                // แสดงชื่อหัวข้อ (แถบสีเขียว) เสมอ ไม่ว่าจะเป็นหัวข้อใหญ่หรือย่อย
                 container.innerHTML += `<div class="competency-title">${currentTopic}</div>`;
-                tableHTML = `
-                    <table class="rubric-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 25%; text-align: left;">ระดับความสามารถ</th>
-                                <th style="width: 60%; text-align: left;">รายละเอียด (Rubrics)</th>
-                                <th style="width: 15%; text-align: center;">เลือก</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+                
+                tableHTML = ""; 
+                
+                // 2. ถ้า "ไม่ใช่" หัวข้อเปล่าๆ (คือมีเกณฑ์ให้คะแนน) ค่อยสร้างหัวตารางรอไว้
+                if (!isJustHeader) {
+                    tableHTML = `
+                        <table class="rubric-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%; text-align: left;">ระดับความสามารถ</th>
+                                    <th style="width: 60%; text-align: left;">รายละเอียด (Rubrics)</th>
+                                    <th style="width: 15%; text-align: center;">เลือก</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    // เก็บชื่อ Topic เฉพาะข้อที่มีการประเมินลงใน activeTopics เพื่อนำไปใช้เช็กตอนกด Save
+                    if (!activeTopics.includes(currentTopic)) {
+                        activeTopics.push(currentTopic);
+                    }
+                }
             }
 
-            tableHTML += `
-                <tr>
-                    <td style="font-weight: 600;">
-                        ${item.level} 
-                        <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
-                    </td>
-                    <td style="font-size: 13px; line-height: 1.5;">${item.detail}</td>
-                    <td class="radio-cell"><input type="radio" name="q_${questionCounter}" value="${item.score}" data-level="${item.level}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required></td>
-                </tr>
-            `;
-            
-            if (!activeTopics.includes(currentTopic)) activeTopics.push(currentTopic);
-            const nextItem = filteredData[filteredData.indexOf(item) + 1];
-            if (!nextItem || nextItem.topic !== currentTopic) questionCounter++;
+            // 3. สร้างแถวของตารางและปุ่มกด (ทำเฉพาะกรณีที่มีเกณฑ์ให้คะแนนเท่านั้น)
+            if (!isJustHeader) {
+                // ใช้จำนวน activeTopics เป็นตัวรันเลข group ของปุ่ม (q_1, q_2, ...)
+                const qName = "q_" + activeTopics.length; 
+                
+                tableHTML += `
+                    <tr>
+                        <td style="font-weight: 600;">
+                            ${item.level} 
+                            <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
+                        </td>
+                        <td style="font-size: 13px; line-height: 1.5;">${item.detail}</td>
+                        <td class="radio-cell"><input type="radio" name="${qName}" value="${item.score}" data-level="${item.level}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required></td>
+                    </tr>
+                `;
+            }
         });
 
         if (tableHTML !== "") {
             tableHTML += `</tbody></table>`;
             container.innerHTML += tableHTML;
         }
+        // ==========================================
+        // สิ้นสุดส่วนที่แก้ไขใหม่
+        // ==========================================
     }
 
     async function loadStudents() {
