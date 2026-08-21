@@ -556,14 +556,10 @@
         container.innerHTML = "";
         activeTopics = [];
         
-        // -------------------------------------------------------------
-        // 🔥 ส่วนที่แก้ไขการจัดเรียง (Sorting) ให้ฉลาดขึ้น อ่านเลข 1, 1.1, 1.2 ได้เป๊ะๆ
-        // -------------------------------------------------------------
         filteredData.sort((a, b) => {
             let topicA = String(a.topic || "").trim();
             let topicB = String(b.topic || "").trim();
             
-            // 1. ดึงตัวเลขที่อยู่หน้าข้อความ (รองรับเลขแบบมีจุดทศนิยมหลายตำแหน่ง เช่น 1, 1.1, 1.1.2)
             let getVersionParts = (str) => {
                 let match = str.match(/^(\d+(?:\.\d+)*)/);
                 return match ? match[1].split('.').map(Number) : null;
@@ -575,8 +571,6 @@
             if (partsA && partsB) {
                 let len = Math.max(partsA.length, partsB.length);
                 for (let i = 0; i < len; i++) {
-                    // ถ้าตำแหน่งไหนไม่มี (เช่น 1 เทียบกับ 1.2 ตำแหน่งที่สองของ 1 จะไม่มี) ให้ถือเป็น -1 
-                    // เพื่อให้หัวข้อหลัก (1) มาก่อนหัวข้อย่อย (1.2)
                     let numA = partsA[i] !== undefined ? partsA[i] : -1; 
                     let numB = partsB[i] !== undefined ? partsB[i] : -1;
                     if (numA !== numB) {
@@ -585,14 +579,12 @@
                 }
             }
             
-            // 2. ถ้าไม่มีตัวเลขนำหน้า หรือตัวเลขเหมือนกันเป๊ะ ให้เทียบตามตัวอักษรปกติ
             let topicCompare = topicA.localeCompare(topicB, 'th', { numeric: true });
             
             if (topicCompare !== 0) {
                 return topicCompare;
             }
             
-            // 3. ถ้าเป็นหัวข้อเดียวกันเป๊ะๆ ให้เรียงตามคะแนนจากมากไปน้อย
             let scoreA = parseFloat(a.score);
             let scoreB = parseFloat(b.score);
             
@@ -603,30 +595,50 @@
         });
 
         // ==========================================
-        // 🔥 ส่วนที่แก้ไขใหม่ เรื่องการซ่อนปุ่ม Radio สำหรับหัวข้อใหญ่
+        // 🔥 ส่วนที่แก้ไขใหม่ เรื่องการแสดงผล Checklist และ Radio
         // ==========================================
         let currentTopic = "";
         let tableHTML = "";
+        let isChecklistMode = false;
 
         filteredData.forEach(item => {
-            // 1. เช็กว่าแถวนี้เป็นแค่ "หัวข้อใหญ่" (ไม่มีคะแนน หรือ ข้อมูลว่างเปล่า) หรือไม่
-            const isJustHeader = !item.score || String(item.score).trim() === "" || String(item.score).trim().toUpperCase() === "N/A" || !item.detail;
+            const hasScore = item.score && String(item.score).trim() !== "" && String(item.score).trim().toUpperCase() !== "N/A";
+            const hasDetail = item.detail && String(item.detail).trim() !== "";
+            const hasLevel = item.level && String(item.level).trim() !== "";
+
+            // แยกประเภทของข้อมูล
+            const isRubric = hasScore && hasDetail; // มีคะแนนและรายละเอียด -> เป็นตาราง Radio
+            const isChecklistItem = !hasScore && hasLevel; // ไม่มีคะแนน แต่มีชื่อ Level -> เป็น Checkbox (หัวข้อย่อย)
+            const isPureHeader = !hasScore && !hasLevel && !hasDetail; // ว่างเปล่า -> เป็นแค่หัวข้อ
 
             if (item.topic !== currentTopic) {
-                // ถ้ามีตารางของหัวข้อก่อนหน้าค้างอยู่ ให้ปิดแท็กตารางแล้วแสดงผล
-                if (currentTopic !== "" && tableHTML !== "") {
-                    tableHTML += `</tbody></table>`;
-                    container.innerHTML += tableHTML;
+                // ปิดตารางหรือกล่อง Checklist ของหัวข้อก่อนหน้า
+                if (currentTopic !== "") {
+                    if (isChecklistMode) {
+                        tableHTML += `</div></div>`;
+                        container.innerHTML += tableHTML;
+                    } else if (tableHTML !== "") {
+                        tableHTML += `</tbody></table>`;
+                        container.innerHTML += tableHTML;
+                    }
                 }
+
                 currentTopic = item.topic;
+                tableHTML = "";
                 
-                // แสดงชื่อหัวข้อ (แถบสีเขียว) เสมอ ไม่ว่าจะเป็นหัวข้อใหญ่หรือย่อย
+                // แสดงชื่อหัวข้อ (แถบสีเขียว)
                 container.innerHTML += `<div class="competency-title">${currentTopic}</div>`;
                 
-                tableHTML = ""; 
-                
-                // 2. ถ้า "ไม่ใช่" หัวข้อเปล่าๆ (คือมีเกณฑ์ให้คะแนน) ค่อยสร้างหัวตารางรอไว้
-                if (!isJustHeader) {
+                // เก็บชื่อ Topic ลงใน activeTopics เพื่อใช้ตอนบันทึกผล
+                if ((isRubric || isChecklistItem) && !activeTopics.includes(currentTopic)) {
+                    activeTopics.push(currentTopic);
+                }
+
+                if (isChecklistItem) {
+                    isChecklistMode = true;
+                    tableHTML = `<div class="p-5 border border-slate-200 rounded-xl bg-white mb-6 shadow-sm"><div class="flex flex-wrap gap-4">`;
+                } else if (isRubric) {
+                    isChecklistMode = false;
                     tableHTML = `
                         <table class="rubric-table">
                             <thead>
@@ -638,18 +650,22 @@
                             </thead>
                             <tbody>
                     `;
-                    // เก็บชื่อ Topic เฉพาะข้อที่มีการประเมินลงใน activeTopics เพื่อนำไปใช้เช็กตอนกด Save
-                    if (!activeTopics.includes(currentTopic)) {
-                        activeTopics.push(currentTopic);
-                    }
                 }
             }
 
-            // 3. สร้างแถวของตารางและปุ่มกด (ทำเฉพาะกรณีที่มีเกณฑ์ให้คะแนนเท่านั้น)
-            if (!isJustHeader) {
-                // ใช้จำนวน activeTopics เป็นตัวรันเลข group ของปุ่ม (q_1, q_2, ...)
-                const qName = "q_" + activeTopics.length; 
-                
+            // สร้างตัวเลือกตามประเภท
+            const qNum = activeTopics.length; // ลำดับข้อปัจจุบัน
+
+            if (isChecklistItem) {
+                // 🟩 สร้างกลุ่ม Checkbox สำหรับหัวข้อย่อย (เช่น Snellen, Penlight)
+                tableHTML += `
+                    <label class="flex items-center gap-3 cursor-pointer bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 hover:bg-indigo-50 transition-colors">
+                        <input type="checkbox" name="chk_${qNum}" value="${item.level}" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="font-medium text-slate-700">${item.level}</span>
+                    </label>
+                `;
+            } else if (isRubric) {
+                // 🔵 สร้าง Radio (ตารางให้คะแนนแบบเดิม)
                 tableHTML += `
                     <tr>
                         <td style="font-weight: 600;">
@@ -657,19 +673,24 @@
                             <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
                         </td>
                         <td style="font-size: 13px; line-height: 1.5;">${item.detail}</td>
-                        <td class="radio-cell"><input type="radio" name="${qName}" value="${item.score}" data-level="${item.level}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required></td>
+                        <td class="radio-cell">
+                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required>
+                        </td>
                     </tr>
                 `;
             }
         });
 
-        if (tableHTML !== "") {
-            tableHTML += `</tbody></table>`;
-            container.innerHTML += tableHTML;
+        // ปิด Tag สุดท้ายที่ค้างอยู่เมื่อจบการวนลูป
+        if (currentTopic !== "") {
+            if (isChecklistMode) {
+                tableHTML += `</div></div>`;
+                container.innerHTML += tableHTML;
+            } else if (tableHTML !== "") {
+                tableHTML += `</tbody></table>`;
+                container.innerHTML += tableHTML;
+            }
         }
-        // ==========================================
-        // สิ้นสุดส่วนที่แก้ไขใหม่
-        // ==========================================
     }
 
     async function loadStudents() {
@@ -905,12 +926,31 @@
 
                 let dynamicScoreDetails = {};
 
+                // 🔥 ปรับแก้การดึงข้อมูลตอนกดบันทึก ให้รองรับทั้ง Radio (รูบริก) และ Checkbox (หัวข้อย่อย)
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
-                    const selectedRadio = document.querySelector('input[name="q_' + qNum + '"]:checked');
-                    
-                    const scoreVal = selectedRadio ? Number(selectedRadio.value) : 0;
-                    const levelText = selectedRadio ? selectedRadio.getAttribute('data-level') : "-";
+                    let scoreVal = 0;
+                    let levelText = "-";
+
+                    // ตรวจสอบว่าเป็นคำถามประเภทไหน
+                    const radios = document.querySelectorAll('input[name="q_' + qNum + '"]');
+                    const checkboxes = document.querySelectorAll('input[name="chk_' + qNum + '"]');
+
+                    if (radios.length > 0) {
+                        // 1. กรณีเป็นตารางให้คะแนน (Radio)
+                        const selectedRadio = document.querySelector('input[name="q_' + qNum + '"]:checked');
+                        scoreVal = selectedRadio ? Number(selectedRadio.value) : 0;
+                        levelText = selectedRadio ? selectedRadio.getAttribute('data-level') : "-";
+                    } else if (checkboxes.length > 0) {
+                        // 2. กรณีเป็นหัวข้อย่อย Checklist (Checkbox)
+                        const checkedBoxes = document.querySelectorAll('input[name="chk_' + qNum + '"]:checked');
+                        scoreVal = checkedBoxes.length > 0 ? 1 : 0; // ให้ค่าเป็น 1 หากมีติ๊ก เพื่อให้ฐานข้อมูลรู้ว่าข้อนี้มีการประเมิน
+                        
+                        // เอาตัวเลือกทั้งหมดที่ติ๊กมาต่อกันด้วยเครื่องหมายลูกน้ำ
+                        levelText = checkedBoxes.length > 0 
+                            ? Array.from(checkedBoxes).map(cb => cb.value).join(', ') 
+                            : "ไม่ได้เลือกหัวข้อย่อย";
+                    }
                     
                     payload["score" + qNum] = scoreVal;
                     dynamicScoreDetails[topic] = { level: levelText, score: scoreVal };
