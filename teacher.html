@@ -560,6 +560,10 @@
             let topicA = String(a.topic || "").trim();
             let topicB = String(b.topic || "").trim();
             
+            // 🔥 บังคับให้ "หัวข้อการประเมิน" (กลุ่ม Checklist) ถูกดันขึ้นไปอยู่บนสุดเสมอ
+            if (topicA.includes("หัวข้อการประเมิน") && !topicB.includes("หัวข้อการประเมิน")) return -1;
+            if (topicB.includes("หัวข้อการประเมิน") && !topicA.includes("หัวข้อการประเมิน")) return 1;
+
             let getVersionParts = (str) => {
                 let match = str.match(/^(\d+(?:\.\d+)*)/);
                 return match ? match[1].split('.').map(Number) : null;
@@ -595,21 +599,22 @@
         });
 
         // ==========================================
-        // 🔥 ส่วนที่แก้ไขใหม่ เรื่องการแสดงผล Checklist และ Radio
+        // 🔥 ส่วนที่สร้างข้อมูลตารางและ Checklist
         // ==========================================
         let currentTopic = "";
         let tableHTML = "";
         let isChecklistMode = false;
 
         filteredData.forEach(item => {
-            const hasScore = item.score && String(item.score).trim() !== "" && String(item.score).trim().toUpperCase() !== "N/A";
-            const hasDetail = item.detail && String(item.detail).trim() !== "";
-            const hasLevel = item.level && String(item.level).trim() !== "";
+            // ดึงค่ามาเช็คความว่างเปล่า
+            const hasScore = item.score !== undefined && String(item.score).trim() !== "" && String(item.score).trim().toUpperCase() !== "N/A";
+            const hasDetail = item.detail !== undefined && String(item.detail).trim() !== "";
+            const hasLevel = item.level !== undefined && String(item.level).trim() !== "";
 
-            // แยกประเภทของข้อมูล
-            const isRubric = hasScore && hasDetail; // มีคะแนนและรายละเอียด -> เป็นตาราง Radio
-            const isChecklistItem = !hasScore && hasLevel; // ไม่มีคะแนน แต่มีชื่อ Level -> เป็น Checkbox (หัวข้อย่อย)
-            const isPureHeader = !hasScore && !hasLevel && !hasDetail; // ว่างเปล่า -> เป็นแค่หัวข้อ
+            // ตรวจสอบประเภท
+            const isRubric = hasScore; 
+            const checklistText = item.detail || item.level; // ดึงข้อความจากช่องใดช่องหนึ่งที่มีข้อมูล (แก้ปัญหาคอลัมน์สลับกัน)
+            const isChecklistItem = !hasScore && checklistText; // ถ้าไม่มีคะแนน แต่มีข้อความ ถือเป็น Checkbox
 
             if (item.topic !== currentTopic) {
                 // ปิดตารางหรือกล่อง Checklist ของหัวข้อก่อนหน้า
@@ -657,24 +662,24 @@
             const qNum = activeTopics.length; // ลำดับข้อปัจจุบัน
 
             if (isChecklistItem) {
-                // 🟩 สร้างกลุ่ม Checkbox สำหรับหัวข้อย่อย (เช่น Snellen, Penlight)
+                // 🟩 สร้างกลุ่ม Checkbox
                 tableHTML += `
-                    <label class="flex items-center gap-3 cursor-pointer bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 hover:bg-indigo-50 transition-colors">
-                        <input type="checkbox" name="chk_${qNum}" value="${item.level}" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
-                        <span class="font-medium text-slate-700">${item.level}</span>
+                    <label class="flex items-center gap-3 cursor-pointer bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 hover:bg-indigo-50 transition-colors w-full sm:w-auto">
+                        <input type="checkbox" name="chk_${qNum}" value="${checklistText}" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="font-medium text-slate-700">${checklistText}</span>
                     </label>
                 `;
             } else if (isRubric) {
-                // 🔵 สร้าง Radio (ตารางให้คะแนนแบบเดิม)
+                // 🔵 สร้าง Radio (ตารางให้คะแนน)
                 tableHTML += `
                     <tr>
                         <td style="font-weight: 600;">
-                            ${item.level} 
+                            ${item.level || "-"} 
                             <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
                         </td>
-                        <td style="font-size: 13px; line-height: 1.5;">${item.detail}</td>
+                        <td style="font-size: 13px; line-height: 1.5;">${item.detail || "-"}</td>
                         <td class="radio-cell">
-                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required>
+                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level || item.detail}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required>
                         </td>
                     </tr>
                 `;
@@ -926,27 +931,23 @@
 
                 let dynamicScoreDetails = {};
 
-                // 🔥 ปรับแก้การดึงข้อมูลตอนกดบันทึก ให้รองรับทั้ง Radio (รูบริก) และ Checkbox (หัวข้อย่อย)
+                // 🔥 ดึงข้อมูลตอนกดบันทึก ให้รองรับทั้ง Radio และ Checkbox
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
                     let scoreVal = 0;
                     let levelText = "-";
 
-                    // ตรวจสอบว่าเป็นคำถามประเภทไหน
                     const radios = document.querySelectorAll('input[name="q_' + qNum + '"]');
                     const checkboxes = document.querySelectorAll('input[name="chk_' + qNum + '"]');
 
                     if (radios.length > 0) {
-                        // 1. กรณีเป็นตารางให้คะแนน (Radio)
                         const selectedRadio = document.querySelector('input[name="q_' + qNum + '"]:checked');
                         scoreVal = selectedRadio ? Number(selectedRadio.value) : 0;
                         levelText = selectedRadio ? selectedRadio.getAttribute('data-level') : "-";
                     } else if (checkboxes.length > 0) {
-                        // 2. กรณีเป็นหัวข้อย่อย Checklist (Checkbox)
                         const checkedBoxes = document.querySelectorAll('input[name="chk_' + qNum + '"]:checked');
-                        scoreVal = checkedBoxes.length > 0 ? 1 : 0; // ให้ค่าเป็น 1 หากมีติ๊ก เพื่อให้ฐานข้อมูลรู้ว่าข้อนี้มีการประเมิน
+                        scoreVal = checkedBoxes.length > 0 ? 1 : 0; 
                         
-                        // เอาตัวเลือกทั้งหมดที่ติ๊กมาต่อกันด้วยเครื่องหมายลูกน้ำ
                         levelText = checkedBoxes.length > 0 
                             ? Array.from(checkedBoxes).map(cb => cb.value).join(', ') 
                             : "ไม่ได้เลือกหัวข้อย่อย";
