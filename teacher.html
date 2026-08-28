@@ -643,25 +643,8 @@
                         }
                     }
 
-                    if (isEvaluatedByMe) {
-                        div.className = "student-item disabled";
-                        div.innerHTML = `
-                            <div class="relative">
-                                ${imgUrl 
-                                    ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm opacity-40 grayscale" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
-                                    : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
-                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
-                                       </div>`}
-                                <span class="absolute -bottom-1 -right-1 bg-emerald-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs shadow-md border-2 border-white">✓</span>
-                            </div>
-                            <div style="font-size:11px; color:#94a3b8; margin-top:10px;">${s.studentId}</div>
-                            <div style="font-weight:bold; margin-top:2px; color:#cbd5e1; text-decoration: line-through;">${s.studentName}</div>
-                            <div style="font-size:11px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
-                        `;
-                        div.onclick = () => {
-                            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'นิสิตคนนี้ได้รับการประเมินไปแล้วโดยอาจารย์' });
-                        };
-                    } else if (isTimeExpired) {
+                    // --- ส่วนที่ได้รับการแก้ไขใหม่ ---
+                    if (isTimeExpired) {
                         div.className = "student-item disabled";
                         div.innerHTML = `
                             <div class="relative">
@@ -698,17 +681,22 @@
                             Swal.fire({ icon: 'warning', title: 'ยังไม่ถึงเวลาประเมิน', text: 'นิสิตคนนี้ยังไม่ถึงกำหนดวันเริ่มปฏิบัติงาน' });
                         };
                     } else {
+                        // 🌟 ปกติคลิกได้เลย (แม้ว่าตัวเองจะเคยประเมินแล้วก็ตาม)
                         div.className = "student-item";
                         div.setAttribute('data-student-id', s.studentId);
                         div.setAttribute('data-student-name', s.studentName);
                         div.innerHTML = `
-                            ${imgUrl 
-                                ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm transition-all duration-200" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
-                                : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 transition-all duration-200">
-                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
-                                   </div>`}
+                            <div class="relative">
+                                ${imgUrl 
+                                    ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm transition-all duration-200" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
+                                    : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 transition-all duration-200">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
+                                       </div>`}
+                                ${isEvaluatedByMe ? `<span class="absolute -bottom-1 -right-1 bg-blue-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs shadow-md border-2 border-white" title="คุณเคยประเมินแล้ว">✓</span>` : ''}
+                            </div>
                             <div class="student-id-text" style="font-size:11px; color:#64748b; opacity:0.8; margin-top:10px;">${s.studentId}</div>
                             <div class="student-name-text" style="font-weight:bold; margin-top:2px; color:#334155;">${s.studentName}</div>
+                            ${isEvaluatedByMe ? `<div style="font-size:10px; color:#3b82f6; margin-top:4px; font-weight:bold;">คุณเคยประเมินแล้ว</div>` : ''}
                         `;
                         div.onclick = () => {
                             div.classList.toggle('active');
