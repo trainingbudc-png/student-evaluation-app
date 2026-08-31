@@ -228,6 +228,60 @@
             </div>
         </div>
 
+        <div class="p-6 border border-slate-200 rounded-2xl bg-white shadow-sm mt-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ข้อมูลเวลาปฏิบัติงาน <span class="text-rose-500">*</span>
+            </h3>
+            
+            <div class="space-y-4 pl-2">
+                <!-- มาครบ -->
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-slate-50 rounded-lg transition-colors border border-transparent">
+                    <input type="checkbox" id="attend-full" value="มาครบ" class="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-500" onchange="toggleAttendance('full')" checked>
+                    <span class="font-medium text-slate-700">🟢 มาครบ (100%)</span>
+                </label>
+
+                <!-- ป่วย -->
+                <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
+                    <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
+                        <input type="checkbox" id="attend-sick" value="ป่วย" class="w-5 h-5 text-amber-500 rounded focus:ring-amber-500" onchange="toggleAttendance('other')">
+                        <span class="font-medium text-slate-700">🟡 ป่วย</span>
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-slate-500 font-medium">จำนวน :</span>
+                        <input type="number" id="sick-days" placeholder="0" step="0.5" min="0.5" class="w-24 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
+                        <span class="text-sm text-slate-500 font-medium">วัน</span>
+                    </div>
+                </div>
+
+                <!-- ลากิจ -->
+                <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
+                    <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
+                        <input type="checkbox" id="attend-leave" value="ลากิจ" class="w-5 h-5 text-orange-500 rounded focus:ring-orange-500" onchange="toggleAttendance('other')">
+                        <span class="font-medium text-slate-700">🟠 ลากิจ</span>
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-slate-500 font-medium">จำนวน :</span>
+                        <input type="number" id="leave-days" placeholder="0" step="0.5" min="0.5" class="w-24 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
+                        <span class="text-sm text-slate-500 font-medium">วัน</span>
+                    </div>
+                </div>
+
+                <!-- ขาด -->
+                <div class="flex items-center gap-6 p-2 hover:bg-slate-50 rounded-lg transition-colors flex-wrap">
+                    <label class="flex items-center gap-3 cursor-pointer min-w-[120px]">
+                        <input type="checkbox" id="attend-absent" value="ขาด" class="w-5 h-5 text-rose-500 rounded focus:ring-rose-500" onchange="toggleAttendance('other')">
+                        <span class="font-medium text-slate-700">🔴 ขาด</span>
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-slate-500 font-medium">จำนวน :</span>
+                        <input type="number" id="absent-days" placeholder="0" step="0.5" min="0.5" class="w-24 border border-slate-300 px-3 py-2 rounded-lg text-sm text-center disabled:bg-slate-100 disabled:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
+                        <span class="text-sm text-slate-500 font-medium">วัน</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="criteriaContainer" class="pt-2">
             <!-- ตารางจะถูกสร้างและนำมาแสดงที่นี่โดย Javascript -->
         </div>
@@ -347,6 +401,43 @@
         }
 
         return null;
+    }
+
+    function toggleAttendance(source) {
+        const fullCb = document.getElementById('attend-full');
+        
+        if (source === 'full') {
+            if (fullCb.checked) {
+                ['sick', 'leave', 'absent'].forEach(type => {
+                    const cb = document.getElementById(`attend-${type}`);
+                    cb.checked = false;
+                    const daysInput = document.getElementById(`${type}-days`);
+                    daysInput.disabled = true;
+                    daysInput.value = '';
+                    daysInput.classList.remove('border-red-500');
+                });
+            }
+        } else {
+            let anyOtherChecked = false;
+            ['sick', 'leave', 'absent'].forEach(type => {
+                const cb = document.getElementById(`attend-${type}`);
+                const daysInput = document.getElementById(`${type}-days`);
+                
+                daysInput.disabled = !cb.checked;
+                if (!cb.checked) {
+                    daysInput.value = '';
+                    daysInput.classList.remove('border-red-500');
+                } else {
+                    anyOtherChecked = true;
+                }
+            });
+            
+            if (anyOtherChecked) {
+                fullCb.checked = false;
+            } else {
+                fullCb.checked = true;
+            }
+        }
     }
 
     async function loadStudentProfiles() {
@@ -469,6 +560,7 @@
             let topicA = String(a.topic || "").trim();
             let topicB = String(b.topic || "").trim();
             
+            // 🔥 บังคับให้ "หัวข้อการประเมิน" (กลุ่ม Checklist) ถูกดันขึ้นไปอยู่บนสุดเสมอ
             if (topicA.includes("หัวข้อการประเมิน") && !topicB.includes("หัวข้อการประเมิน")) return -1;
             if (topicB.includes("หัวข้อการประเมิน") && !topicA.includes("หัวข้อการประเมิน")) return 1;
 
@@ -506,20 +598,26 @@
             return finalScoreB - finalScoreA;
         });
 
+        // ==========================================
+        // 🔥 ส่วนที่สร้างข้อมูลตารางและ Checklist
+        // ==========================================
         let currentTopic = "";
         let tableHTML = "";
         let isChecklistMode = false;
 
         filteredData.forEach(item => {
+            // ดึงค่ามาเช็คความว่างเปล่า
             const hasScore = item.score !== undefined && String(item.score).trim() !== "" && String(item.score).trim().toUpperCase() !== "N/A";
             const hasDetail = item.detail !== undefined && String(item.detail).trim() !== "";
             const hasLevel = item.level !== undefined && String(item.level).trim() !== "";
 
+            // ตรวจสอบประเภท
             const isRubric = hasScore; 
-            const checklistText = item.detail || item.level; 
-            const isChecklistItem = !hasScore && checklistText; 
+            const checklistText = item.detail || item.level; // ดึงข้อความจากช่องใดช่องหนึ่งที่มีข้อมูล (แก้ปัญหาคอลัมน์สลับกัน)
+            const isChecklistItem = !hasScore && checklistText; // ถ้าไม่มีคะแนน แต่มีข้อความ ถือเป็น Checkbox
 
             if (item.topic !== currentTopic) {
+                // ปิดตารางหรือกล่อง Checklist ของหัวข้อก่อนหน้า
                 if (currentTopic !== "") {
                     if (isChecklistMode) {
                         tableHTML += `</div></div>`;
@@ -533,8 +631,10 @@
                 currentTopic = item.topic;
                 tableHTML = "";
                 
+                // แสดงชื่อหัวข้อ (แถบสีเขียว)
                 container.innerHTML += `<div class="competency-title">${currentTopic}</div>`;
                 
+                // เก็บชื่อ Topic ลงใน activeTopics เพื่อใช้ตอนบันทึกผล
                 if ((isRubric || isChecklistItem) && !activeTopics.includes(currentTopic)) {
                     activeTopics.push(currentTopic);
                 }
@@ -558,9 +658,11 @@
                 }
             }
 
-            const qNum = activeTopics.length; 
+            // สร้างตัวเลือกตามประเภท
+            const qNum = activeTopics.length; // ลำดับข้อปัจจุบัน
 
             if (isChecklistItem) {
+                // 🟩 สร้างกลุ่ม Checkbox
                 tableHTML += `
                     <label class="flex items-center gap-3 cursor-pointer bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 hover:bg-indigo-50 transition-colors w-full sm:w-auto">
                         <input type="checkbox" name="chk_${qNum}" value="${checklistText}" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
@@ -568,6 +670,7 @@
                     </label>
                 `;
             } else if (isRubric) {
+                // 🔵 สร้าง Radio (ตารางให้คะแนน)
                 tableHTML += `
                     <tr>
                         <td style="font-weight: 600;">
@@ -583,6 +686,7 @@
             }
         });
 
+        // ปิด Tag สุดท้ายที่ค้างอยู่เมื่อจบการวนลูป
         if (currentTopic !== "") {
             if (isChecklistMode) {
                 tableHTML += `</div></div>`;
@@ -643,8 +747,25 @@
                         }
                     }
 
-                    // --- ส่วนที่ได้รับการแก้ไขใหม่ ---
-                    if (isTimeExpired) {
+                    if (isEvaluatedByMe) {
+                        div.className = "student-item disabled";
+                        div.innerHTML = `
+                            <div class="relative">
+                                ${imgUrl 
+                                    ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm opacity-40 grayscale" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
+                                    : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
+                                       </div>`}
+                                <span class="absolute -bottom-1 -right-1 bg-emerald-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs shadow-md border-2 border-white">✓</span>
+                            </div>
+                            <div style="font-size:11px; color:#94a3b8; margin-top:10px;">${s.studentId}</div>
+                            <div style="font-weight:bold; margin-top:2px; color:#cbd5e1; text-decoration: line-through;">${s.studentName}</div>
+                            <div style="font-size:11px; color:#10b981; margin-top:4px; font-weight:bold;">✅ ประเมินแล้ว</div>
+                        `;
+                        div.onclick = () => {
+                            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'นิสิตคนนี้ได้รับการประเมินไปแล้วโดยอาจารย์' });
+                        };
+                    } else if (isTimeExpired) {
                         div.className = "student-item disabled";
                         div.innerHTML = `
                             <div class="relative">
@@ -681,22 +802,17 @@
                             Swal.fire({ icon: 'warning', title: 'ยังไม่ถึงเวลาประเมิน', text: 'นิสิตคนนี้ยังไม่ถึงกำหนดวันเริ่มปฏิบัติงาน' });
                         };
                     } else {
-                        // 🌟 ปกติคลิกได้เลย (แม้ว่าตัวเองจะเคยประเมินแล้วก็ตาม)
                         div.className = "student-item";
                         div.setAttribute('data-student-id', s.studentId);
                         div.setAttribute('data-student-name', s.studentName);
                         div.innerHTML = `
-                            <div class="relative">
-                                ${imgUrl 
-                                    ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm transition-all duration-200" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
-                                    : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 transition-all duration-200">
-                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
-                                       </div>`}
-                                ${isEvaluatedByMe ? `<span class="absolute -bottom-1 -right-1 bg-blue-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs shadow-md border-2 border-white" title="คุณเคยประเมินแล้ว">✓</span>` : ''}
-                            </div>
+                            ${imgUrl 
+                                ? `<img src="${imgUrl}" class="student-img h-20 w-20 object-cover rounded-2xl border-2 border-slate-200 shadow-sm transition-all duration-200" onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=No+Image'">`
+                                : `<div class="student-img-placeholder h-20 w-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 transition-all duration-200">
+                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path></svg>
+                                   </div>`}
                             <div class="student-id-text" style="font-size:11px; color:#64748b; opacity:0.8; margin-top:10px;">${s.studentId}</div>
                             <div class="student-name-text" style="font-weight:bold; margin-top:2px; color:#334155;">${s.studentName}</div>
-                            ${isEvaluatedByMe ? `<div style="font-size:10px; color:#3b82f6; margin-top:4px; font-weight:bold;">คุณเคยประเมินแล้ว</div>` : ''}
                         `;
                         div.onclick = () => {
                             div.classList.toggle('active');
@@ -740,6 +856,56 @@
             return;
         }
 
+        let attendanceStatusArr = [];
+        let combinedNotesArr = [];
+        let totalAbsentDays = 0;
+        let missingDaysError = false;
+
+        if (document.getElementById('attend-full').checked) {
+            attendanceStatusArr.push("มาครบ");
+        }
+
+        const types = [
+            { id: 'sick', label: 'ป่วย' },
+            { id: 'leave', label: 'ลากิจ' },
+            { id: 'absent', label: 'ขาด' }
+        ];
+
+        types.forEach(type => {
+            if (document.getElementById(`attend-${type.id}`).checked) {
+                attendanceStatusArr.push(type.label);
+                
+                let daysInput = document.getElementById(`${type.id}-days`);
+                let days = parseFloat(daysInput.value);
+
+                if (isNaN(days) || days <= 0) {
+                    missingDaysError = true;
+                    daysInput.classList.add('border-red-500');
+                } else {
+                    daysInput.classList.remove('border-red-500');
+                }
+
+                totalAbsentDays += (isNaN(days) ? 0 : days);
+                
+                let noteText = `${type.label}`;
+                if (!isNaN(days) && days > 0) noteText += ` (${days} วัน)`;
+                
+                combinedNotesArr.push(noteText);
+            }
+        });
+
+        if (missingDaysError) {
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาระบุจำนวนวันให้ครบถ้วนในช่องที่เลือก' });
+            return;
+        }
+
+        if (attendanceStatusArr.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกสถานะการเข้างานอย่างน้อย 1 รายการ' });
+            return;
+        }
+
+        const finalStatus = attendanceStatusArr.join(", ");
+        const finalNotes = combinedNotesArr.join(" | ");
         const namesList = selectedStudents.map(s => s.name).join(", ");
         
         Swal.fire({
@@ -750,7 +916,6 @@
             if (result.isConfirmed) {
                 showLoadingPopup("กำลังบันทึกข้อมูล...", "ระบบกำลังส่งผลประเมินเข้าสู่ฐานข้อมูล");
                 
-                // แก้ไขการส่งข้อมูลให้ส่งค่าเริ่มต้นแทนส่วนเวลาปฏิบัติงานที่ถูกลบออกไป
                 const payload = {
                     action: "submitEvaluation",
                     teacherName: document.getElementById("teacherName").value,
@@ -758,14 +923,15 @@
                     students: selectedStudents,
                     evaluationTopic: selectedTopic, 
                     studentRole: selectedRole, 
-                    attendanceStatus: "-", // ส่งค่าเริ่มต้น
-                    attendanceDays: "",    // ส่งค่าเริ่มต้น
-                    attendanceReason: "-", // ส่งค่าเริ่มต้น
+                    attendanceStatus: finalStatus, 
+                    attendanceDays: totalAbsentDays > 0 ? totalAbsentDays : "",
+                    attendanceReason: finalNotes,
                     comment: document.getElementById("comment").value
                 };
 
                 let dynamicScoreDetails = {};
 
+                // 🔥 ดึงข้อมูลตอนกดบันทึก ให้รองรับทั้ง Radio และ Checkbox
                 activeTopics.forEach((topic, index) => {
                     const qNum = index + 1;
                     let scoreVal = 0;
@@ -803,6 +969,9 @@
                         await Swal.fire("สำเร็จ!", `บันทึกผลการประเมินนิสิต ${selectedStudents.length} รายการเรียบร้อยแล้ว`, "success");
                         loadStudents(); 
                         document.getElementById("comment").value = "";
+                        
+                        document.getElementById('attend-full').checked = true;
+                        toggleAttendance('full');
                         
                         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
                         let defaultRoleObj = document.querySelector('input[name="studentRole"][value="ไม่ระบุ / N/A"]');
