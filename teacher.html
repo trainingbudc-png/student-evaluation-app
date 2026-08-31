@@ -253,6 +253,26 @@
     let studentImgMap = {}; 
     let allCriteriaData = []; 
 
+    // ฟังก์ชันจัดการการกดปุ่ม Radio เพื่อให้กดยกเลิก (Uncheck) ได้
+    function handleRadioClick(td) {
+        const rb = td.querySelector('input[type=radio]');
+        if (!rb) return;
+        
+        // ถ้ากดปุ่มที่ถูกเลือกอยู่แล้ว (มีค่าเป็น true) ให้ทำการ Uncheck
+        if (rb.checked && rb.dataset.wasChecked === 'true') {
+            rb.checked = false;
+            rb.dataset.wasChecked = 'false';
+        } else {
+            // ถ้าย้ายไปกดปุ่มอื่น ให้รีเซ็ตสถานะทั้งหมดในกลุ่มเดียวกันเป็น false ก่อน
+            document.querySelectorAll(`input[name="${rb.name}"]`).forEach(el => {
+                el.dataset.wasChecked = 'false';
+            });
+            // แล้วค่อยเปลี่ยนปุ่มที่กดให้เป็น true (ถูกเลือก)
+            rb.checked = true;
+            rb.dataset.wasChecked = 'true';
+        }
+    }
+
     function showLoadingPopup(titleText = "กำลังโหลดข้อมูล...", subText = "กรุณารอสักครู่ ระบบกำลังประมวลผล") {
         Swal.fire({
             title: titleText,
@@ -569,7 +589,7 @@
                     </label>
                 `;
             } else if (isRubric) {
-                // อัปเดตบรรทัดนี้: ลบ onclick ออกจาก tr และใส่ใน td คอลัมน์ขวาสุดแทน
+                // ตรงนี้เพิ่ม pointer-events-none เข้าไปที่ปุ่ม radio เพื่อบังคับให้ผู้ใช้คลิกโดนช่อง td เท่านั้น แล้วให้ td เป็นคนสั่งงาน
                 tableHTML += `
                     <tr>
                         <td style="font-weight: 600;">
@@ -577,8 +597,8 @@
                             <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
                         </td>
                         <td style="font-size: 13px; line-height: 1.5;">${item.detail || "-"}</td>
-                        <td class="radio-cell" style="cursor: pointer;" onclick="const rb = this.querySelector('input[type=radio]'); if(rb) { rb.checked = true; rb.focus(); }">
-                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level || item.detail}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" onclick="event.stopPropagation();" required>
+                        <td class="radio-cell" style="cursor: pointer;" onclick="handleRadioClick(this)">
+                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level || item.detail}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer pointer-events-none" required>
                         </td>
                     </tr>
                 `;
@@ -762,6 +782,7 @@
                 if (selectedRadio) {
                     results.push({ topic, score: selectedRadio.value, detail: selectedRadio.dataset.level });
                 } else {
+                    // ถ้าผู้ใช้กดยกเลิกออกจนไม่มีช่องไหนถูกติ๊กเลย จะเข้ามาที่นี่ครับ
                     missingFields = true;
                 }
             } else if (questionType === 'checkbox') {
@@ -770,6 +791,7 @@
             }
         });
 
+        // ตรวจสอบว่ามีช่องไหนไม่ได้ตอบหรือไม่ (รวมถึงช่องที่ถูกกดยกเลิกด้วย)
         if (missingFields) {
             Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาประเมินให้ครบทุกหัวข้อที่เป็นแบบตัวเลือกครับ' });
             return;
