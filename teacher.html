@@ -569,7 +569,7 @@
                 `;
             } else if (isRubric) {
                 tableHTML += `
-                    <tr>
+                    <tr style="cursor: pointer;" onclick="const rb = this.querySelector('input[type=radio]'); if(rb) rb.checked = true;">
                         <td style="font-weight: 600;">
                             ${item.level || "-"} 
                             <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
