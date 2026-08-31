@@ -126,7 +126,8 @@
         .rubric-table th:last-child, .rubric-table td:last-child { border-right: none; }
         .rubric-table tr:hover td { background-color: #f8fafc; }
         
-        .radio-cell { text-align: center; width: 65px; }
+        .radio-cell { text-align: center; width: 65px; transition: background-color 0.2s; }
+        .radio-cell:hover { background-color: #e2e8f0 !important; }
         
         .error-box { 
             background: #fef2f2; 
@@ -568,15 +569,16 @@
                     </label>
                 `;
             } else if (isRubric) {
+                // อัปเดตบรรทัดนี้: ลบ onclick ออกจาก tr และใส่ใน td คอลัมน์ขวาสุดแทน
                 tableHTML += `
-                    <tr style="cursor: pointer;" onclick="const rb = this.querySelector('input[type=radio]'); if(rb) rb.checked = true;">
+                    <tr>
                         <td style="font-weight: 600;">
                             ${item.level || "-"} 
                             <span class="block text-xs text-blue-600 font-medium mt-0.5">(${item.score} คะแนน)</span>
                         </td>
                         <td style="font-size: 13px; line-height: 1.5;">${item.detail || "-"}</td>
-                        <td class="radio-cell">
-                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level || item.detail}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" required>
+                        <td class="radio-cell" style="cursor: pointer;" onclick="const rb = this.querySelector('input[type=radio]'); if(rb) { rb.checked = true; rb.focus(); }">
+                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level || item.detail}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer" onclick="event.stopPropagation();" required>
                         </td>
                     </tr>
                 `;
@@ -734,97 +736,99 @@
             return;
         }
 
-        const selectedStudents = Array.from(activeStudents).map(item => ({
-            id: item.getAttribute('data-student-id'),
-            name: item.getAttribute('data-student-name')
+        const selectedStudents = Array.from(activeStudents).map(div => ({
+            id: div.getAttribute('data-student-id'),
+            name: div.getAttribute('data-student-name')
         }));
-
-        const selectedTopic = document.getElementById("evalTopic").value; 
-        if (!selectedTopic) {
-            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกหัวข้อการประเมิน (Topic / Bedside)' });
-            return;
-        }
-
-        const selectedRoleEl = document.querySelector('input[name="studentRole"]:checked');
-        const selectedRole = selectedRoleEl ? selectedRoleEl.value : "";
-        if (!selectedRole) {
-            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาเลือกบทบาทของนิสิต (ผู้นำเสนอ / ผู้ฟังบรรยาย / ไม่ระบุ)' });
-            return;
-        }
-
-        const namesList = selectedStudents.map(s => s.name).join(", ");
         
-        Swal.fire({
-            title: `ยืนยันส่งผลประเมิน?\nจำนวน ${selectedStudents.length} คน`,
-            text: `หัวข้อ: ${selectedTopic}\nบทบาท: ${selectedRole}\nรายชื่อ: ${namesList}`,
-            icon: 'question', showCancelButton: true, confirmButtonText: 'ใช่, บันทึกเลย', cancelButtonText: 'ตรวจสอบอีกครั้ง'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                showLoadingPopup("กำลังบันทึกข้อมูล...", "ระบบกำลังส่งผลประเมินเข้าสู่ฐานข้อมูล");
-                
-                const payload = {
-                    action: "submitEvaluation",
-                    teacherName: document.getElementById("teacherName").value,
-                    subjectCode: document.getElementById("subjectCode").value,
-                    students: selectedStudents,
-                    evaluationTopic: selectedTopic, 
-                    studentRole: selectedRole, 
-                    comment: document.getElementById("comment").value
-                };
+        let formData = new FormData(e.target);
+        
+        const formType = document.getElementById("evalTopic").value;
+        const studentRole = formData.get("studentRole") || "ไม่ระบุ / N/A";
+        
+        let results = [];
+        let missingFields = false;
 
-                let dynamicScoreDetails = {};
-
-                activeTopics.forEach((topic, index) => {
-                    const qNum = index + 1;
-                    let scoreVal = 0;
-                    let levelText = "-";
-
-                    const radios = document.querySelectorAll('input[name="q_' + qNum + '"]');
-                    const checkboxes = document.querySelectorAll('input[name="chk_' + qNum + '"]');
-
-                    if (radios.length > 0) {
-                        const selectedRadio = document.querySelector('input[name="q_' + qNum + '"]:checked');
-                        scoreVal = selectedRadio ? Number(selectedRadio.value) : 0;
-                        levelText = selectedRadio ? selectedRadio.getAttribute('data-level') : "-";
-                    } else if (checkboxes.length > 0) {
-                        const checkedBoxes = document.querySelectorAll('input[name="chk_' + qNum + '"]:checked');
-                        scoreVal = checkedBoxes.length > 0 ? 1 : 0; 
-                        
-                        levelText = checkedBoxes.length > 0 
-                            ? Array.from(checkedBoxes).map(cb => cb.value).join(', ') 
-                            : "ไม่ได้เลือกหัวข้อย่อย";
-                    }
-                    
-                    payload["score" + qNum] = scoreVal;
-                    dynamicScoreDetails[topic] = { level: levelText, score: scoreVal };
-                });
-
-                payload.scoreDetails = dynamicScoreDetails;
-
-                try {
-                    const response = await fetch(API_URL, { 
-                        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) 
-                    });
-                    const resData = await response.json();
-                    
-                    if (resData.result === "success") {
-                        await Swal.fire("สำเร็จ!", `บันทึกผลการประเมินนิสิต ${selectedStudents.length} รายการเรียบร้อยแล้ว`, "success");
-                        loadStudents(); 
-                        document.getElementById("comment").value = "";
-                        
-                        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-                        let defaultRoleObj = document.querySelector('input[name="studentRole"][value="ไม่ระบุ / N/A"]');
-                        if (defaultRoleObj) defaultRoleObj.checked = true;
-                        
-                        document.getElementById("evalTopic").value = ""; 
-                        document.getElementById("criteriaContainer").innerHTML = `<div style="color: #64748b; text-align: center; padding: 24px 0;" class="text-sm font-medium border-2 border-dashed border-slate-200 rounded-xl mt-6 bg-slate-50">👆 กรุณาเลือกหัวข้อการประเมินด้านบน เพื่อแสดงเกณฑ์การให้คะแนน</div>`;
-                    } else { 
-                        Swal.fire("ล้มเหลว", resData.message || "เกิดข้อผิดพลาดจากระบบฐานข้อมูล", "error"); 
-                    }
-                } catch (error) { Swal.fire("ผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "error"); }
+        activeTopics.forEach((topic, index) => {
+            let questionType = null;
+            let checkEl = document.querySelector(`input[name="chk_${index}"]`);
+            let radioEl = document.querySelector(`input[name="q_${index}"]`);
+            
+            if (checkEl) questionType = 'checkbox';
+            else if (radioEl) questionType = 'radio';
+            
+            if (questionType === 'radio') {
+                const selectedRadio = document.querySelector(`input[name="q_${index}"]:checked`);
+                if (selectedRadio) {
+                    results.push({ topic, score: selectedRadio.value, detail: selectedRadio.dataset.level });
+                } else {
+                    missingFields = true;
+                }
+            } else if (questionType === 'checkbox') {
+                const isChecked = checkEl.checked;
+                results.push({ topic, score: isChecked ? "Pass" : "Fail", detail: isChecked ? "ทำได้" : "ไม่ได้ทำ" });
             }
         });
+
+        if (missingFields) {
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาประเมินให้ครบทุกหัวข้อที่เป็นแบบตัวเลือกครับ' });
+            return;
+        }
+
+        const confirmResult = await Swal.fire({
+            title: 'ยืนยันการส่งผลประเมิน?',
+            html: `คุณกำลังจะส่งผลการประเมินให้กับนิสิตจำนวน <b>${selectedStudents.length}</b> คน<br>หัวข้อ: <b>${formType}</b>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'ใช่, บันทึกเลย!',
+            cancelButtonText: 'ยกเลิก'
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        showLoadingPopup("กำลังบันทึกข้อมูล...", `กำลังส่งข้อมูลนิสิต ${selectedStudents.length} คนเข้าระบบ`);
+
+        const requestData = {
+            action: "saveEvaluation",
+            teacherName: document.getElementById("teacherName").value,
+            subjectCode: document.getElementById("subjectCode").value,
+            formType: formType,
+            studentRole: studentRole, 
+            comment: document.getElementById("comment").value,
+            students: selectedStudents,
+            evaluations: results
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(requestData)
+            });
+
+            const res = await response.json();
+            if (res.result === "success") {
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'บันทึกสำเร็จ!', 
+                    text: `บันทึกผลการประเมินนิสิตจำนวน ${selectedStudents.length} คนเรียบร้อยแล้ว`,
+                    confirmButtonColor: '#10b981'
+                }).then(() => {
+                    document.getElementById("evalForm").reset();
+                    activeStudents.forEach(el => el.classList.remove('active'));
+                    filterCriteria();
+                    loadStudents(); 
+                });
+            } else {
+                throw new Error("API returned error");
+            }
+        } catch (error) {
+            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด!', text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
+        }
     });
 </script>
+
 </body>
 </html>
