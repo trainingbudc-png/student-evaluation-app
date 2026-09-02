@@ -82,6 +82,7 @@
         .student-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .student-list-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+        /* หัวข้อหลัก (สีเขียว) */
         .competency-title { 
             background: #f0fdf4; 
             color: #166534; 
@@ -93,6 +94,32 @@
             font-size: 16px; 
             border-left: 5px solid #22c55e;
             box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        /* หัวข้อย่อย (สีฟ้า) */
+        .sub-competency-title {
+            background: #eff6ff; 
+            color: #1e40af; 
+            padding: 12px 18px; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            margin-top: 24px; 
+            margin-bottom: 12px; 
+            font-size: 15px; 
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        /* ถ้าหัวข้อย่อยต่อจากหัวข้อหลักทันทีโดยไม่มีตาราง ให้ขยับชิดกัน */
+        .competency-title + .sub-competency-title {
+            margin-top: -6px !important;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+        
+        /* ถ้ามีหัวข้อหลักติดกันสองอัน */
+        .competency-title + .competency-title {
+            margin-top: 8px !important;
         }
         
         .rubric-table { 
@@ -253,21 +280,17 @@
     let studentImgMap = {}; 
     let allCriteriaData = []; 
 
-    // ฟังก์ชันจัดการการกดปุ่ม Radio เพื่อให้กดยกเลิก (Uncheck) ได้
     function handleRadioClick(td) {
         const rb = td.querySelector('input[type=radio]');
         if (!rb) return;
         
-        // ถ้ากดปุ่มที่ถูกเลือกอยู่แล้ว (มีค่าเป็น true) ให้ทำการ Uncheck
         if (rb.checked && rb.dataset.wasChecked === 'true') {
             rb.checked = false;
             rb.dataset.wasChecked = 'false';
         } else {
-            // ถ้าย้ายไปกดปุ่มอื่น ให้รีเซ็ตสถานะทั้งหมดในกลุ่มเดียวกันเป็น false ก่อน
             document.querySelectorAll(`input[name="${rb.name}"]`).forEach(el => {
                 el.dataset.wasChecked = 'false';
             });
-            // แล้วค่อยเปลี่ยนปุ่มที่กดให้เป็น true (ถูกเลือก)
             rb.checked = true;
             rb.dataset.wasChecked = 'true';
         }
@@ -554,7 +577,11 @@
                 currentTopic = item.topic;
                 tableHTML = "";
                 
-                container.innerHTML += `<div class="competency-title">${currentTopic}</div>`;
+                // ตรวจสอบว่าเป็นหัวข้อย่อยหรือไม่ (มีจุดทศนิยม เช่น 2.1, 3.2)
+                let isSubTopic = /^\d+\.\d+/.test(currentTopic.trim());
+                let titleClass = isSubTopic ? "sub-competency-title" : "competency-title";
+                
+                container.innerHTML += `<div class="${titleClass}">${currentTopic}</div>`;
                 
                 if ((isRubric || isChecklistItem) && !activeTopics.includes(currentTopic)) {
                     activeTopics.push(currentTopic);
@@ -589,7 +616,6 @@
                     </label>
                 `;
             } else if (isRubric) {
-                // ตรงนี้เพิ่ม pointer-events-none เข้าไปที่ปุ่ม radio เพื่อบังคับให้ผู้ใช้คลิกโดนช่อง td เท่านั้น แล้วให้ td เป็นคนสั่งงาน
                 tableHTML += `
                     <tr>
                         <td style="font-weight: 600;">
@@ -782,7 +808,6 @@
                 if (selectedRadio) {
                     results.push({ topic, score: selectedRadio.value, detail: selectedRadio.dataset.level });
                 } else {
-                    // ถ้าผู้ใช้กดยกเลิกออกจนไม่มีช่องไหนถูกติ๊กเลย จะเข้ามาที่นี่ครับ
                     missingFields = true;
                 }
             } else if (questionType === 'checkbox') {
@@ -791,7 +816,6 @@
             }
         });
 
-        // ตรวจสอบว่ามีช่องไหนไม่ได้ตอบหรือไม่ (รวมถึงช่องที่ถูกกดยกเลิกด้วย)
         if (missingFields) {
             Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาประเมินให้ครบทุกหัวข้อที่เป็นแบบตัวเลือกครับ' });
             return;
