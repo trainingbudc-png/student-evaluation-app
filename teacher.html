@@ -172,7 +172,6 @@
         ภาควิชา: <span id="displayDept">กำลังโหลด...</span>
     </div>
     
-    <!-- ปุ่มใหม่สำหรับเช็คประวัติ -->
     <button onclick="checkEvaluationHistory()" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm border border-blue-200 transition-all cursor-pointer">
         📋 เช็คประวัติการประเมิน
     </button>
@@ -278,11 +277,10 @@
 
     let loggedInTeacher = null;
     let allStudents = [];
-    let activeTopics = [];
+    let rubricTopics = []; // เก็บหัวข้อ Rubrics
     let studentImgMap = {}; 
     let allCriteriaData = []; 
 
-    // ฟังก์ชันใหม่สำหรับเช็คประวัติการประเมินที่เพิ่มช่องค้นหาแล้ว
     async function checkEvaluationHistory() {
         const teacherName = document.getElementById("teacherName").value;
         if (!teacherName) {
@@ -296,7 +294,6 @@
             const response = await fetch(API_URL + "?action=getAdminAllData");
             const res = await response.json();
             
-            // กรองเฉพาะผลประเมินที่อาจารย์คนนี้เป็นคนทำ
             const history = res.evaluationResults.filter(r => String(r["ชื่อผู้ประเมิน"]).trim() === String(teacherName).trim());
             
             if (history.length === 0) {
@@ -304,7 +301,6 @@
                 return;
             }
 
-            // สร้างช่องค้นหา
             let htmlContent = `
                 <div style="margin-bottom: 16px;">
                     <input type="text" id="swalSearchInput" placeholder="🔍 ค้นหา รหัสนิสิต, ชื่อ-นามสกุล หรือ รหัสวิชา..." 
@@ -314,7 +310,6 @@
                 <div id="swalHistoryList" style="max-height: 420px; overflow-y: auto; text-align: left; font-size: 14px; padding-right: 4px;">
             `;
             
-            // เรียงลำดับจากล่าสุดไปเก่า (reverse array)
             history.reverse().forEach((item, index) => {
                 let detailsText = "- ไม่มีรายละเอียดระบุ -";
                 let rawDetails = item["รายละเอียดคะแนน (JSON String)"] || item["รายละเอียดคะแนน"] || item.scoreDetails;
@@ -332,7 +327,6 @@
                     detailsText = rawDetails || detailsText;
                 }
 
-                // รวมข้อมูลสำหรับการค้นหา
                 let searchKeyword = `${item["รหัสนิสิต"]} ${item["ชื่อนิสิต"]} ${item["รหัสวิชา"]} ${item["Form_Type"] || item["Topic"]}`.toLowerCase();
 
                 htmlContent += `
@@ -362,7 +356,6 @@
                 confirmButtonText: 'ปิดหน้าต่าง',
                 confirmButtonColor: '#3b82f6',
                 didOpen: () => {
-                    // เพิ่มระบบค้นหา Real-time
                     const searchInput = document.getElementById('swalSearchInput');
                     const historyList = document.getElementById('swalHistoryList');
                     const items = historyList.getElementsByClassName('history-item');
@@ -614,7 +607,7 @@
         }
 
         container.innerHTML = "";
-        activeTopics = [];
+        rubricTopics = []; // ล้างค่ารายการ Rubric เดิม
         
         filteredData.sort((a, b) => {
             let topicA = String(a.topic || "").trim();
@@ -663,12 +656,9 @@
 
         filteredData.forEach(item => {
             const hasScore = item.score !== undefined && String(item.score).trim() !== "" && String(item.score).trim().toUpperCase() !== "N/A";
-            const hasDetail = item.detail !== undefined && String(item.detail).trim() !== "";
-            const hasLevel = item.level !== undefined && String(item.level).trim() !== "";
-
-            const isRubric = hasScore; 
             const checklistText = item.detail || item.level; 
             const isChecklistItem = !hasScore && checklistText;
+            const isRubric = hasScore;
 
             if (item.topic !== currentTopic) {
                 if (currentTopic !== "") {
@@ -688,16 +678,13 @@
                 let titleClass = isSubTopic ? "sub-competency-title" : "competency-title";
                 
                 container.innerHTML += `<div class="${titleClass}">${currentTopic}</div>`;
-                
-                if ((isRubric || isChecklistItem) && !activeTopics.includes(currentTopic)) {
-                    activeTopics.push(currentTopic);
-                }
 
                 if (isChecklistItem) {
                     isChecklistMode = true;
                     tableHTML = `<div class="p-5 border border-slate-200 rounded-xl bg-white mb-6 shadow-sm"><div class="flex flex-wrap gap-4">`;
                 } else if (isRubric) {
                     isChecklistMode = false;
+                    rubricTopics.push(currentTopic);
                     tableHTML = `
                         <table class="rubric-table">
                             <thead>
@@ -712,16 +699,15 @@
                 }
             }
 
-            const qNum = activeTopics.length;
-
             if (isChecklistItem) {
                 tableHTML += `
                     <label class="flex items-center gap-3 cursor-pointer bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 hover:bg-indigo-50 transition-colors w-full sm:w-auto">
-                        <input type="checkbox" name="chk_${qNum}" value="${checklistText}" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                        <input type="checkbox" class="eval-checklist-item w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500" data-topic="${checklistText}">
                         <span class="font-medium text-slate-700">${checklistText}</span>
                     </label>
                 `;
             } else if (isRubric) {
+                const rIndex = rubricTopics.length - 1;
                 tableHTML += `
                     <tr>
                         <td style="font-weight: 600;">
@@ -730,7 +716,7 @@
                         </td>
                         <td style="font-size: 13px; line-height: 1.5;">${item.detail || "-"}</td>
                         <td class="radio-cell" style="cursor: pointer;" onclick="handleRadioClick(this)">
-                            <input type="radio" name="q_${qNum}" value="${item.score}" data-level="${item.level || item.detail}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer pointer-events-none" required>
+                            <input type="radio" name="rubric_q_${rIndex}" value="${item.score}" data-level="${item.level || item.detail}" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer pointer-events-none" required>
                         </td>
                     </tr>
                 `;
@@ -901,29 +887,33 @@
         let results = [];
         let missingFields = false;
 
-        activeTopics.forEach((topic, index) => {
-            let questionType = null;
-            let checkEl = document.querySelector(`input[name="chk_${index}"]`);
-            let radioEl = document.querySelector(`input[name="q_${index}"]`);
-            
-            if (checkEl) questionType = 'checkbox';
-            else if (radioEl) questionType = 'radio';
-            
-            if (questionType === 'radio') {
-                const selectedRadio = document.querySelector(`input[name="q_${index}"]:checked`);
-                if (selectedRadio) {
-                    results.push({ topic, score: selectedRadio.value, detail: selectedRadio.dataset.level });
-                } else {
-                    missingFields = true;
-                }
-            } else if (questionType === 'checkbox') {
-                const isChecked = checkEl.checked;
-                results.push({ topic, score: isChecked ? "Pass" : "Fail", detail: isChecked ? "ทำได้" : "ไม่ได้ทำ" });
+        // 1. อ่านค่า Checkbox ภาษาอังกฤษทั้งหมด (Checklist)
+        const checkInputs = document.querySelectorAll('.eval-checklist-item');
+        checkInputs.forEach(chk => {
+            const isChecked = chk.checked;
+            results.push({
+                topic: chk.dataset.topic,
+                score: isChecked ? "Pass" : "Fail",
+                detail: isChecked ? "ทำได้" : "ไม่ได้ทำ"
+            });
+        });
+
+        // 2. อ่านค่า Rubrics (Radio)
+        rubricTopics.forEach((topic, index) => {
+            const selectedRadio = document.querySelector(`input[name="rubric_q_${index}"]:checked`);
+            if (selectedRadio) {
+                results.push({
+                    topic: topic,
+                    score: selectedRadio.value,
+                    detail: selectedRadio.dataset.level
+                });
+            } else {
+                missingFields = true;
             }
         });
 
         if (missingFields) {
-            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาประเมินให้ครบทุกหัวข้อที่เป็นแบบตัวเลือกครับ' });
+            Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณาประเมินให้ครบทุกหัวข้อที่เป็นแบบตัวเลือก (Rubric) ครับ' });
             return;
         }
 
