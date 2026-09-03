@@ -282,7 +282,7 @@
     let studentImgMap = {}; 
     let allCriteriaData = []; 
 
-    // ฟังก์ชันใหม่สำหรับเช็คประวัติการประเมิน
+    // ฟังก์ชันใหม่สำหรับเช็คประวัติการประเมินที่เพิ่มช่องค้นหาแล้ว
     async function checkEvaluationHistory() {
         const teacherName = document.getElementById("teacherName").value;
         if (!teacherName) {
@@ -304,7 +304,15 @@
                 return;
             }
 
-            let htmlContent = `<div style="max-height: 450px; overflow-y: auto; text-align: left; font-size: 14px;">`;
+            // สร้างช่องค้นหา
+            let htmlContent = `
+                <div style="margin-bottom: 16px;">
+                    <input type="text" id="swalSearchInput" placeholder="🔍 ค้นหา รหัสนิสิต, ชื่อ-นามสกุล หรือ รหัสวิชา..." 
+                           style="width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; font-family: 'Prompt', sans-serif; outline: none; transition: border-color 0.2s;"
+                           onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+                <div id="swalHistoryList" style="max-height: 420px; overflow-y: auto; text-align: left; font-size: 14px; padding-right: 4px;">
+            `;
             
             // เรียงลำดับจากล่าสุดไปเก่า (reverse array)
             history.reverse().forEach((item, index) => {
@@ -324,21 +332,24 @@
                     detailsText = rawDetails || detailsText;
                 }
 
+                // รวมข้อมูลสำหรับการค้นหา
+                let searchKeyword = `${item["รหัสนิสิต"]} ${item["ชื่อนิสิต"]} ${item["รหัสวิชา"]} ${item["Form_Type"] || item["Topic"]}`.toLowerCase();
+
                 htmlContent += `
-                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; background: #ffffff;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="font-weight: bold; color: #1e40af;">${index + 1}. ${item["ชื่อนิสิต"]}</span>
-                        <span style="font-size: 12px; color: #64748b;">${item["Timestamp"]}</span>
+                <div class="history-item" data-search="${searchKeyword}" style="padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; background: #ffffff; transition: all 0.2s;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; align-items: flex-start;">
+                        <span style="font-weight: bold; color: #1e40af; font-size: 15px;">${index + 1}. ${item["ชื่อนิสิต"]}</span>
+                        <span style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 12px;">${item["Timestamp"]}</span>
                     </div>
-                    <div style="font-size: 13px; margin-bottom: 8px; color: #475569;">
-                        <b>รหัสนิสิต:</b> ${item["รหัสนิสิต"]} <br>
-                        <b>วิชา:</b> ${item["รหัสวิชา"]} <br>
-                        <b>หัวข้อ:</b> <span style="color: #059669; font-weight: bold;">${item["Form_Type"] || item["Topic"]}</span> <br>
-                        <b>คะแนนรวม:</b> ${item["คะแนนรวม"]} (${item["เกรด"]})
+                    <div style="font-size: 13.5px; margin-bottom: 10px; color: #475569; line-height: 1.6;">
+                        <span style="display: inline-block; width: 80px;"><b>รหัสนิสิต:</b></span> <span style="color: #334155;">${item["รหัสนิสิต"]}</span> <br>
+                        <span style="display: inline-block; width: 80px;"><b>วิชา:</b></span> <span style="color: #334155;">${item["รหัสวิชา"]}</span> <br>
+                        <span style="display: inline-block; width: 80px;"><b>หัวข้อ:</b></span> <span style="color: #059669; font-weight: bold; background: #d1fae5; padding: 0 6px; border-radius: 4px;">${item["Form_Type"] || item["Topic"]}</span> <br>
+                        <span style="display: inline-block; width: 80px;"><b>คะแนนรวม:</b></span> <span style="color: #ea580c; font-weight: bold;">${item["คะแนนรวม"]} (${item["เกรด"]})</span>
                     </div>
-                    <div style="background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 12px; border: 1px dashed #cbd5e1;">
-                        <b style="color: #334155; display: block; margin-bottom: 4px;">รายละเอียดที่ประเมินไป:</b>
-                        ${detailsText}
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 12.5px; border: 1px dashed #cbd5e1; line-height: 1.5;">
+                        <b style="color: #334155; display: block; margin-bottom: 6px;">รายละเอียดที่ประเมินไป:</b>
+                        <div style="color: #64748b;">${detailsText}</div>
                     </div>
                 </div>`;
             });
@@ -347,9 +358,27 @@
             Swal.fire({
                 title: '📋 ประวัติการประเมินของคุณ',
                 html: htmlContent,
-                width: '700px',
+                width: '750px',
                 confirmButtonText: 'ปิดหน้าต่าง',
-                confirmButtonColor: '#3b82f6'
+                confirmButtonColor: '#3b82f6',
+                didOpen: () => {
+                    // เพิ่มระบบค้นหา Real-time
+                    const searchInput = document.getElementById('swalSearchInput');
+                    const historyList = document.getElementById('swalHistoryList');
+                    const items = historyList.getElementsByClassName('history-item');
+
+                    searchInput.addEventListener('input', (e) => {
+                        const searchTerm = e.target.value.toLowerCase();
+                        for (let i = 0; i < items.length; i++) {
+                            const keyword = items[i].getAttribute('data-search');
+                            if (keyword.includes(searchTerm)) {
+                                items[i].style.display = 'block';
+                            } else {
+                                items[i].style.display = 'none';
+                            }
+                        }
+                    });
+                }
             });
             
         } catch(e) {
