@@ -317,11 +317,24 @@
                 try { 
                     if (rawDetails) {
                         let parsed = JSON.parse(rawDetails); 
+                        
+                        // --- ส่วนที่ปรับปรุงเพิ่มเติม (ซ่อนรายการที่ "ไม่ได้ทำ") ---
                         if (Array.isArray(parsed)) {
-                            detailsText = parsed.map(p => `• <b>${p.topic}</b>: ${p.detail || ''} (${p.score || 0} คะแนน)`).join('<br>');
+                            let filtered = parsed.filter(p => p.detail !== "ไม่ได้ทำ");
+                            if(filtered.length > 0) {
+                                detailsText = filtered.map(p => `• <b>${p.topic}</b>: ${p.detail || ''} (${p.score || 0} คะแนน)`).join('<br>');
+                            } else {
+                                detailsText = "<span style='color: #9ca3af;'>- ไม่มีรายการที่ถูกประเมิน -</span>";
+                            }
                         } else {
-                            detailsText = Object.keys(parsed).map(k => `• <b>${k}</b>: ${parsed[k].level || parsed[k].detail || ''} (${parsed[k].score || 0} คะแนน)`).join('<br>');
+                            let filteredKeys = Object.keys(parsed).filter(k => parsed[k].level !== "ไม่ได้ทำ" && parsed[k].detail !== "ไม่ได้ทำ");
+                            if(filteredKeys.length > 0) {
+                                detailsText = filteredKeys.map(k => `• <b>${k}</b>: ${parsed[k].level || parsed[k].detail || ''} (${parsed[k].score || 0} คะแนน)`).join('<br>');
+                            } else {
+                                detailsText = "<span style='color: #9ca3af;'>- ไม่มีรายการที่ถูกประเมิน -</span>";
+                            }
                         }
+                        // ------------------------------------------------
                     }
                 } catch(e) {
                     detailsText = rawDetails || detailsText;
