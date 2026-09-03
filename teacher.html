@@ -82,7 +82,6 @@
         .student-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .student-list-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* หัวข้อหลัก (สีเขียว) */
         .competency-title { 
             background: #f0fdf4; 
             color: #166534; 
@@ -96,7 +95,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
-        /* หัวข้อย่อย (สีฟ้า) */
         .sub-competency-title {
             background: #eff6ff; 
             color: #1e40af; 
@@ -110,14 +108,12 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
-        /* ถ้าหัวข้อย่อยต่อจากหัวข้อหลักทันทีโดยไม่มีตาราง ให้ขยับชิดกัน */
         .competency-title + .sub-competency-title {
             margin-top: -6px !important;
             border-top-left-radius: 4px;
             border-top-right-radius: 4px;
         }
         
-        /* ถ้ามีหัวข้อหลักติดกันสองอัน */
         .competency-title + .competency-title {
             margin-top: 8px !important;
         }
@@ -175,12 +171,18 @@
     <div id="deptBadge" class="hidden bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm border border-emerald-200">
         ภาควิชา: <span id="displayDept">กำลังโหลด...</span>
     </div>
+    
+    <!-- ปุ่มใหม่สำหรับเช็คประวัติ -->
+    <button onclick="checkEvaluationHistory()" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm border border-blue-200 transition-all cursor-pointer">
+        📋 เช็คประวัติการประเมิน
+    </button>
+
     <button onclick="logout()" class="bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-md border border-slate-200 transition-all cursor-pointer">
         🚪 ออกจากระบบ
     </button>
 </div>
 
-<div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 transition-all mt-12 md:mt-4">
+<div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 transition-all mt-16 md:mt-12">
     
     <div class="text-center mb-8">
         <div class="inline-flex bg-blue-50 text-blue-600 p-4 rounded-2xl shadow-inner mb-4 text-3xl">
@@ -279,6 +281,82 @@
     let activeTopics = [];
     let studentImgMap = {}; 
     let allCriteriaData = []; 
+
+    // ฟังก์ชันใหม่สำหรับเช็คประวัติการประเมิน
+    async function checkEvaluationHistory() {
+        const teacherName = document.getElementById("teacherName").value;
+        if (!teacherName) {
+            Swal.fire('แจ้งเตือน', 'ไม่พบชื่ออาจารย์ในระบบ กรุณาเข้าสู่ระบบใหม่', 'warning');
+            return;
+        }
+
+        showLoadingPopup("กำลังดึงข้อมูล...", "กำลังค้นหาประวัติการประเมินของคุณ");
+
+        try {
+            const response = await fetch(API_URL + "?action=getAdminAllData");
+            const res = await response.json();
+            
+            // กรองเฉพาะผลประเมินที่อาจารย์คนนี้เป็นคนทำ
+            const history = res.evaluationResults.filter(r => String(r["ชื่อผู้ประเมิน"]).trim() === String(teacherName).trim());
+            
+            if (history.length === 0) {
+                Swal.fire('ประวัติการประเมิน', 'ยังไม่มีประวัติการประเมินนิสิตในระบบครับ', 'info');
+                return;
+            }
+
+            let htmlContent = `<div style="max-height: 450px; overflow-y: auto; text-align: left; font-size: 14px;">`;
+            
+            // เรียงลำดับจากล่าสุดไปเก่า (reverse array)
+            history.reverse().forEach((item, index) => {
+                let detailsText = "- ไม่มีรายละเอียดระบุ -";
+                let rawDetails = item["รายละเอียดคะแนน (JSON String)"] || item["รายละเอียดคะแนน"] || item.scoreDetails;
+                
+                try { 
+                    if (rawDetails) {
+                        let parsed = JSON.parse(rawDetails); 
+                        if (Array.isArray(parsed)) {
+                            detailsText = parsed.map(p => `• <b>${p.topic}</b>: ${p.detail || ''} (${p.score || 0} คะแนน)`).join('<br>');
+                        } else {
+                            detailsText = Object.keys(parsed).map(k => `• <b>${k}</b>: ${parsed[k].level || parsed[k].detail || ''} (${parsed[k].score || 0} คะแนน)`).join('<br>');
+                        }
+                    }
+                } catch(e) {
+                    detailsText = rawDetails || detailsText;
+                }
+
+                htmlContent += `
+                <div style="padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; background: #ffffff;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: bold; color: #1e40af;">${index + 1}. ${item["ชื่อนิสิต"]}</span>
+                        <span style="font-size: 12px; color: #64748b;">${item["Timestamp"]}</span>
+                    </div>
+                    <div style="font-size: 13px; margin-bottom: 8px; color: #475569;">
+                        <b>รหัสนิสิต:</b> ${item["รหัสนิสิต"]} <br>
+                        <b>วิชา:</b> ${item["รหัสวิชา"]} <br>
+                        <b>หัวข้อ:</b> <span style="color: #059669; font-weight: bold;">${item["Form_Type"] || item["Topic"]}</span> <br>
+                        <b>คะแนนรวม:</b> ${item["คะแนนรวม"]} (${item["เกรด"]})
+                    </div>
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 12px; border: 1px dashed #cbd5e1;">
+                        <b style="color: #334155; display: block; margin-bottom: 4px;">รายละเอียดที่ประเมินไป:</b>
+                        ${detailsText}
+                    </div>
+                </div>`;
+            });
+            htmlContent += `</div>`;
+
+            Swal.fire({
+                title: '📋 ประวัติการประเมินของคุณ',
+                html: htmlContent,
+                width: '700px',
+                confirmButtonText: 'ปิดหน้าต่าง',
+                confirmButtonColor: '#3b82f6'
+            });
+            
+        } catch(e) {
+            console.error(e);
+            Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลประวัติได้ในขณะนี้', 'error');
+        }
+    }
 
     function handleRadioClick(td) {
         const rb = td.querySelector('input[type=radio]');
@@ -577,7 +655,6 @@
                 currentTopic = item.topic;
                 tableHTML = "";
                 
-                // ตรวจสอบว่าเป็นหัวข้อย่อยหรือไม่ (มีจุดทศนิยม เช่น 2.1, 3.2)
                 let isSubTopic = /^\d+\.\d+/.test(currentTopic.trim());
                 let titleClass = isSubTopic ? "sub-competency-title" : "competency-title";
                 
@@ -864,7 +941,6 @@
                 }).then(() => {
                     document.getElementById("evalForm").reset();
                     
-                    // 🌟 ดึงชื่ออาจารย์ที่ระบบจำไว้กลับมาใส่คืน 🌟
                     if (loggedInTeacher) {
                         const fullName = `${loggedInTeacher.prefix || ''}${loggedInTeacher.firstName || ''} ${loggedInTeacher.lastName || ''}`.trim();
                         document.getElementById('teacherName').value = fullName;
