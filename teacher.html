@@ -863,6 +863,13 @@
                     confirmButtonColor: '#10b981'
                 }).then(() => {
                     document.getElementById("evalForm").reset();
+                    
+                    // 🌟 ดึงชื่ออาจารย์ที่ระบบจำไว้กลับมาใส่คืน 🌟
+                    if (loggedInTeacher) {
+                        const fullName = `${loggedInTeacher.prefix || ''}${loggedInTeacher.firstName || ''} ${loggedInTeacher.lastName || ''}`.trim();
+                        document.getElementById('teacherName').value = fullName;
+                    }
+
                     activeStudents.forEach(el => el.classList.remove('active'));
                     filterCriteria();
                     loadStudents(); 
