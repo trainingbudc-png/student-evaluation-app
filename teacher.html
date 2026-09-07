@@ -787,8 +787,8 @@
                         );
                     }
 
-                    // 3. จะล็อกปุ่มประเมินแล้ว ต่อเมื่อเป็นอาจารย์ท่านนี้ประเมิน และ เป็นการประเมินในวันนี้
-                    const isEvaluatedByMe = s.evaluatedBy && s.evaluatedBy.includes(teacherName) && teacherName !== "" && isEvaluatedToday;
+                    // 3. ล็อกปุ่มประเมิน ถ้านิสิตถูกประเมินไปแล้วใน "วันนี้" (ไม่ว่าใครจะเป็นผู้ประเมิน)
+                    const isLockedForToday = isEvaluatedToday;
                     
                     const sIdTrim = String(s.studentId).trim();
                     const imgUrl = studentImgMap[sIdTrim] || "";
@@ -813,7 +813,7 @@
                         }
                     }
 
-                    if (isEvaluatedByMe) {
+                    if (isLockedForToday) {
                         div.className = "student-item disabled";
                         div.innerHTML = `
                             <div class="relative">
