@@ -773,8 +773,8 @@
                 filtered.forEach(s => {
                     const div = document.createElement("div");
                     
-                    // 1. ดึงข้อมูลวันที่ประเมิน
-                    let rawEvalDate = s["วันที่ได้รับประเมินแล้ว"] || s.evaluatedDate || s.lastEvaluatedDate || s.timestamp || "";
+                    // 🌟 1. ดึงข้อมูลวันที่ประเมิน (แก้ไขชื่อให้ตรงกับตัวแปรจากฝั่ง Backend แล้ว) 🌟
+                    let rawEvalDate = s.evaluationDate || s["วันที่ได้รับประเมินแล้ว"] || s.timestamp || "";
                     let evalDateObj = parseThaiDate(rawEvalDate);
                     
                     // 2. ตรวจสอบว่าวันที่ประเมินล่าสุดคือ "วันนี้" หรือไม่
@@ -787,7 +787,7 @@
                         );
                     }
 
-                    // 3. ล็อกปุ่มประเมิน ถ้านิสิตถูกประเมินไปแล้วใน "วันนี้" (ไม่ว่าใครจะเป็นผู้ประเมิน)
+                    // 3. ล็อกปุ่มประเมิน ถ้านิสิตถูกประเมินไปแล้วใน "วันนี้"
                     const isLockedForToday = isEvaluatedToday;
                     
                     const sIdTrim = String(s.studentId).trim();
@@ -981,11 +981,13 @@
             });
 
             const res = await response.json();
+            
+            // 🌟 แจ้งเตือนแบบครอบคลุมทั้งผ่าน และผ่านแบบมีคนซ้ำ
             if (res.result === "success") {
                 Swal.fire({ 
                     icon: 'success', 
                     title: 'บันทึกสำเร็จ!', 
-                    text: `บันทึกผลการประเมินนิสิตจำนวน ${selectedStudents.length} คนเรียบร้อยแล้ว`,
+                    text: res.message, // ใช้ข้อความที่ส่งมาจากหลังบ้านแทน
                     confirmButtonColor: '#10b981'
                 }).then(() => {
                     document.getElementById("evalForm").reset();
@@ -1000,7 +1002,8 @@
                     loadStudents(); 
                 });
             } else {
-                throw new Error("API returned error");
+                // แจ้งเตือนกรณีประเมินซ้ำแบบ 100% (โดนปัดตกหมด)
+                Swal.fire({ icon: 'error', title: 'ข้อมูลซ้ำซ้อน!', text: res.message });
             }
         } catch (error) {
             Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด!', text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
