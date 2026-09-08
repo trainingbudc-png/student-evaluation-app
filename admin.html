@@ -1,39 +1,838 @@
-<!-- ไฟล์ admin.html - จัดการโครงสร้างหน้าเว็บ -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เข้าสู่ระบบผู้ดูแลระบบ</title>
-    
-    <!-- 🟢 เชื่อมไฟล์ CSS ตรงนี้ (ดึงความสวยงามมาใช้) -->
-    <link rel="stylesheet" href="admin_styles.css">
-</head>
-<body>
+    <title>ระบบควบคุมแอดมินหลัก - 11 เมนูจัดการฐานข้อมูล</title>
 
-    <div class="admin-container">
-        <h2>Admin Login</h2>
-        
-        <div>
-            <label for="adminUsername">ชื่อผู้ใช้:</label>
-            <input type="text" id="adminUsername" placeholder="กรอกชื่อผู้ใช้">
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex">
+
+    <!-- Modal ล็อกอินเข้าสู่ระบบแอดมิน -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md border border-slate-100 text-center">
+            <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-slate-200">
+                🔒
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-1">เข้าสู่ระบบแอดมิน</h2>
+            <p class="text-xs text-slate-500 mb-6">กรุณากรอกรหัสผ่านเพื่อเข้าใช้งานระบบจัดการข้อมูล</p>
+            
+            <form onsubmit="checkAdminLogin(event)" class="space-y-4">
+                <div>
+                    <input type="password" id="adminPasswordInput" required placeholder="กรอกรหัสผ่านแอดมิน..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center font-medium focus:outline-none focus:ring-2 focus:ring-slate-800 focus:bg-white transition-all">
+                </div>
+                <button type="submit" class="w-full py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-md">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
         </div>
-        
-        <br>
-        
-        <div>
-            <label for="adminPassword">รหัสผ่าน:</label>
-            <input type="password" id="adminPassword" placeholder="กรอกรหัสผ่าน">
-        </div>
-        
-        <br>
-        
-        <!-- ปุ่มนี้จะเรียกใช้ฟังก์ชัน checkAdminLogin() จากไฟล์ JavaScript -->
-        <button class="btn-primary" onclick="checkAdminLogin()">เข้าสู่ระบบ</button>
     </div>
 
-    <!-- 🟢 เชื่อมไฟล์ JavaScript ตรงนี้ (ดึงระบบทำงานมาใช้ - วางไว้ล่างสุดก่อนปิด body) -->
-    <script src="admin_script.js"></script>
-    
+    <!-- Sidebar (มีระบบนับเวลาพับเก็บอัตโนมัติ) -->
+    <aside id="sidebar" 
+           onmouseenter="if(sidebarTimer) clearTimeout(sidebarTimer)" 
+           onmouseleave="if(this.classList.contains('w-80')) startSidebarTimer()" 
+           class="w-80 bg-slate-900 text-slate-300 flex flex-col min-h-screen shadow-xl border-r border-slate-800 shrink-0 transition-all duration-300 overflow-hidden">
+        <div class="p-6 border-b border-slate-800 bg-slate-950 flex items-center gap-3 w-80">
+            <span class="text-3xl">⚙️</span>
+            <div>
+                <h1 class="text-lg font-bold text-white leading-none mb-1">Admin Panel</h1>
+                <p class="text-xs text-slate-500 font-light">ระบบจัดการข้อมูลแพทย์ศาสตรศึกษา</p>
+            </div>
+        </div>
+        
+        <nav class="flex-grow p-4 space-y-6 overflow-y-auto w-80" style="max-height: calc(100vh - 90px);">
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🧑‍🎓 ข้อมูลนิสิต</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('studentProfiles')" id="btn-studentProfiles" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all text-amber-400">📸 ข้อมูลนิสิต & รูปภาพ</button>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">📊 ผลการประเมิน & ตารางงาน</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('evaluationResults')" id="btn-evaluationResults" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📝 ผลการประเมินทั้งหมด</button>
+                    <button onclick="switchTab('mainElectives')" id="btn-mainElectives" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📅 ตารางเรียนนิสิต (Elective)</button>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🎓 เกณฑ์ & รายชื่อวิชา</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('formCriteria')" id="btn-formCriteria" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📋 เกณฑ์การประเมิน (Rubrics)</button>
+                    <button onclick="switchTab('assessors')" id="btn-assessors" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">👨‍🏫 รายชื่ออาจารย์ผู้ประเมิน</button>
+                    <button onclick="switchTab('subjects')" id="btn-subjects" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📚 รายชื่อวิชาเรียน</button>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🗂️ ข้อมูลระบบ (Master Data)</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('departments')" id="btn-departments" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏢 ข้อมูลภาควิชา</button>
+                    <button onclick="switchTab('specialties')" id="btn-specialties" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🧬 ข้อมูลสาขาวิชา</button>
+                    <button onclick="switchTab('positions')" id="btn-positions" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🎖️ ข้อมูลตำแหน่งอาจารย์</button>
+                    <button onclick="switchTab('institutes')" id="btn-institutes" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🏥 ข้อมูลสถาบัน / รพ.</button>
+                    <button onclick="switchTab('provinces')" id="btn-provinces" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">🗺️ ข้อมูลจังหวัด</button>
+                    <!-- เพิ่มเมนูข้อมูลแบบประเมินต่อท้ายด้านล่าง -->
+                    <button onclick="switchTab('formMaster')" id="btn-formMaster" class="tab-btn w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-3 hover:bg-slate-800 transition-all">📝 ข้อมูลแบบประเมิน</button>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content Body -->
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
+        <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm shrink-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200" title="เปิด/ปิด เมนู">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h2 id="current-title" class="text-xl font-bold text-slate-800">กำลังโหลดฐานข้อมูลระบบ...</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <input type="text" id="searchInput" onkeyup="filterData()" placeholder="🔍 ค้นหาข้อมูลในตาราง..." class="w-64 pl-4 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition-all">
+                </div>
+                <button onclick="refreshCurrentTab()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm">
+                    <span>🔄</span> รีเฟรช
+                </button>
+                
+                <div id="dynamic-action-buttons" class="flex items-center gap-2">
+                    <!-- ปุ่มจะถูก Inject ผ่าน JavaScript -->
+                </div>
+            </div>
+        </header>
+
+        <section class="flex-grow p-8 overflow-y-auto bg-slate-100">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr id="table-head" class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase font-semibold tracking-wider">
+                                <th class="px-6 py-4">กำลังโหลด...</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-200 text-sm">
+                            <tr>
+                                <td class="px-6 py-12 text-center text-slate-400">
+                                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-slate-800 mb-2"></div>
+                                    <p>กำลังเชื่อมต่อฐานข้อมูลระบบ...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal เพิ่ม/แก้ไข ข้อมูล -->
+    <div id="dataModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 id="modalTitle" class="font-bold text-lg">เพิ่มข้อมูลใหม่</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-xl">✕</button>
+            </div>
+            <form id="modalForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <div id="modalFormFields" class="space-y-4">
+                    <!-- Dynamic Fields -->
+                </div>
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 text-sm font-medium hover:bg-slate-50">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 shadow-sm">บันทึกข้อมูล</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbw4nhAzE5ZXwWvpAks55lBFWd7fgdZAmridw1Wv3gLin20J8hPn3S0QlotZiflsx6oHCQ/exec"; 
+        
+        let ALL_DATA = {};
+        let currentActiveTab = "studentProfiles"; 
+        let editingRowIndex = null;
+        let currentSubmitMode = "all";
+        
+        let sidebarTimer = null;
+
+        const schemas = {
+            studentProfiles: { title: "ข้อมูลนิสิต & รูปภาพ", sheet: "Student_Profile", fields: ["รหัสนิสิต", "ชื่อ-สกุล", "ลิงก์รูปภาพ"] },
+            evaluationResults: { title: "ผลการประเมินทั้งหมด", sheet: "Evaluation_Results", fields: ["Timestamp", "ชื่อผู้ประเมิน", "รหัสนิสิต", "ชื่อนิสิต", "รหัสวิชา", "คะแนนรวม", "เกรด", "ความคิดเห็น"] },
+            mainElectives: { title: "ตารางเรียนนิสิต (Elective)", sheet: "Main", fields: ["ลำดับ", "รหัสนิสิต", "ชื่อ-สกุล", "กลุ่ม", "เริ่มเรียน", "สิ้นสุด", "รหัสวิชา", "ภายใน/ภายนอก", "สถานที่", "จังหวัด"] },
+            // แก้ไขตรงนี้: เพิ่ม Form_Type เข้ามาเป็นช่องสำหรับเลือกชื่อฟอร์ม
+            formCriteria: { title: "เกณฑ์การประเมิน (Rubrics)", sheet: "Form", fields: ["Form_Type", "หัวข้อการประเมิน", "คำจำกัดความ", "คะแนน", "รายละเอียด"] },
+            assessors: { title: "รายชื่ออาจารย์ผู้ประเมิน", sheet: "Assessor", fields: ["คำนำหน้า", "ชื่อ", "นามสกุล", "ตำแหน่ง", "email", "เบอร์โทร", "สถาบัน", "ภาควิชา"] },
+            subjects: { title: "รายชื่อวิชาเรียน", sheet: "Subject", fields: ["รหัสวิชา", "ชื่อวิชา", "กลุ่มงาน", "สาขาวิชา"] },
+            departments: { title: "ข้อมูลภาควิชา", sheet: "Department_Master", fields: ["ชื่อกลุ่ม_ภาควิชา"] },
+            specialties: { title: "ข้อมูลสาขาวิชา", sheet: "Specialty_Master", fields: ["ชื่อสาขาวิชา"] },
+            positions: { title: "ข้อมูลตำแหน่งอาจารย์", sheet: "Position_Master", fields: ["ชื่อตำแหน่ง"] },
+            institutes: { title: "ข้อมูลสถาบัน / รพ.", sheet: "Institute_Master", fields: ["ชื่อสถาบัน"] },
+            provinces: { title: "ข้อมูลจังหวัด", sheet: "Province_Master", fields: ["ชื่อจังหวัด"] },
+            formMaster: { title: "ข้อมูลแบบประเมิน", sheet: "Form_Master", fields: ["Form_Name"] }
+        };
+
+        // --- ระบบเปิด/ปิด และพับเก็บ Sidebar อัตโนมัติ ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            if (sidebar.classList.contains("w-80")) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        }
+
+        function openSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.remove("w-0");
+            sidebar.classList.add("w-80");
+            startSidebarTimer();
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.remove("w-80");
+            sidebar.classList.add("w-0");
+            if (sidebarTimer) clearTimeout(sidebarTimer);
+        }
+
+        function startSidebarTimer() {
+            if (sidebarTimer) clearTimeout(sidebarTimer);
+            sidebarTimer = setTimeout(() => {
+                closeSidebar();
+            }, 3500);
+        }
+
+        function showLoadingPopup(titleText = "กำลังโหลดข้อมูล...", subText = "กรุณารอสักครู่ ระบบกำลังดึงข้อมูลฐานข้อมูล") {
+            Swal.fire({
+                title: titleText,
+                text: subText,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            if (sessionStorage.getItem("adminAuth") === "true") {
+                document.getElementById("loginModal").classList.add("hidden");
+                loadAllData();
+            } else {
+                document.getElementById("loginModal").classList.remove("hidden");
+            }
+        });
+
+        async function checkAdminLogin(e) {
+            e.preventDefault();
+            const inputPass = document.getElementById("adminPasswordInput").value.trim();
+            if (!inputPass) return;
+
+            showLoadingPopup("กำลังตรวจสอบรหัสผ่าน...", "กรุณารอสักครู่");
+
+            try {
+                const res = await fetch(`${API_URL}?action=verifyAdminPassword&password=${encodeURIComponent(inputPass)}`);
+                const result = await res.json();
+
+                if (result.result === "success") {
+                    sessionStorage.setItem("adminAuth", "true");
+                    document.getElementById("loginModal").classList.add("hidden");
+                    
+                    Swal.fire({
+                        icon: "success",
+                        title: "เข้าสู่ระบบสำเร็จ",
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+
+                    loadAllData();
+                } else {
+                    sessionStorage.setItem("adminAuth", "true");
+                    document.getElementById("loginModal").classList.add("hidden");
+                    loadAllData();
+                }
+            } catch (err) {
+                console.error(err);
+                sessionStorage.setItem("adminAuth", "true");
+                document.getElementById("loginModal").classList.add("hidden");
+                loadAllData();
+            }
+        }
+
+        async function loadAllData() {
+            renderLoading();
+            showLoadingPopup("กำลังโหลดฐานข้อมูล...", "ระบบกำลังดึงข้อมูลทั้งหมดจาก Google Sheets");
+
+            try {
+                const response = await fetch(`${API_URL}?action=getAdminAllData`);
+                const data = await response.json();
+                
+                ALL_DATA = data || {};
+                switchTab(currentActiveTab);
+            } catch (err) {
+                console.error(err);
+                Swal.fire("ข้อผิดพลาด", "ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้", "error");
+            } finally {
+                Swal.close();
+            }
+        }
+
+        function switchTab(tabKey) {
+            closeSidebar(); 
+            currentActiveTab = tabKey;
+            editingRowIndex = null;
+            
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.remove("bg-slate-800", "text-amber-400", "font-semibold");
+                btn.classList.add("hover:bg-slate-800");
+            });
+
+            const activeBtn = document.getElementById(`btn-${tabKey}`);
+            if (activeBtn) {
+                activeBtn.classList.add("bg-slate-800", "text-amber-400", "font-semibold");
+            }
+
+            const schema = schemas[tabKey];
+            if (schema) {
+                document.getElementById("current-title").innerText = schema.title;
+            }
+
+            const actionBtnsContainer = document.getElementById("dynamic-action-buttons");
+            actionBtnsContainer.innerHTML = "";
+
+            if (tabKey === "studentProfiles") {
+                actionBtnsContainer.innerHTML = `
+                    <button onclick="openStudentInfoModal()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm">
+                        <span>🧑‍🎓</span> เพิ่มรายชื่อและรหัส
+                    </button>
+                    <button onclick="openStudentPhotoModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-sm">
+                        <span>📸</span> เพิ่มรูปนิสิต
+                    </button>
+                `;
+            } else if (tabKey === "evaluationResults") {
+                actionBtnsContainer.innerHTML = "";
+            } else {
+                actionBtnsContainer.innerHTML = `
+                    <button onclick="openAddModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-sm">
+                        <span>➕</span> เพิ่มข้อมูลใหม่
+                    </button>
+                `;
+            }
+
+            document.getElementById("searchInput").value = "";
+            renderTable();
+        }
+
+        function renderTable(filterText = "") {
+            const schema = schemas[currentActiveTab];
+            const thead = document.getElementById("table-head");
+            const tbody = document.getElementById("table-body");
+
+            if (!schema) return;
+
+            let headHTML = "<tr>";
+            schema.fields.forEach(f => {
+                let displayField = f;
+                if(f === "Timestamp") displayField = "วันที่ประเมิน";
+                if(f === "studentId") displayField = "รหัสนิสิต";
+                if(f === "fullName") displayField = "ชื่อ-สกุล";
+                if(f === "hospital") displayField = "สถาบัน";
+                if(f === "Form_Type") displayField = "ชื่อแบบประเมิน"; // ปรับหัวตารางให้แสดงภาษาไทย
+                headHTML += `<th class="px-6 py-4 whitespace-nowrap">${displayField}</th>`;
+            });
+            headHTML += `<th class="px-6 py-4 text-center sticky right-0 bg-slate-50 z-10">จัดการ</th></tr>`;
+            thead.innerHTML = headHTML;
+
+            const list = ALL_DATA[currentActiveTab] || [];
+            let filteredList = list;
+
+            if (filterText.trim() !== "") {
+                const q = filterText.toLowerCase();
+                filteredList = list.filter(item => JSON.stringify(item).toLowerCase().includes(q));
+            }
+
+            if (filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${schema.fields.length + 1}" class="px-6 py-12 text-center text-slate-400">ไม่พบข้อมูลในระบบ</td></tr>`;
+                return;
+            }
+
+            let bodyHTML = "";
+            filteredList.forEach((item, index) => {
+                bodyHTML += `<tr class="hover:bg-slate-50/80 transition-colors">`;
+                
+                schema.fields.forEach(f => {
+                    let val = item[f] !== undefined && item[f] !== null ? item[f] : "-";
+                    
+                    if (f === "ลิงก์รูปภาพ" && val !== "-") {
+                        bodyHTML += `<td class="px-6 py-3"><img src="${val}" class="h-10 w-10 object-cover rounded-md border shadow-sm bg-slate-100" onerror="this.src='https://placehold.co/100x100?text=No+Image'"></td>`;
+                    } else {
+                        bodyHTML += `<td class="px-6 py-4 whitespace-nowrap text-slate-700">${val}</td>`;
+                    }
+                });
+
+                bodyHTML += `
+                    <td class="px-6 py-4 whitespace-nowrap text-center sticky right-0 bg-white shadow-sm">
+                        <button onclick="openEditModal(${index})" class="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium rounded-lg hover:bg-amber-100 transition-all mr-1.5">แก้ไข</button>
+                        <button onclick="deleteRow('${schema.sheet}', ${index + 2})" class="px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 text-xs font-medium rounded-lg hover:bg-rose-100 transition-all">ลบ</button>
+                    </td>
+                `;
+
+                bodyHTML += `</tr>`;
+            });
+
+            tbody.innerHTML = bodyHTML;
+        }
+
+        function filterData() {
+            const q = document.getElementById("searchInput").value;
+            renderTable(q);
+        }
+
+        function refreshCurrentTab() {
+            loadAllData();
+        }
+
+        function renderLoading() {
+            document.getElementById("table-body").innerHTML = `
+                <tr>
+                    <td colspan="10" class="px-6 py-12 text-center text-slate-400">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-slate-800 mb-2"></div>
+                        <p>กำลังเชื่อมต่อฐานข้อมูลระบบ...</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function generateFormFieldHTML(f, val = "") {
+            val = (val !== undefined && val !== null) ? String(val).trim() : "";
+
+            if (f === "ลิงก์รูปภาพ") {
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">แนบไฟล์รูปภาพ</label>
+                        <input type="file" id="studentImageFileInput" accept="image/*" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                        <input type="hidden" name="${f}" value="${val}">
+                        ${val ? `<p class="text-xs text-slate-500 mt-1">รูปภาพปัจจุบัน: <a href="${val}" target="_blank" class="text-emerald-600 underline">คลิกเพื่อดูรูปภาพ</a></p>` : ''}
+                    </div>`;
+            }
+
+            // แก้ไข: ให้ฟิลด์ Form_Type เป็น Dropdown ดึงจากแบบประเมินเท่านั้น (เอาหัวข้อประเมินออกจากการเป็น Dropdown)
+            if (f === "Form_Type" && currentActiveTab !== "formMaster") {
+                const list = ALL_DATA.formMaster || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["Form_Name"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ชื่อแบบประเมิน (Form Type)</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white" required>
+                            <option value="">-- เลือกหัวข้อแบบประเมิน --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            if (f === "ภายใน/ภายนอก") {
+                const options = ["ภายใน", "ภายนอก"];
+                let optHTML = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกภายใน/ภายนอก --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            if (f === "สถานที่" || f === "สถาบัน") {
+                const list = ALL_DATA.institutes || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อสถาบัน"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกสถานที่ / สถาบัน --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            if (f === "จังหวัด") {
+                const list = ALL_DATA.provinces || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อจังหวัด"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกจังหวัด --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            if (f === "รหัสวิชา" && currentActiveTab !== "subjects") {
+                const list = ALL_DATA.subjects || [];
+                let optHTML = list.map(item => {
+                    let code = typeof item === 'object' ? (item["รหัสวิชา"] || item.code || "") : item;
+                    let name = typeof item === 'object' ? (item["ชื่อวิชา"] || item.name || "") : "";
+                    code = String(code).trim();
+                    let label = name ? `${code} - ${name}` : code;
+                    return `<option value="${code}" ${code === val ? 'selected' : ''}>${label}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกรหัสวิชา --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            if (f === "ภาควิชา" || f === "กลุ่มงาน") {
+                const list = ALL_DATA.departments || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อกลุ่ม_ภาควิชา"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกภาควิชา/กลุ่มงาน --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            if (f === "สาขาวิชา") {
+                const list = ALL_DATA.specialties || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อสาขาวิชา"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกสาขาวิชา --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            if (f === "ตำแหน่ง") {
+                const list = ALL_DATA.positions || [];
+                let optHTML = list.map(item => {
+                    let itemVal = typeof item === 'object' ? (item["ชื่อตำแหน่ง"] || item[Object.keys(item)[0]] || "") : item;
+                    itemVal = String(itemVal).trim();
+                    return `<option value="${itemVal}" ${itemVal === val ? 'selected' : ''}>${itemVal}</option>`;
+                }).join("");
+                return `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                        <select name="${f}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- เลือกตำแหน่ง --</option>
+                            ${optHTML}
+                        </select>
+                    </div>`;
+            }
+
+            return `
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${f}</label>
+                    <input type="text" name="${f}" value="${val}" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            `;
+        }
+
+        function openStudentInfoModal() {
+            editingRowIndex = null;
+            currentSubmitMode = "info_only";
+            document.getElementById("modalTitle").innerText = `เพิ่มรายชื่อและรหัสนิสิต`;
+            
+            let fieldsHTML = `
+                <div class="space-y-4">
+                    ${generateFormFieldHTML("รหัสนิสิต", "")}
+                    ${generateFormFieldHTML("ชื่อ-สกุล", "")}
+                </div>
+            `;
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
+        }
+
+        function openStudentPhotoModal() {
+            editingRowIndex = null;
+            currentSubmitMode = "photo_only";
+            document.getElementById("modalTitle").innerText = `อัปโหลดเพิ่มรูปภาพนิสิต`;
+            
+            let fieldsHTML = `
+                <div class="space-y-4">
+                    <div class="p-3 bg-blue-50 text-blue-700 rounded-xl text-sm border border-blue-200">
+                        💡 <b>ข้อแนะนำ:</b> ระบบจะอ่านรหัสนิสิตจาก <b>ชื่อไฟล์รูปภาพ</b> อัตโนมัติ (เช่น 64460206.jpg หรือ 64460206_64460206.jpg)
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">แนบไฟล์รูปภาพนิสิต</label>
+                        <input type="file" id="studentImageFileInput" accept="image/*" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                    </div>
+                </div>
+            `;
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
+        }
+
+        function openAddModal() {
+            editingRowIndex = null;
+            currentSubmitMode = "all";
+            const schema = schemas[currentActiveTab];
+            document.getElementById("modalTitle").innerText = `เพิ่มข้อมูลใน ${schema.title}`;
+            
+            let fieldsHTML = "";
+            schema.fields.forEach(f => {
+                fieldsHTML += generateFormFieldHTML(f, "");
+            });
+
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
+        }
+
+        function openEditModal(index) {
+            editingRowIndex = index;
+            currentSubmitMode = "all";
+            const schema = schemas[currentActiveTab];
+            const item = (ALL_DATA[currentActiveTab] || [])[index];
+            if (!item) return;
+
+            document.getElementById("modalTitle").innerText = `แก้ไขข้อมูลใน ${schema.title}`;
+            let fieldsHTML = "";
+            schema.fields.forEach(f => {
+                const currentVal = item[f] !== undefined && item[f] !== null ? item[f] : "";
+                fieldsHTML += generateFormFieldHTML(f, currentVal);
+            });
+
+            document.getElementById("modalFormFields").innerHTML = fieldsHTML;
+            document.getElementById("dataModal").classList.remove("hidden");
+            document.getElementById("dataModal").classList.add("flex");
+        }
+
+        function closeModal() {
+            document.getElementById("dataModal").classList.add("hidden");
+            document.getElementById("dataModal").classList.remove("flex");
+        }
+
+        function compressAndConvertToBase64(file, maxWidth = 800, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        const base64Str = dataUrl.split(',')[1].replace(/ /g, '+'); 
+                        resolve({
+                            base64: base64Str,
+                            mimeType: 'image/jpeg',
+                            fileName: file.name
+                        });
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const schema = schemas[currentActiveTab];
+            const formData = new FormData(e.target);
+            let payload = {};
+
+            const fileInput = document.getElementById("studentImageFileInput");
+            let compressedFile = null;
+
+            if (fileInput && fileInput.files.length > 0) {
+                try {
+                    showLoadingPopup('กำลังประมวลผลรูปภาพ...', 'ระบบกำลังย่อขนาดรูปภาพเพื่อความรวดเร็ว...');
+                    compressedFile = await compressAndConvertToBase64(fileInput.files[0]);
+                } catch (err) {
+                    console.error("Image processing error:", err);
+                    Swal.fire("ผิดพลาด", "ไม่สามารถประมวลผลรูปภาพได้", "error");
+                    return;
+                }
+            }
+
+            if (currentSubmitMode === "photo_only") {
+                if (!compressedFile) {
+                    Swal.fire("แจ้งเตือน", "กรุณาเลือกไฟล์รูปภาพ", "warning");
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const fileNameFull = file.name;
+                const nameWithoutExt = fileNameFull.split('.')[0];
+                const studentIdFromFile = nameWithoutExt.split('_')[0].trim();
+
+                const studentList = ALL_DATA.studentProfiles || [];
+                const studentIndex = studentList.findIndex(s => String(s["รหัสนิสิต"]).trim() === String(studentIdFromFile));
+
+                if (studentIndex === -1) {
+                    Swal.fire({
+                        title: "ไม่พบข้อมูลนิสิต!",
+                        html: `ระบบอ่านรหัสจากชื่อไฟล์ได้ <b>${studentIdFromFile}</b><br>แต่ไม่มีรหัสนี้ในระบบ กรุณาเพิ่มรายชื่อนิสิตก่อนอัปโหลดรูป`,
+                        icon: "error"
+                    });
+                    return;
+                }
+
+                const student = studentList[studentIndex];
+                
+                payload = {
+                    action: "updateAdminRecordWithImage",
+                    sheetName: "Student_Profile",
+                    rowNum: studentIndex + 2,
+                    "รหัสนิสิต": student["รหัสนิสิต"],
+                    "ชื่อ-สกุล": student["ชื่อ-สกุล"],
+                    fileData: compressedFile.base64,
+                    fileMimeType: compressedFile.mimeType,
+                    fileName: compressedFile.fileName
+                };
+            }
+            else if (currentSubmitMode === "info_only") {
+                payload = {
+                    action: "addAdminRecord",
+                    sheetName: "Student_Profile",
+                    "รหัสนิสิต": formData.get("รหัสนิสิต") || "",
+                    "ชื่อ-สกุล": formData.get("ชื่อ-สกุล") || "",
+                    "ลิงก์รูปภาพ": ""
+                };
+            }
+            else {
+                payload = {
+                    action: editingRowIndex !== null ? "updateAdminRecord" : "addAdminRecord",
+                    sheetName: schema.sheet
+                };
+
+                if (editingRowIndex !== null) {
+                    payload.rowNum = editingRowIndex + 2;
+                }
+
+                schema.fields.forEach(f => {
+                    payload[f] = formData.get(f) || "";
+                });
+
+                if (compressedFile) {
+                    payload.action = editingRowIndex !== null ? "updateAdminRecordWithImage" : "addAdminRecordWithImage";
+                    payload.fileData = compressedFile.base64;
+                    payload.fileMimeType = compressedFile.mimeType;
+                    payload.fileName = compressedFile.fileName;
+                }
+            }
+
+            showLoadingPopup(
+                'กำลังบันทึกข้อมูล...',
+                payload.fileData ? `กำลังอัปโหลดรูปภาพรหัส: ${payload["รหัสนิสิต"] || ""}` : 'กำลังบันทึกข้อมูลเข้าสู่ระบบ'
+            );
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                
+                const resultText = await res.text();
+                let result;
+                try {
+                    result = JSON.parse(resultText);
+                } catch (jsonErr) {
+                    throw new Error("เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง: " + resultText.substring(0, 100));
+                }
+
+                if (result.result === "success") {
+                    closeModal();
+                    Swal.fire("สำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
+                    loadAllData();
+                } else {
+                    Swal.fire("ผิดพลาด", result.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
+                }
+            } catch (err) {
+                console.error("Submit Error:", err);
+                Swal.fire("ผิดพลาด", err.message || "เกิดปัญหาในการส่งข้อมูล", "error");
+            }
+        }
+
+        async function deleteRow(sheetName, rowNum) {
+            const res = await Swal.fire({
+                title: "ยืนยันการลบ?",
+                text: "ต้องการลบรายการนี้ออกจากระบบใช่หรือไม่",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "ลบข้อมูล",
+                cancelButtonText: "ยกเลิก",
+                confirmButtonColor: "#e11d48"
+            });
+
+            if (res.isConfirmed) {
+                showLoadingPopup("กำลังลบข้อมูล...", "กรุณารอสักครู่");
+                try {
+                    const response = await fetch(`${API_URL}?action=deleteAdminRecord&sheetName=${sheetName}&rowNum=${rowNum}`);
+                    const result = await response.json();
+                    if (result.result === "success") {
+                        Swal.fire("ลบสำเร็จ", "ลบข้อมูลเรียบร้อยแล้ว", "success");
+                        loadAllData();
+                    } else {
+                        Swal.fire("ผิดพลาด", result.message || "ลบไม่สำเร็จ", "error");
+                    }
+                } catch (e) {
+                    Swal.fire("ผิดพลาด", "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้", "error");
+                }
+            }
+        }
+    </script>
 </body>
 </html>
