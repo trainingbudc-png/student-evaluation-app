@@ -1,0 +1,19 @@
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { 
+    animation: fadeIn 0.4s ease forwards; 
+}
+
+/* สีกล่องสถานะตามโค้ดเดิม */
+.status-evaluated { 
+    background-color: #ecfdf5 !important; 
+    border-color: #a7f3d0 !important; 
+    color: #065f46 !important; 
+}
+.status-not-evaluated { 
+    background-color: #fff7ed !important; 
+    border-color: #fed7aa !important; 
+    color: #9a3412 !important; 
+}
